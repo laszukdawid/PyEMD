@@ -1,9 +1,8 @@
 #!/usr/bin/python
 # coding: UTF-8
 #
-# Author: Dawid Laszuk
-# Contact: d.laszuk@pgr.reading.ac.uk
-#          laszukdawid@gmail.com
+# Author:   Dawid Laszuk
+# Contact:  laszukdawid@gmail.com
 #
 # Feel free to contact for any information.
 
@@ -11,7 +10,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 import pylab as py
 
-import sys, time, os
+import time, os
 
 class EMD:
     """

@@ -1,16 +1,13 @@
-# Author: Dawid Laszuk
+#!/usr/bin/python
+# coding: UTF-8
+#
+# Author:   Dawid Laszuk
+# Contact:  laszukdawid@gmail.com
+#
+# Feel free to contact for any information.
 
 import numpy as np
-#import scipy as sp
 import pylab as py
-
-import sys, time
-
-def mvAvg(interval, window_size):
-    window = np.ones(int(window_size))/float(window_size)
-    s = np.convolve(interval, window, 'same')
-    s = np.convolve(s[::-1], window, 'same')
-    return s
 
 class EEMD:
     
@@ -53,8 +50,6 @@ class EEMD:
             print "trial: ", trial
     
             noise = np.random.normal(loc=0, scale=self.noiseWidth, size=N)
-            #~ noise = mvAvg(noise, 3)
-            #~ noise = np.zeros(N)
 
             tmpIMF, tmpEXT, tmpITER, imfNo = self.emd(S+noise, timeLine, maxImf)
 
@@ -97,8 +92,6 @@ if __name__ == "__main__":
     S = np.sum( [-eval("s%i"%i) for i in range(1,1+n)], axis=0)
     
     S = np.random.normal(0,1, len(t))
-    #~ S = mvAvg(S[::-1], 5)
-    #~ S = mvAvg(S[::-1], 5)
     IMF, EXT, ITER, imfNo = EEMD().eemd(S, timeLine, maxImf)
     
     c = np.floor(np.sqrt(imfNo+3))
