@@ -7,8 +7,8 @@
 # Feel free to contact for any information.
 
 import numpy as np
-from scipy.interpolate import interp1d
 import pylab as py
+from scipy.interpolate import interp1d
 
 import time, os
 
