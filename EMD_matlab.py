@@ -508,40 +508,11 @@ class EMD:
 
     def _common_dtype(self, x, y):
         
-        x_dtype = np.dtype(x.dtype)
-        y_dtype = np.dtype(y.dtype)
+        dtype = np.find_common_type([x.dtype, y.dtype], [])
+        if x.dtype != dtype: x = x.astype(dtype)
+        if y.dtype != dtype: y = y.astype(dtype)
         
-        x_kind, x_size = x_dtype.kind, x_dtype.itemsize
-        y_kind, y_size = y_dtype.kind, y_dtype.itemsize
-        
-        max_size = max(x_size, y_size)
-        
-        # If they are the same type use highest precision
-        if x_kind == y_kind:
-            if x_size != max_size:
-                x = x.astype(y_dtype)
-            else:
-                y = y.astype(x_dtype)
-            
-            return x, y
-        
-        # At this point x_kind != y_kind    
-        info = "Provided two different types for data: '{}' and '{}'. "
-        info+= "Converting these to highest float."
-        print(info.format(x_dtype, y_dtype))
-        
-        max_size = '8'
-        if x_kind == 'f':
-            max_size = str(x_size)
-        elif y_kind == 'f':
-            max_size = str(y_size)
-
-        x = x.astype('f'+max_size)
-        y = y.astype('f'+max_size)
-
         return x, y
-        
-
 
     def emd(self, S, timeLine=None, maxImf=None):
         """
