@@ -6,6 +6,8 @@
 #
 # Feel free to contact for any information.
 
+from __future__ import print_function
+
 import numpy as np
 import pylab as py
 
@@ -47,7 +49,7 @@ class EEMD:
         
         
         for trial in xrange(self.trials):
-            print "trial: ", trial
+            print("trial: ", trial)
     
             noise = np.random.normal(loc=0, scale=self.noiseWidth, size=N)
 

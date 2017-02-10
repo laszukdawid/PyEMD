@@ -6,11 +6,14 @@
 #
 # Feel free to contact for any information.
 
+from __future__ import print_function
+
+import os
+import time
+
 import numpy as np
 import pylab as py
 from scipy.interpolate import interp1d
-
-import time, os
 
 class EMD:
     def __init__(self):
@@ -38,27 +41,29 @@ class EMD:
 
         self.MAX_ITERATION = 10000
 
-    def splineHermite(self, T, P0, M0, P1, M1):
+    def spline_hermite(self, T, P0, M0, P1, M1, alpha=None):
         """
-        Hermite splines.
+        Based on two points values (P) and derivatives (M)
+        calculates a spline on time range T, i.e. returns S(T).
         """
         # Normalized time - range (0,1)
         t = (T-T[0])/(T[-1]-T[0])
         t2 = t*t
         t3 = t2*t
-        alfa = 0.2
+        
+        if alpha is None:
+            alpha = 0.2
         
         return P0*( 2*t3 - 3*t2 + 1) + \
-               M0*(   t3 - 2*t2 + t)*alfa + \
+               M0*(   t3 - 2*t2 + t)*alpha + \
                P1*(-2*t3 + 3*t2) + \
-               M1*(   t3 -   t2)*alfa           
+               M1*(   t3 -   t2)*alpha
 
     def spline_interplolate(self, T, P0, M0, P1, M1):
         """
-        Spline interpolation: http://en.wikipedia.org/wiki/Spline_interpolation.
+        Spline interpolation:
+        http://en.wikipedia.org/wiki/Spline_interpolation.
         """
-        a = 1
-        M0, M1 = a*M0, a*M1
         
         t0, t1 = T[0], T[-1]
         a =  M0*(t1-t0) - (P1-P0)
@@ -90,10 +95,10 @@ class EMD:
         #~ maxPos, maxVal, minPos, minVal = self.findExtrema_new(T, S)
         maxPos, maxVal, minPos, minVal, indzer = self.findExtrema_simple(T, S)
 
-        if maxPos.dtype!=self.DTYPE: print 'maxPos.dtype: ', maxPos.dtype
-        if maxVal.dtype!=self.DTYPE: print 'maxVal.dtype: ', maxVal.dtype
-        if minPos.dtype!=self.DTYPE: print 'minPos.dtype: ', minPos.dtype
-        if minVal.dtype!=self.DTYPE: print 'minVal.dtype: ', minVal.dtype
+        if maxPos.dtype!=self.DTYPE: print('maxPos.dtype: ', maxPos.dtype)
+        if maxVal.dtype!=self.DTYPE: print('maxVal.dtype: ', maxVal.dtype)
+        if minPos.dtype!=self.DTYPE: print('minPos.dtype: ', minPos.dtype)
+        if minVal.dtype!=self.DTYPE: print('minVal.dtype: ', minVal.dtype)
         if len(maxPos) + len(minPos) < 3: return [-1]*4
             
         #########################################
@@ -103,15 +108,15 @@ class EMD:
         #########################################
 
         # Extrapolation of signal (ober boundaries)
-        #maxExtrema, minExtrema = self.preparePoints(T, S, maxPos, maxVal, minPos, minVal)
+        #~ maxExtrema, minExtrema = self.preparePoints(T, S, maxPos, maxVal, minPos, minVal)
         maxExtrema, minExtrema = self.preparePoints_coppiedFromMatlab(T, S, maxPos, maxVal, minPos, minVal)
         
         maxTSpline, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
         minTSpline, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
 
-        if maxExtrema.dtype!=self.DTYPE: print 'maxExtrema.dtype: ', maxExtrema.dtype
-        if maxSpline.dtype!=self.DTYPE: print 'maxSpline.dtype: ', maxSpline.dtype
-        if maxTSpline.dtype!=self.DTYPE: print 'maxTSline.dtype: ', maxTSpline.dtype
+        if maxExtrema.dtype!=self.DTYPE: print('maxExtrema.dtype: ', maxExtrema.dtype)
+        if maxSpline.dtype!=self.DTYPE: print('maxSpline.dtype: ', maxSpline.dtype)
+        if maxTSpline.dtype!=self.DTYPE: print('maxTSline.dtype: ', maxTSpline.dtype)
 
         return maxSpline, minSpline, maxExtrema, minExtrema
 
@@ -277,8 +282,8 @@ class EMD:
         indmin = np.array([np.nonzero(T==t)[0] for t in minPos]).flatten()
         indmax = np.array([np.nonzero(T==t)[0] for t in maxPos]).flatten()
 
-        if S.dtype != self.DTYPE: print 'S.dtype: ', S.dtype
-        if T.dtype != self.DTYPE: print 'T.dtype: ', T.dtype
+        if S.dtype != self.DTYPE: print('S.dtype: ', S.dtype)
+        if T.dtype != self.DTYPE: print('T.dtype: ', T.dtype)
         
         # Local variables
         nbsym = self.nbsym
@@ -288,23 +293,19 @@ class EMD:
         # Left bound - mirror nbsym points to the left
         if indmax[0] < indmin[0]:
             if S[0] > S[indmin[0]]:
-                #~ print 'L1 m'
                 lmax = indmax[1:min(endMax,nbsym+1)][::-1]
                 lmin = indmin[0:min(endMin,nbsym+0)][::-1]
                 lsym = indmax[0]
             else:
-                #~ print 'L2 m'
                 lmax = indmax[0:min(endMax,nbsym)][::-1]
                 lmin = np.append(indmin[0:min(endMin,nbsym-1)][::-1],0)
                 lsym = 0
         else:
             if S[0] < S[indmax[0]]:
-                #~ print 'L3 m'
                 lmax = indmax[0:min(endMax,nbsym+0)][::-1]
                 lmin = indmin[1:min(endMin,nbsym+1)][::-1]
                 lsym = indmin[0]
             else:
-                #~ print 'L4 m'
                 lmax = np.append(indmax[0:min(endMax,nbsym-1)][::-1],0)
                 lmin = indmin[0:min(endMin,nbsym)][::-1]
                 lsym = 0
@@ -313,23 +314,19 @@ class EMD:
         # Right bound - mirror nbsym points to the right
         if indmax[-1] < indmin[-1]:
             if S[-1] < S[indmax[-1]]: #################
-                #~ print 'R1 m'
                 rmax = indmax[max(endMax-nbsym,0):][::-1]
                 rmin = indmin[max(endMin-nbsym-1,0):-1][::-1]
                 rsym = indmin[-1]
             else:
-                #~ print 'R2 m'
                 rmax = np.append(indmax[max(endMax-nbsym+1,0):], len(S)-1)[::-1]
                 rmin = indmin[max(endMin-nbsym,0):][::-1]
                 rsym = len(S)-1
         else:
             if S[-1] > S[indmin[-1]]: ###############
-                #~ print 'R3 m'
                 rmax = indmax[max(endMax-nbsym-1,0):-1][::-1]
                 rmin = indmin[max(endMin-nbsym,0):][::-1]
                 rsym = indmax[-1]
             else:
-                #~ print 'R4 m'
                 rmax = indmax[max(endMax-nbsym,0):][::-1]
                 rmin = np.append(indmin[max(endMin-nbsym+1,0):], len(S)-1)[::-1]
                 rsym = len(S)-1
@@ -385,7 +382,7 @@ class EMD:
 
         maxExtrema = np.array([tmax, zmax])        
         minExtrema = np.array([tmin, zmin])
-        if maxExtrema.dtype != self.DTYPE: print 'maxExtrema.dtype: ', maxExtrema.dtype
+        if maxExtrema.dtype != self.DTYPE: print('maxExtrema.dtype: ', maxExtrema.dtype)
         
         # Make double sure, that each extremum is significant
         maxExtrema = np.delete(maxExtrema, np.where(maxExtrema[0,1:]==maxExtrema[0,:-1]),axis=1)
@@ -393,138 +390,6 @@ class EMD:
      
         return maxExtrema, minExtrema
         
-    def preparePoints_alamatlab(self, T, S, maxPos, maxVal, minPos, minVal):
-        """
-        Adds to signal extrema according to mirror technique.
-        Number of added points depends on nbsym variable.
-        
-        Input:
-        ---------
-            S: Signal (1D numpy array).
-            T: Timeline (1D numpy array).
-            maxPos: sorted time positions of maxima.
-            maxVal: signal values at maxPos positions.
-            minPos: sorted time positions of minima.
-            minVal: signal values at minPos positions.
-        
-        Output:
-        ---------
-            minExtrema: Position (1st row) and values (2nd row) of minima.
-            minExtrema: Position (1st row) and values (2nd row) of maxima.
-        """
-
-        # Find indexes of pass 
-        indmin = np.array([np.nonzero(T==t)[0] for t in minPos]).flatten()
-        indmax = np.array([np.nonzero(T==t)[0] for t in maxPos]).flatten()
-
-        if S.dtype != self.DTYPE: print 'S.dtype: ', S.dtype
-        if T.dtype != self.DTYPE: print 'T.dtype: ', T.dtype
-        
-        # Local variables
-        nbsym = self.nbsym
-        endMin, endMax = len(minPos), len(maxPos)
-        
-        ####################################
-        # Left bound - mirror nbsym points to the left
-        if indmax[0] < indmin[0]:
-            if S[0] > S[indmin[0]]:
-                lmax = indmax[1:min(endMax,nbsym+1)][::-1]
-                lmin = indmin[0:min(endMin,nbsym+0)][::-1]
-                lsym = indmax[0]
-            else:
-                lmax = indmax[0:min(endMax,nbsym)][::-1]
-                lmin = np.append(indmin[0:min(endMin,nbsym)][::-1],0)
-                lsym = 0
-        else:
-            if S[0] < S[indmax[0]]:
-                lmax = indmax[0:min(endMax,nbsym+0)][::-1]
-                lmin = indmin[1:min(endMin,nbsym+1)][::-1]
-                lsym = indmin[0]
-            else:
-                lmax = np.append(indmax[0:min(endMax,nbsym)][::-1],0)
-                lmin = indmin[0:min(endMin,nbsym)][::-1]
-                lsym = 0
-
-        ####################################
-        # Right bound - mirror nbsym points to the right
-        if indmax[-1] < indmin[-1]:
-            if S[-1] < S[indmax[-1]]:
-                rmax = indmax[max(endMax-nbsym,0):][::-1]
-                rmin = indmin[max(endMin-nbsym-1,0):-1][::-1]
-                rsym = indmin[-1]
-            else:
-                rmax = np.append(indmax[max(endMax-nbsym,0):], len(S)-1)[::-1]
-                rmin = indmin[max(endMin-nbsym,0):][::-1]
-                rsym = len(S)-1
-        else:
-            if S[-1] > S[indmin[-1]]:
-                rmax = indmax[max(endMax-nbsym-1,0):-1][::-1]
-                rmin = indmin[max(endMin-nbsym,0):][::-1]
-                rsym = indmax[-1]
-            else:
-                rmax = indmax[max(endMax-nbsym,0):][::-1]
-                rmin = np.append(indmin[max(endMin-nbsym,0):], len(S)-1)[::-1]
-                rsym = len(S)-1
-
-        # In case any array missing
-        if not lmin.size: lmin = indmin
-        if not rmin.size: rmin = indmin
-        if not lmax.size: lmax = indmax
-        if not rmax.size: rmax = indmax
-        
-        # Mirror points
-        tlmin = 2*T[lsym]-T[lmin]
-        tlmax = 2*T[lsym]-T[lmax]
-        trmin = 2*T[rsym]-T[rmin]
-        trmax = 2*T[rsym]-T[rmax]
-
-        # If mirrored points are not outside passed time range.
-        if tlmin[0] > T[0] or tlmax[0] > T[0]:
-            if lsym == indmax[0]:
-                lmax = indmax[0:min(endMax,nbsym)][::-1]
-            else:
-                lmin = indmin[0:min(endMin,nbsym)][::-1]
-
-            if lsym == 0:
-                raise Exception('bug')
-
-            lsym = 0
-            tlmin = 2*T[lsym]-T[lmin]
-            tlmax = 2*T[lsym]-T[lmax]
-        
-        if trmin[-1] < T[-1] or trmax[-1] < T[-1]:
-            if rsym == indmax[-1]:
-                rmax = indmax[max(endMax-nbsym,0):][::-1]
-            else:
-                rmin = indmin[max(endMin-nbsym,0):][::-1]
-            
-            if rsym == len(S)-1:
-                raise Exception('bug')
-
-            rsym = len(S)-1
-            trmin = 2*T[rsym]-T[rmin]
-            trmax = 2*T[rsym]-T[rmax]
-            
-        zlmax = S[lmax] 
-        zlmin = S[lmin]
-        zrmax = S[rmax]
-        zrmin = S[rmin]
-        
-        tmin = np.append(tlmin, np.append(T[indmin], trmin))
-        tmax = np.append(tlmax, np.append(T[indmax], trmax))
-        zmin = np.append(zlmin, np.append(S[indmin], zrmin))
-        zmax = np.append(zlmax, np.append(S[indmax], zrmax))
-
-        maxExtrema = np.array([tmax, zmax])        
-        minExtrema = np.array([tmin, zmin])
-        if maxExtrema.dtype != self.TYPE: print 'maxExtrema.dtype: ', maxExtrema.dtype
-        
-        # Make double sure, that each extremum is significant
-        maxExtrema = np.delete(maxExtrema, np.where(maxExtrema[0,1:]==maxExtrema[0,:-1]),axis=1)
-        minExtrema = np.delete(minExtrema, np.where(minExtrema[0,1:]==minExtrema[0,:-1]),axis=1)
-     
-        return maxExtrema, minExtrema
-
     def splinePoints(self, T, extrema, splineKind):
         """
         Constructs spline over given points.
@@ -543,8 +408,8 @@ class EMD:
 
         kind = splineKind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
-        if t.dtype != self.DTYPE: print 't.dtype: ', t.dtype
-        if extrema.dtype != self.DTYPE: print 'extrema.dtype: ', extrema.dtype
+        if t.dtype != self.DTYPE: print('t.dtype: ', t.dtype)
+        if extrema.dtype != self.DTYPE: print('extrema.dtype: ', extrema.dtype)
         
         if kind == "akima":
             return t, self.akima(extrema[0], extrema[1], t)
@@ -627,7 +492,7 @@ class EMD:
         dx = np.diff(X)
         dy = np.diff(Y)
         
-        if dx.dtype != self.DTYPE: print 'dx.dtype: ', dx.dtype
+        if dx.dtype != self.DTYPE: print('dx.dtype: ', dx.dtype)
 
         if np.any(dx <= 0):
             raise Exception('input x-array must be in strictly ascending order')
@@ -638,7 +503,7 @@ class EMD:
         # d - approximation of derivative
         # p, n - previous, next
         d = dy/dx
-        if d.dtype != self.DTYPE: print 'd.dtype: ', d.dtype
+        if d.dtype != self.DTYPE: print('d.dtype: ', d.dtype)
         
         dpp = 2*d[0]-d[1]
         dp = 2*dpp - d[0]
@@ -662,9 +527,9 @@ class EMD:
         a2 = (3.0*d - 2.0*a1[0:n-1] - a1[1:n]) / dx
         a3 = (a1[0:n-1] + a1[1:n] - 2.0*d) / (dx*dx)
         
-        if a1.dtype != self.DTYPE: 'a1.dtype: ', a1.dtype
-        if a2.dtype != self.DTYPE: 'a2.dtype: ', a2.dtype
-        if a3.dtype != self.DTYPE: 'a3.dtype: ', a3.dtype
+        if a1.dtype != self.DTYPE: print('a1.dtype: ', a1.dtype)
+        if a2.dtype != self.DTYPE: print('a2.dtype: ', a2.dtype)
+        if a3.dtype != self.DTYPE: print('a3.dtype: ', a3.dtype)
         
         bins = np.digitize(x, X)
         bins = np.minimum(bins, n - 1) - 1
@@ -673,8 +538,8 @@ class EMD:
         
         out = ((_x*a3[bb] + a2[bb])*_x + a1[bb])*_x + Y[bb]
         
-        if _x.dtype != self.DTYPE: print '_x.dtype: ', _x.dtype
-        if out.dtype != self.DTYPE: print 'out.dtype: ', out.dtype
+        if _x.dtype != self.DTYPE: print('_x.dtype: ', _x.dtype)
+        if out.dtype != self.DTYPE: print('out.dtype: ', out.dtype)
 
         return out
 
@@ -875,12 +740,12 @@ class EMD:
 
             if len(imax) > 0:
                 indmax = indmax.tolist()
-                [indmax.append(x) for x in imax]
+                for x in imax: indmax.append(int(x))
                 indmax.sort()
 
             if len(imin) > 0:
                 indmin = indmin.tolist()
-                [indmin.append(x) for x in imin]
+                for x in imin: indmin.append(int(x))
                 indmin.sort()
 
         localMaxPos = t[indmax]
@@ -902,11 +767,11 @@ class EMD:
             #~ return True
             
         if np.max(tmp) - np.min(tmp) < self.rangeThreshold:
-            print "FINISHED -- RANGE"
+            print("FINISHED -- RANGE")
             return True
         
         if np.sum(np.abs(tmp)) < self.totalPowerThreshold:
-            print "FINISHED -- SUM POWER"
+            print("FINISHED -- SUM POWER")
             return True
             
     def checkImf(self, imfNew, imfOld, eMax, eMin, mean):
@@ -935,7 +800,42 @@ class EMD:
         else:
             return False
 
-    def emd(self, S, timeLine=None, maxImf=-1):
+    def _common_dtype(self, x, y):
+        
+        x_dtype = np.dtype(x.dtype)
+        y_dtype = np.dtype(y.dtype)
+        
+        x_kind, x_size = x_dtype.kind, x_dtype.itemsize
+        y_kind, y_size = y_dtype.kind, y_dtype.itemsize
+        
+        max_size = max(x_size, y_size)
+        
+        # If they are the same type use highest precision
+        if x_kind == y_kind:
+            if x_size != max_size:
+                x = x.astype(y_dtype)
+            else:
+                y = y.astype(x_dtype)
+            
+            return x, y
+        
+        # At this point x_kind != y_kind    
+        info = "Provided two different types for data: '{}' and '{}'. "
+        info+= "Converting these to highest float."
+        print(info.format(x_dtype, y_dtype))
+        
+        max_size = '8'
+        if x_kind == 'f':
+            max_size = str(x_size)
+        elif y_kind == 'f':
+            max_size = str(y_size)
+
+        x = x.astype('f'+max_size)
+        y = y.astype('f'+max_size)
+
+        return x, y
+        
+    def emd(self, S, timeLine=None, maxImf=None):
         """
         Performs Emerical Mode Decomposition on signal S.
         The decomposition is limited to maxImf imf. No limitation as default.
@@ -957,21 +857,26 @@ class EMD:
             imfNo: Number of IMFs.
         """
         
+        if timeLine is None: timeLine = np.arange(len(S), dtype=S.dtype)
+        if maxImf is None: maxImf = -1
+
+        # Make sure same types are dealt
+        S, timeLine = self._common_dtype(S, timeLine)
+        self.DTYPE = S.dtype
+        
         Res = S.astype(self.DTYPE)
         scale = (max(Res) - min(Res))/self.scaleFactor
         Res, scaledS = Res/scale, S/scale
         imf = np.zeros(len(S), dtype=self.DTYPE)
         imfOld = Res.copy()
         
-        if timeLine == None: timeLine = np.arange(len(S))
-
         N = len(S)
 
-        if Res.dtype!=self.DTYPE: print 'Res.dtype: ', Res.dtype
-        if scaledS.dtype!=self.DTYPE: print 'scaledS.dtype: ', scaledS.dtype
-        if imf.dtype!=self.DTYPE: print 'imf.dtype: ', imf.dtype
-        if imfOld.dtype!=self.DTYPE: print 'imfOld.dtype: ', imfOld.dtype
-        if timeLine.dtype!=self.DTYPE: print 'timeLine.dtype: ', timeLine.dtype
+        if Res.dtype!=self.DTYPE:      print('Res.dtype: ', Res.dtype          )
+        if scaledS.dtype!=self.DTYPE:  print('scaledS.dtype: ', scaledS.dtype  )
+        if imf.dtype!=self.DTYPE:      print('imf.dtype: ', imf.dtype          )
+        if imfOld.dtype!=self.DTYPE:   print('imfOld.dtype: ', imfOld.dtype    )
+        if timeLine.dtype!=self.DTYPE: print('timeLine.dtype: ', timeLine.dtype)
 
         if S.shape != timeLine.shape:
             info = "Time array should be the same size as signal."
@@ -988,7 +893,7 @@ class EMD:
         time0 = time.time()
 
         while(notFinish):
-            print 'IMF -- ', imfNo
+            print('IMF -- ', imfNo)
 
             Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
             #~ Res -= imf
@@ -1044,10 +949,10 @@ class EMD:
                      
                     mean = 0.5*(maxEnv+minEnv)
                     
-                    if maxEnv.dtype!=self.DTYPE: print 'maxEnvimf.dtype: ', maxEnv.dtype
-                    if minEnv.dtype!=self.DTYPE: print 'minEnvimf.dtype: ', minEnvimf.dtype
-                    if imf.dtype!=self.DTYPE: print 'imf.dtype: ', imf.dtype
-                    if mean.dtype!=self.DTYPE: print 'mean.dtype: ', mean.dtype
+                    if maxEnv.dtype!=self.DTYPE: print('maxEnvimf.dtype: ', maxEnv.dtype   )
+                    if minEnv.dtype!=self.DTYPE: print('minEnvimf.dtype: ', minEnvimf.dtype)
+                    if imf.dtype!=self.DTYPE:    print('imf.dtype: ', imf.dtype            )
+                    if mean.dtype!=self.DTYPE:   print('mean.dtype: ', mean.dtype          )
                     
                     # Fix number of iterations
                     if self.FIXE:
@@ -1123,35 +1028,22 @@ class EMD:
 
 if __name__ == "__main__":
 
-    N = 10000
+    N = 200
     maxImf = -1
 
-    TYPE = 64
+    TYPE = 32
     if   TYPE == 16: DTYPE = np.float16
     elif TYPE == 32: DTYPE = np.float32
     elif TYPE == 64: DTYPE = np.float64
     else:            DTYPE = np.float64
 
-    #~ t = np.linspace(1*np.pi, 2*np.pi, N)
-    t = np.linspace(0*np.pi, 1*np.pi, N)
-    timeLine = t.astype(DTYPE)
-    t = t.astype(DTYPE)
+    timeLine = t = np.linspace(0, 2*np.pi, N, dtype=DTYPE)
 
-    sin = np.sin
-    cos = np.cos
-    #~ tS = 'sin(3*t**(-1)) + cos(2*t)'
-    #~ tS = 'sin(3*t**1.4 + cos(4*t))*cos(8*t + sin(6*t))/t'
-    #tS = 't**(sin(2.76*t)-cos(t**2))'
-    #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**1.7)'
-    tS = 'sin(3*t**1.2)**2 + cos(2.2*t**(t/8))'
-    tS = 'sin(20*t*(1+0.2*t)) + t**2 + sin(13*t)'
-    S = eval(tS)    
+    tS = 'np.sin(20*t*(1+0.2*t)) + t**2 + np.sin(13*t)'
+    S = eval(tS)
     S = S.astype(DTYPE)
-    print S.dtype
+    print(S.dtype)
     
-    #~ S = np.random.random(len(t))
-    #~ S = mvAvg(S[::-1], 5)
-    #~ S = mvAvg(S[::-1], 5)
     emd = EMD()
     #~ emd.PLOT = 1
     emd.FIXE_H = 3

@@ -6,11 +6,14 @@
 #
 # Feel free to contact for any information.
 
+from __future__ import print_function
+
+import time
+import os
+
 import numpy as np
 import pylab as py
 from scipy.interpolate import interp1d
-
-import time, os
 
 class EMD:
     def __init__(self):
@@ -39,9 +42,6 @@ class EMD:
         self.MAX_ITERATION = 10000
 
     def splineHermite(self, T, P0, M0, P1, M1):
-        """
-        Hermite splines.
-        """
         # Normalized time - range (0,1)
         t = (T-T[0])/(T[-1]-T[0])
         t2 = t*t
@@ -91,10 +91,10 @@ class EMD:
         #~ maxPos, maxVal, minPos, minVal, indzer = self.findExtrema_simple(T, S)
         maxPos, maxVal, minPos, minVal, indzer = self.findExtremaGeneric(T, S)
 
-        if maxPos.dtype!=self.DTYPE: print 'maxPos.dtype: ', maxPos.dtype
-        if maxVal.dtype!=self.DTYPE: print 'maxVal.dtype: ', maxVal.dtype
-        if minPos.dtype!=self.DTYPE: print 'minPos.dtype: ', minPos.dtype
-        if minVal.dtype!=self.DTYPE: print 'minVal.dtype: ', minVal.dtype
+        if maxPos.dtype!=self.DTYPE: print('maxPos.dtype: ', maxPos.dtype)
+        if maxVal.dtype!=self.DTYPE: print('maxVal.dtype: ', maxVal.dtype)
+        if minPos.dtype!=self.DTYPE: print('minPos.dtype: ', minPos.dtype)
+        if minVal.dtype!=self.DTYPE: print('minVal.dtype: ', minVal.dtype)
         if len(maxPos) + len(minPos) < 3: return [-1]*4
             
         #########################################
@@ -109,9 +109,9 @@ class EMD:
         maxTSpline, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
         minTSpline, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
 
-        if maxExtrema.dtype!=self.DTYPE: print 'maxExtrema.dtype: ', maxExtrema.dtype
-        if maxSpline.dtype!=self.DTYPE: print 'maxSpline.dtype: ', maxSpline.dtype
-        if maxTSpline.dtype!=self.DTYPE: print 'maxTSline.dtype: ', maxTSpline.dtype
+        if maxExtrema.dtype!=self.DTYPE: print('maxExtrema.dtype: ', maxExtrema.dtype)
+        if maxSpline.dtype!=self.DTYPE: print('maxSpline.dtype: ', maxSpline.dtype)
+        if maxTSpline.dtype!=self.DTYPE: print('maxTSline.dtype: ', maxTSpline.dtype)
 
         return maxSpline, minSpline, maxExtrema, minExtrema
 
@@ -296,8 +296,8 @@ class EMD:
         #~ t = T[np.r_[T>extrema[0,0]-dt] & np.r_[T<extrema[0,-1]+dt]]
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
 
-        if t.dtype != self.DTYPE: print 't.dtype: ', t.dtype
-        if extrema.dtype != self.DTYPE: print 'extrema.dtype: ', extrema.dtype
+        if t.dtype != self.DTYPE: print('t.dtype: ', t.dtype)
+        if extrema.dtype != self.DTYPE: print('extrema.dtype: ', extrema.dtype)
         
         if kind == "akima":
             return t, self.akima(extrema[0], extrema[1], t)
@@ -380,7 +380,7 @@ class EMD:
         dx = np.diff(X)
         dy = np.diff(Y)
         
-        if dx.dtype != self.DTYPE: print 'dx.dtype: ', dx.dtype
+        if dx.dtype != self.DTYPE: print('dx.dtype: ', dx.dtype)
 
         if np.any(dx <= 0):
             raise Exception('input x-array must be in strictly ascending order')
@@ -391,7 +391,7 @@ class EMD:
         # d - approximation of derivative
         # p, n - previous, next
         d = dy/dx
-        if d.dtype != self.DTYPE: print 'd.dtype: ', d.dtype
+        if d.dtype != self.DTYPE: print('d.dtype: ', d.dtype)
         
         dpp = 2*d[0]-d[1]
         dp = 2*dpp - d[0]
@@ -426,8 +426,8 @@ class EMD:
         
         out = ((_x*a3[bb] + a2[bb])*_x + a1[bb])*_x + Y[bb]
         
-        if _x.dtype != self.DTYPE: print '_x.dtype: ', _x.dtype
-        if out.dtype != self.DTYPE: print 'out.dtype: ', out.dtype
+        if _x.dtype != self.DTYPE: print('_x.dtype: ', _x.dtype)
+        if out.dtype != self.DTYPE: print('out.dtype: ', out.dtype)
 
         return out
 
@@ -459,7 +459,6 @@ class EMD:
         b = (s0-sn)*tp**2 + (sn-sp)*t0**2 + (sp-s0)*tn**2
         c = t0*tn*t0tn*sp + tn*tp*tntp*s0 + tp*t0*tpt0*sn
         
-        print 'scale: ', scale
         a = a/scale
         b = b/scale
         c = c/scale
@@ -489,7 +488,6 @@ class EMD:
                 I.append(i)
         
         idx = np.array(I)
-        print 'a: ', a
         a, b, c = a[idx], b[idx], c[idx]
         
         tVertex = tVertex[idx]
@@ -682,12 +680,12 @@ class EMD:
 
             if len(imax) > 0:
                 indmax = indmax.tolist()
-                [indmax.append(x) for x in imax]
+                for x in imax: indmax.append(int(x))
                 indmax.sort()
 
             if len(imin) > 0:
                 indmin = indmin.tolist()
-                [indmin.append(x) for x in imin]
+                for x in imin: indmin.append(int(x))
                 indmin.sort()
 
         localMaxPos = t[indmax]
@@ -709,11 +707,11 @@ class EMD:
             #~ return True
             
         if np.max(tmp) - np.min(tmp) < self.rangeThreshold:
-            print "FINISHED -- RANGE"
+            print("FINISHED -- RANGE")
             return True
         
         if np.sum(np.abs(tmp)) < self.totalPowerThreshold:
-            print "FINISHED -- SUM POWER"
+            print("FINISHED -- SUM POWER")
             return True
             
     def checkImf(self, imfNew, imfOld, eMax, eMin, mean):
@@ -742,7 +740,44 @@ class EMD:
         else:
             return False
 
-    def emd(self, S, timeLine=None, maxImf=-1):
+    def _common_dtype(self, x, y):
+        
+        x_dtype = np.dtype(x.dtype)
+        y_dtype = np.dtype(y.dtype)
+        
+        x_kind, x_size = x_dtype.kind, x_dtype.itemsize
+        y_kind, y_size = y_dtype.kind, y_dtype.itemsize
+        
+        max_size = max(x_size, y_size)
+        
+        # If they are the same type use highest precision
+        if x_kind == y_kind:
+            if x_size != max_size:
+                x = x.astype(y_dtype)
+            else:
+                y = y.astype(x_dtype)
+            
+            return x, y
+        
+        # At this point x_kind != y_kind    
+        info = "Provided two different types for data: '{}' and '{}'. "
+        info+= "Converting these to highest float."
+        print(info.format(x_dtype, y_dtype))
+        
+        max_size = '8'
+        if x_kind == 'f':
+            max_size = str(x_size)
+        elif y_kind == 'f':
+            max_size = str(y_size)
+
+        x = x.astype('f'+max_size)
+        y = y.astype('f'+max_size)
+
+        return x, y
+        
+
+
+    def emd(self, S, timeLine=None, maxImf=None):
         """
         Performs Emerical Mode Decomposition on signal S.
         The decomposition is limited to maxImf imf. No limitation as default.
@@ -764,21 +799,26 @@ class EMD:
             imfNo: Number of IMFs.
         """
         
+        if timeLine is None: timeLine = np.arange(len(S))
+        if maxImf is None: maxImf = -1
+        
+        # Make sure same types are dealt
+        S, timeLine = self._common_dtype(S, timeLine)
+        self.DTYPE = S.dtype
+        
         Res = S.astype(self.DTYPE)
         scale = (max(Res) - min(Res))/self.scaleFactor
         Res, scaledS = Res/scale, S/scale
         imf = np.zeros(len(S), dtype=self.DTYPE)
         imfOld = Res.copy()
-        
-        if timeLine == None: timeLine = np.arange(len(S))
 
         N = len(S)
 
-        if Res.dtype!=self.DTYPE: print 'Res.dtype: ', Res.dtype
-        if scaledS.dtype!=self.DTYPE: print 'scaledS.dtype: ', scaledS.dtype
-        if imf.dtype!=self.DTYPE: print 'imf.dtype: ', imf.dtype
-        if imfOld.dtype!=self.DTYPE: print 'imfOld.dtype: ', imfOld.dtype
-        if timeLine.dtype!=self.DTYPE: print 'timeLine.dtype: ', timeLine.dtype
+        if Res.dtype!=self.DTYPE: print('Res.dtype: ', Res.dtype)
+        if scaledS.dtype!=self.DTYPE: print('scaledS.dtype: ', scaledS.dtype)
+        if imf.dtype!=self.DTYPE: print('imf.dtype: ', imf.dtype)
+        if imfOld.dtype!=self.DTYPE: print('imfOld.dtype: ', imfOld.dtype)
+        if timeLine.dtype!=self.DTYPE: print('timeLine.dtype: ', timeLine.dtype)
 
         if S.shape != timeLine.shape:
             info = "Time array should be the same size as signal."
@@ -802,7 +842,7 @@ class EMD:
         meanEnv = np.zeros(N, dtype=self.DTYPE)
         
         while(notFinish):
-            print 'IMF -- ', imfNo
+            print('IMF -- ', imfNo)
 
             #~ yRes = (-imf - corRes).astype(self.DTYPE)
             yRes = (-(imf+corRes)).astype(self.DTYPE)
@@ -813,12 +853,12 @@ class EMD:
             #~ Res -= imf
             imf = Res.copy()
             
-            if imf.dtype!=self.DTYPE: print 'imf.dtype: ', imf.dtype
+            if imf.dtype!=self.DTYPE: print('imf.dtype: ', imf.dtype)
             mean = np.zeros(len(S), dtype=self.DTYPE)
             sumEnv = np.zeros(len(S), dtype=self.DTYPE)
             corEnv = np.zeros(len(S), dtype=self.DTYPE)
-            if sumEnv.dtype != self.DTYPE: print 'sumEnv.dtype: ', sumEnv.dtype
-            if corEnv.dtype != self.DTYPE: print 'corEnv.dtype: ', corEnv.dtype
+            if sumEnv.dtype != self.DTYPE: print('sumEnv.dtype: ', sumEnv.dtype)
+            if corEnv.dtype != self.DTYPE: print('corEnv.dtype: ', corEnv.dtype)
 
             # Counters
             n = 0   # All iterations for current imf.
@@ -842,7 +882,7 @@ class EMD:
                     # If scale tiny it might be noise, thus no need for
                     # further decomposition
                     if np.max(imf) - np.min(imf) < 1e-4:
-                        print 'dS: ', np.max(imf) - np.min(imf)
+                        print('dS: ', np.max(imf) - np.min(imf))
                         notFinish = False
                         break
                     
@@ -859,14 +899,12 @@ class EMD:
                             fName = "imf{}_{:02}".format(imfNo, n-1)
                             py.savefig(os.path.join(self.plotPath,fName))
 
-                    if Res.dtype!=self.DTYPE: print 'Res.dtype: ', Res.dtype
-                    if mean.dtype!=self.DTYPE: print 'mean.dtype: ', mean.dtype
+                    if Res.dtype!=self.DTYPE: print('Res.dtype: ', Res.dtype)
+                    if mean.dtype!=self.DTYPE: print('mean.dtype: ', mean.dtype)
                     
                     imfOld = imf.copy()
                     imf = Res - self.reduceScale*mean
 
-                    if imf.dtype!=self.DTYPE: print '2) imf.dtype: ', imf.dtype
-                    
                     maxEnv, minEnv, eMax, eMin = self.extractMaxMinSpline(timeLine, imf)
                     tmpMean = 0.5*(maxEnv+minEnv)
                     
@@ -886,10 +924,6 @@ class EMD:
                     
                     oldMean = mean.copy()
                     mean = sumEnv
-                    if mean.dtype!=self.DTYPE: print '3) mean.dtype: ', mean.dtype
-                    
-                    if y.dtype != self.DTYPE: print 'y.dtype: ', y.dtype
-                    if t.dtype != self.DTYPE: print 't.dtype: ', t.dtype
 
                     # Fix number of iterations
                     if self.FIXE:
@@ -990,7 +1024,7 @@ if __name__ == "__main__":
     tS = 'sin(3*t**1.2)**2 + cos(2.2*t**(t/8))'
     S = eval(tS)    
     S = S.astype(DTYPE)
-    print S.dtype
+    print(S.dtype)
     
     #~ S = np.random.random(len(t))
     #~ S = mvAvg(S[::-1], 5)
