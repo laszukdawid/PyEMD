@@ -1,10 +1,8 @@
 language: python
 python:
-  - "2.7"
   - "3.5"
 # command to run tests
 before_install:
-  - pip install --only-binary=numpy,scipy numpy
   - pip install -r requirements.txt
 script: 
   - python -m PyEMD.tests.spline
