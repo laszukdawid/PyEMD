@@ -3,5 +3,7 @@ python:
   - "2.7"
   - "3.5"
 # command to run tests
+before_install:
+  - pip install -r requirments.txt
 script: 
   - python -m PyEMD.tests.spline
