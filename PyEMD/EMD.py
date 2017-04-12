@@ -14,7 +14,6 @@ import os
 import time
 
 import numpy as np
-import pylab as py
 from scipy.interpolate import interp1d
 
 class EMD:
@@ -59,6 +58,8 @@ class EMD:
 
         self.MAX_ITERATION = 10000
 
+        if self.PLOT:
+            import pylab as plt
 
     def extractMaxMinSpline(self, T, S):
         """
@@ -987,6 +988,8 @@ class EMD:
 ## Beggining of program
 
 if __name__ == "__main__":
+    
+    import pylab as plt
 
     N = 400
     maxImf = -1
