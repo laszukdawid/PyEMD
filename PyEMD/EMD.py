@@ -16,7 +16,7 @@ import os
 import time
 
 from scipy.interpolate import interp1d
-from splines import *
+from PyEMD.splines import *
 
 class EMD:
     """
