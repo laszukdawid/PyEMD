@@ -11,11 +11,12 @@
 from __future__ import print_function
 
 import logging
+import numpy as np
 import os
 import time
 
-import numpy as np
 from scipy.interpolate import interp1d
+from splines import *
 
 class EMD:
     """
@@ -33,7 +34,7 @@ class EMD:
         Decomposition and its algorithms", IEEE-EURASIP Workshop on
         Nonlinear Signal and Image Processing NSIP-03, Grado (I), June 2003
     """
-    
+
     logger = logging.getLogger(__name__)
 
     def __init__(self):
@@ -46,7 +47,6 @@ class EMD:
 
         self.nbsym = 2
         self.reduceScale = 1.
-        self.maxIteration = 400
         self.scaleFactor = 100
 
         self.PLOT = 0
@@ -54,6 +54,7 @@ class EMD:
         self.plotPath = 'splineTest'
 
         self.splineKind = 'akima'
+        self.extrema_detection = 'parabol' # simple, parabol
 
         self.DTYPE = np.float64
         self.FIXE = 0
@@ -64,7 +65,7 @@ class EMD:
         if self.PLOT:
             import pylab as plt
 
-    def extractMaxMinSpline(self, T, S):
+    def extract_max_min_spline(self, T, S):
         """
         Input:
         -----------------
@@ -77,13 +78,8 @@ class EMD:
             minSpline - Spline which connects minima of S.
         """
 
-        # Create timeline
-        tMin, tMax = T[0], T[-1]
-
         # Get indexes of extrema
-        #~ maxPos, maxVal, minPos, minVal = self.findExtrema(T, S)
-        #~ maxPos, maxVal, minPos, minVal = self.findExtrema_new(T, S)
-        maxPos, maxVal, minPos, minVal, indzer = self.findExtrema_simple(T, S)
+        maxPos, maxVal, minPos, minVal, indzer = self.find_extrema(T, S)
 
         if maxPos.dtype!=self.DTYPE: self.logger.error('maxPos.dtype: '+str(maxPos.dtype))
         if maxVal.dtype!=self.DTYPE: self.logger.error('maxVal.dtype: '+str(maxVal.dtype))
@@ -92,17 +88,12 @@ class EMD:
         if len(maxPos) + len(minPos) < 3: return [-1]*4
 
         #########################################
-        # Prepare spline
-        order = 0
-        dt = T[1]-T[0]
-        #########################################
-
         # Extrapolation of signal (ober boundaries)
-        #~ maxExtrema, minExtrema = self.preparePoints(T, S, maxPos, maxVal, minPos, minVal)
-        maxExtrema, minExtrema = self.preparePoints_coppiedFromMatlab(T, S, maxPos, maxVal, minPos, minVal)
+        maxExtrema, minExtrema = self.prepare_points(T, S, maxPos, maxVal, minPos, minVal)
+        # maxExtrema, minExtrema = self.prepare_points_coppiedFromMatlab(T, S, maxPos, maxVal, minPos, minVal)
 
-        maxTSpline, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
-        minTSpline, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
+        maxTSpline, maxSpline = self.spline_points(T, maxExtrema, self.splineKind)
+        minTSpline, minSpline = self.spline_points(T, minExtrema, self.splineKind)
 
         if maxExtrema.dtype!=self.DTYPE: self.logger.error('maxExtrema.dtype: '+str(maxExtrema.dtype))
         if maxSpline.dtype!=self.DTYPE: self.logger.error('maxSpline.dtype: '+str(maxSpline.dtype))
@@ -110,7 +101,17 @@ class EMD:
 
         return maxSpline, minSpline, maxExtrema, minExtrema
 
-    def preparePoints(self, T, S, maxPos, maxVal, minPos, minVal):
+    def prepare_points(self, T, S, maxPos, maxVal, minPos, minVal):
+        if self.extrema_detection=="parabol":
+            return self._prepare_points_parabol(T, S, maxPos, maxVal, minPos, minVal)
+        elif self.extrema_detection=="simple":
+            return self._prepare_points_simple(T, S, maxPos, maxVal, minPos, minVal)
+        else:
+            msg = "Incorrect extrema detection type. Please try: "
+            msg+= "'simple' or 'parabol'."
+            raise(msg)
+
+    def _prepare_points_parabol(self, T, S, maxPos, maxVal, minPos, minVal):
         """
         Input:
         ---------
@@ -138,7 +139,7 @@ class EMD:
         ####################################
         # Left bound
         dPos = maxPos[0] - minPos[0]
-        leftExtType = {True:"max", False:"min"}[dPos<0]
+        leftExtType = ["min", "max"][dPos<0]
 
         if (leftExtType == "max"):
             if (S[0]>minVal[0]) and (np.abs(dPos)>(maxPos[0]-T[0])):
@@ -248,7 +249,7 @@ class EMD:
 
         return maxExtrema, minExtrema
 
-    def preparePoints_coppiedFromMatlab(self, T, S, maxPos, maxVal, minPos, minVal):
+    def _prepare_points_simple(self, T, S, maxPos, maxVal, minPos, minVal):
         """
         Adds to signal extrema according to mirror technique.
         Number of added points depends on nbsym variable.
@@ -380,7 +381,7 @@ class EMD:
 
         return maxExtrema, minExtrema
 
-    def splinePoints(self, T, extrema, splineKind):
+    def spline_points(self, T, extrema, splineKind):
         """
         Constructs spline over given points.
 
@@ -402,13 +403,13 @@ class EMD:
         if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: '+str(extrema.dtype))
 
         if kind == "akima":
-            return t, self.akima(extrema[0], extrema[1], t)
+            return t, akima(extrema[0], extrema[1], t)
 
         elif kind == 'cubic':
             if extrema.shape[1]>3:
                 return t, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
             else:
-                return self.cubicSpline_3points(T, extrema)
+                return cubicSpline_3points(T, extrema)
 
         elif kind in ['slinear', 'quadratic', 'linear']:
             return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
@@ -416,178 +417,61 @@ class EMD:
         else:
             raise Exception("No such interpolation method!")
 
-    def cubicSpline_3points(self, T, extrema):
-        """
-        Apperently scipy.interpolate.interp1d does not support
-        cubic spline for less than 4 points.
-        """
-
-        x0, x1, x2 = extrema[0]
-        y0, y1, y2 = extrema[1]
-
-        x1x0, x2x1 = x1-x0, x2-x1
-        y1y0, y2y1 = y1-y0, y2-y1
-        _x1x0, _x2x1 = 1./x1x0, 1./x2x1
-
-        m11, m12, m13= 2*_x1x0, _x1x0, 0
-        m21, m22, m23 = _x1x0, 2.*(_x1x0+_x2x1), _x2x1
-        m31, m32, m33 = 0, _x2x1, 2.*_x2x1
-
-        v1 = 3*y1y0*_x1x0*_x1x0
-        v3 = 3*y2y1*_x2x1*_x2x1
-        v2 = v1+v3
-
-        M = np.matrix([[m11,m12,m13],[m21,m22,m23],[m31,m32,m33]])
-        v = np.matrix([v1,v2,v3]).T
-        k = np.array(np.linalg.inv(M)*v)
-
-        a1 = k[0]*x1x0 - y1y0
-        b1 =-k[1]*x1x0 + y1y0
-        a2 = k[1]*x2x1 - y2y1
-        b2 =-k[2]*x2x1 + y2y1
-
-        t = T[np.r_[T>=x0] & np.r_[T<=x2]]
-        t1 = (T[np.r_[T>=x0]&np.r_[T< x1]] - x0)/x1x0
-        t2 = (T[np.r_[T>=x1]&np.r_[T<=x2]] - x1)/x2x1
-        t11, t22 = 1.-t1, 1.-t2
-
-        q1 = t11*y0 + t1*y1 + t1*t11*(a1*t11 + b1*t1)
-        q2 = t22*y1 + t2*y2 + t2*t22*(a2*t22 + b2*t2)
-        q = np.append(q1,q2)
-
-        return t, q.astype(self.DTYPE)
-
-    def akima(self, X, Y, x):
-        """
-        Interpolates curve based on Akima's method [1].
-
-        [1] H. Akima, "A new method of interpolation and smooth
-            curve fitting based on local procedures", 1970.
-
-        Input:
-        ---------
-            X: Position.
-            Y: Values.
-            x: Positions for interpolated spline.
-
-        Output:
-        ---------
-            y: Interpolated spline.
-        """
-
-        n = len(X)
-        if (len(X) != len(Y)):
-            raise Exception('input x and y arrays must be of same length')
-
-        dx = np.diff(X)
-        dy = np.diff(Y)
-
-        if dx.dtype != self.DTYPE: self.logger.error('dx.dtype: '+str(dx.dtype))
-
-        if np.any(dx <= 0):
-            raise Exception('input x-array must be in strictly ascending order')
-
-        if np.any(x<X[0]) or np.any(x>X[-1]):
-            raise Exception('All interpolation points xi must lie between x(1) and x(n)')
-
-        # d - approximation of derivative
-        # p, n - previous, next
-        d = dy/dx
-        if d.dtype != self.DTYPE: self.logger.error('d.dtype: '+str(d.dtype))
-
-        dpp = 2*d[0]-d[1]
-        dp = 2*dpp - d[0]
-
-        dn = 2*d[n-2]-d[n-3]
-        dnn = 2*dn-d[n-2]
-
-        d1 = np.concatenate(([dpp], [dp], d, [dn], [dnn]))
-        d1 = d1.astype(self.DTYPE)
-
-        w = np.abs(np.diff(d1), dtype=self.DTYPE)
-        # w1 = w_{i-1} = |d_{i+1}-d_{i}|
-        # w2 = w_{i} = |d_{i-1}-d_{i-2}|
-        w1, w2 = w[2:n+2], w[:n]
-        w12 = w1+w2
-
-        idx = np.nonzero(w12 > 1e-9*np.max(w12))[0]
-        a1 = d1[1:n + 1].copy()
-
-        a1[idx] = (w1[idx]*d1[idx+1] + w2[idx]*d1[idx+2])/w12[idx]
-        a2 = (3.0*d - 2.0*a1[0:n-1] - a1[1:n]) / dx
-        a3 = (a1[0:n-1] + a1[1:n] - 2.0*d) / (dx*dx)
-
-        if a1.dtype != self.DTYPE: self.logger.error('a1.dtype: '+str(a1.dtype))
-        if a2.dtype != self.DTYPE: self.logger.error('a2.dtype: '+str(a2.dtype))
-        if a3.dtype != self.DTYPE: self.logger.error('a3.dtype: '+str(a3.dtype))
-
-        bins = np.digitize(x, X)
-        bins = np.minimum(bins, n - 1) - 1
-        bb = bins[0:len(x)]
-        _x = x - X[bb]
-
-        out = ((_x*a3[bb] + a2[bb])*_x + a1[bb])*_x + Y[bb]
-
-        if _x.dtype != self.DTYPE: self.logger.error('_x.dtype: '+str(_x.dtype))
-        if out.dtype != self.DTYPE: self.logger.error('out.dtype: '+str(out.dtype))
-
-        return out
-
-    def findExtrema_new(self, t, s):
-        dt = t[1]-t[0]
-        scale = 2*dt*dt
-
-        idx = self.notDuplicate(s)
-        t = t[idx]
-        s = s[idx]
-
-        # p - previous
-        # 0 - current
-        # n - next
-        tp, t0, tn = t[:-2], t[1:-1], t[2:]
-        sp, s0, sn = s[:-2], s[1:-1], s[2:]
-        #~ a = sn + sp - 2*s0
-        #~ b = 2*(tn+tp)*s0 - ((tn+t0)*sp+(t0+tp)*sn)
-        #~ c = sp*t0*tn -2*tp*s0*tn + tp*t0*sn
-        tntp, t0tn, tpt0 = tn-tp, t0-tn, tp-t0
-        scale = tp*tn*tn + tp*tp*t0 + t0*t0*tn - tp*tp*tn - tp*t0*t0 - t0*tn*tn
-
-        a = t0tn*sp + tntp*s0 + tpt0*sn
-        b = (s0-sn)*tp**2 + (sn-sp)*t0**2 + (sp-s0)*tn**2
-        c = t0*tn*t0tn*sp + tn*tp*tntp*s0 + tp*t0*tpt0*sn
-
-        a = a/scale
-        b = b/scale
-        c = c/scale
-        tVertex = -0.5*b/a
-        idx = np.r_[tVertex<t0 + 0.5*(tn-t0)] & np.r_[tVertex>=t0-0.5*(t0-tp)]
-
-        I = []
-        for i in np.arange(len(idx))[idx]:#[:-1]:
-            if i > 2 and (i < len(t0)-2):
-                if  sp[i-1] >= s0[i-1] and sp[i] >= s0[i] and s0[i] >= sn[i] and s0[i+1] >= sn[i+1]:
-                    pass
-                elif sp[i-1] <= s0[i-1] and sp[i] <= s0[i] and  s0[i] <= sn[i] and s0[i+1] <= sn[i+1]:
-                    pass
-                else:
-                    I.append(i)
-            else:
-                I.append(i)
-
-        idx = np.array(I)
-        a, b, c = a[idx], b[idx], c[idx]
-
-        tVertex = tVertex[idx]
-        T, S = t0[idx], s0[idx]
-        #~ sVertex = a*(tVertex+T)*(tVertex-T) + b*(tVertex-T) + S
-        sVertex = a*tVertex*tVertex + b*tVertex + c
-
-        localMaxPos, localMaxVal = tVertex[a<0], sVertex[a<0]
-        localMinPos, localMinVal = tVertex[a>0], sVertex[a>0]
-
-        return localMaxPos, localMaxVal, localMinPos, localMinVal
-
-    def notDuplicate(self, s):
+#    def find_extrema_new(self, t, s):
+#        dt = t[1]-t[0]
+#        scale = 2*dt*dt
+#
+#        idx = self.not_duplicate(s)
+#        t = t[idx]
+#        s = s[idx]
+#
+#        # p - previous
+#        # 0 - current
+#        # n - next
+#        tp, t0, tn = t[:-2], t[1:-1], t[2:]
+#        sp, s0, sn = s[:-2], s[1:-1], s[2:]
+#        #~ a = sn + sp - 2*s0
+#        #~ b = 2*(tn+tp)*s0 - ((tn+t0)*sp+(t0+tp)*sn)
+#        #~ c = sp*t0*tn -2*tp*s0*tn + tp*t0*sn
+#        tntp, t0tn, tpt0 = tn-tp, t0-tn, tp-t0
+#        scale = tp*tn*tn + tp*tp*t0 + t0*t0*tn - tp*tp*tn - tp*t0*t0 - t0*tn*tn
+#
+#        a = t0tn*sp + tntp*s0 + tpt0*sn
+#        b = (s0-sn)*tp**2 + (sn-sp)*t0**2 + (sp-s0)*tn**2
+#        c = t0*tn*t0tn*sp + tn*tp*tntp*s0 + tp*t0*tpt0*sn
+#
+#        a = a/scale
+#        b = b/scale
+#        c = c/scale
+#        tVertex = -0.5*b/a
+#        idx = np.r_[tVertex<t0 + 0.5*(tn-t0)] & np.r_[tVertex>=t0-0.5*(t0-tp)]
+#
+#        I = []
+#        for i in np.arange(len(idx))[idx]:#[:-1]:
+#            if i > 2 and (i < len(t0)-2):
+#                if  sp[i-1] >= s0[i-1] and sp[i] >= s0[i] and s0[i] >= sn[i] and s0[i+1] >= sn[i+1]:
+#                    pass
+#                elif sp[i-1] <= s0[i-1] and sp[i] <= s0[i] and  s0[i] <= sn[i] and s0[i+1] <= sn[i+1]:
+#                    pass
+#                else:
+#                    I.append(i)
+#            else:
+#                I.append(i)
+#
+#        idx = np.array(I)
+#        a, b, c = a[idx], b[idx], c[idx]
+#
+#        tVertex = tVertex[idx]
+#        T, S = t0[idx], s0[idx]
+#        #~ sVertex = a*(tVertex+T)*(tVertex-T) + b*(tVertex-T) + S
+#        sVertex = a*tVertex*tVertex + b*tVertex + c
+#
+#        localMaxPos, localMaxVal = tVertex[a<0], sVertex[a<0]
+#        localMinPos, localMinVal = tVertex[a>0], sVertex[a>0]
+#
+#        return localMaxPos, localMaxVal, localMinPos, localMinVal
+#
+    def not_duplicate(self, s):
         idx = [0]
         for i in range(1,len(s)-1):
             if (s[i] == s[i+1] and s[i] == s[i-1]):
@@ -597,7 +481,17 @@ class EMD:
         idx.append(len(s)-1)
         return idx
 
-    def findExtrema(self, t, s):
+    def find_extrema(self, t, s):
+        if self.extrema_detection=="parabol":
+            return self._find_extrema_parabol(t, s)
+        elif self.extrema_detection=="simple":
+            return self._find_extrema_simple(t, s)
+        else:
+            msg = "Incorrect extrema detection type. Please try: "
+            msg+= "'simple' or 'parabol'."
+            raise(msg)
+
+    def _find_extrema_parabol(self, t, s):
         """
         Estimates position and value of extrema by parabolical
         interpolation based on three consecutive points.
@@ -616,10 +510,27 @@ class EMD:
 
         """
 
+        # Finds indexes of zero-crossings
+        s1, s2 = s[:-1], s[1:]
+        indzer = np.nonzero(s1*s2<0)[0]
+        if np.any(s == 0):
+            iz = np.nonzero( s==0 )[0]
+            indz = []
+            if np.any(np.diff(iz)==1):
+                zer = s == 0
+                dz = np.diff(np.append(np.append(0, zer), 0))
+                debz = np.nonzero(dz == 1)[0]
+                finz = np.nonzero(dz == -1)[0]-1
+                indz = np.round((debz+finz)/2)
+            else:
+                indz = iz
+
+            indzer = np.sort(np.append(indzer, indz))
+
+
         d = np.append(s[1:] - s[:-1],1)
         t = t[d!=0]
         s = s[d!=0]
-
 
         dt = t[1]-t[0]
         tVertex = np.zeros(len(t)-2, dtype=self.DTYPE)
@@ -652,9 +563,9 @@ class EMD:
         localMaxPos, localMaxVal = tVertex[a<0], sVertex[a<0]
         localMinPos, localMinVal = tVertex[a>0], sVertex[a>0]
 
-        return localMaxPos, localMaxVal, localMinPos, localMinVal
+        return localMaxPos, localMaxVal, localMinPos, localMinVal, indzer
 
-    def findExtrema_simple(self, t, s):
+    def _find_extrema_simple(self, t, s):
         """
         Finds extrema and zero-crossings.
 
@@ -745,7 +656,7 @@ class EMD:
 
         return localMaxPos, localMaxVal, localMinPos, localMinVal, indzer
 
-    def endCondition(self, Res, IMF):
+    def end_condition(self, Res, IMF):
         # When to stop EMD
         tmp = Res.copy()
         for imfNo in IMF.keys():
@@ -764,7 +675,7 @@ class EMD:
             self.logger.info("FINISHED -- SUM POWER")
             return True
 
-    def checkImf(self, imfNew, imfOld, eMax, eMin, mean):
+    def check_imf(self, imfNew, imfOld, eMax, eMin, mean):
         """
         Huang criteria. Similar to Cauchy convergence test.
         SD stands for Sum of the Difference.
@@ -774,7 +685,6 @@ class EMD:
             return False
 
         # Convergence
-
         if np.sum(imfNew**2) < 1e-10: return False
 
         std = np.sum( ((imfNew-imfOld)/imfNew)**2 )
@@ -782,10 +692,10 @@ class EMD:
 
 
         if  scaledVar < self.scaledVarThreshold:
-            #~ self.logger.info("Scaled variance -- PASSED")
+            self.logger.info("Scaled variance -- PASSED")
             return True
         elif std < self.stdThreshold:
-            #~ self.logger.info("Standard deviation -- PASSED")
+            self.logger.info("Standard deviation -- PASSED")
             return True
         else:
             return False
@@ -881,7 +791,7 @@ class EMD:
                 # Time of single iteration
                 singleTime = time.time()
 
-                maxPos, maxVal, minPos, minVal, indzer = self.findExtrema_simple(timeLine, imf)
+                maxPos, maxVal, minPos, minVal, indzer = self.find_extrema(timeLine, imf)
                 extNo = len(minPos)+len(maxPos)
                 nzm = len(indzer)
 
@@ -905,7 +815,7 @@ class EMD:
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale*mean
 
-                    maxEnv, minEnv, eMax, eMin = self.extractMaxMinSpline(timeLine, imf)
+                    maxEnv, minEnv, eMax, eMin = self.extract_max_min_spline(timeLine, imf)
 
                     if type(maxEnv) == type(-1):
                         notFinish = True
@@ -926,7 +836,7 @@ class EMD:
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
 
-                        maxPos, maxVal, minPos, minVal, indZer = self.findExtrema_simple(timeLine, imf)
+                        maxPos, maxVal, minPos, minVal, indZer = self.find_extrema(timeLine, imf)
                         extNo = len(maxPos)+len(minPos)
                         nzm = len(indZer)
 
@@ -946,11 +856,11 @@ class EMD:
                     # Stops after default stopping criteria are meet.
                     else:
 
-                        maxPos, maxVal, minPos, minVal, indZer = self.findExtrema_simple(timeLine, imf)
+                        maxPos, maxVal, minPos, minVal, indZer = self.find_extrema(timeLine, imf)
                         extNo = len(maxPos) + len(minPos)
                         nzm = len(indZer)
 
-                        f1 = self.checkImf(imf, maxEnv, minEnv, mean, extNo)
+                        f1 = self.check_imf(imf, maxEnv, minEnv, mean, extNo)
                         #f2 = np.all(maxVal>0) and np.all(minVal<0)
                         f2 = abs(extNo - nzm)<2
 
@@ -968,7 +878,7 @@ class EMD:
             TIME[imfNo] = time.time() - t0
             imfNo += 1
 
-            if self.endCondition(scaledS, IMF) or imfNo==maxImf:
+            if self.end_condition(scaledS, IMF) or imfNo==maxImf:
                 notFinish = False
                 break
 
@@ -1011,14 +921,13 @@ if __name__ == "__main__":
     tS = 'np.sin(20*t)'
     S = eval(tS)
     S = S.astype(DTYPE)
-    print(S.dtype)
+    print("Input S.dtype: "+str(S.dtype))
 
     emd = EMD()
     emd.PLOT = 0
     emd.FIXE_H = 1
     emd.nbsym = 2
     emd.splineKind = 'cubic'
-    emd.splineKind = 'linear'
     #IMF, EXT, TIME, ITER, imfNo = emd.emd(S, timeLine, maxImf)
     IMF, EXT, ITER, imfNo = emd.emd(S, timeLine, maxImf)
 

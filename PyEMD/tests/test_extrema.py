@@ -15,8 +15,7 @@ class ExtremaTest(unittest.TestCase):
         Simple test for extrema.
         """
         emd = EMD()
-
-        findExtrema = emd.findExtrema
+        emd.extrema_detection = "simple"
 
         t = np.arange(10)
         s = np.array([-1, 0, 1, 0, -1, 0, 3, 0, -9, 0])
@@ -25,38 +24,38 @@ class ExtremaTest(unittest.TestCase):
         expMinPos = [4, 8]
         expMinVal = [-1, -9]
 
-        maxPos, maxVal, minPos, minVal = findExtrema(t, s)
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
         self.assertEqual(maxPos.tolist(), expMaxPos)
         self.assertEqual(maxVal.tolist(), expMaxVal)
         self.assertEqual(minPos.tolist(), expMinPos)
         self.assertEqual(minVal.tolist(), expMinVal)
 
-    def test_find_extrema_repeat(self):
+    def test_find_extrema_simple_repeat(self):
         """
         Test what happens in /^^\ situation, i.e.
         when extremum is somewhere between two consecutive pts.
         """
         emd = EMD()
-
-        findExtrema = emd.findExtrema
+        emd.extrema_detection = "simple"
 
         t = np.arange(2,13)
         s = np.array([-1, 0, 1, 1, 0, -1, 0, 3, 0, -9, 0])
-        expMaxPos = [4.5, 9]
-        expMaxVal = [1.25, 3]
+        expMaxPos = [5, 9]
+        expMaxVal = [1, 3]
         expMinPos = [7, 11]
         expMinVal = [-1, -9]
 
-        maxPos, maxVal, minPos, minVal = findExtrema(t, s)
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
         self.assertEqual(maxPos.tolist(), expMaxPos)
         self.assertEqual(maxVal.tolist(), expMaxVal)
         self.assertEqual(minPos.tolist(), expMinPos)
         self.assertEqual(minVal.tolist(), expMinVal)
 
-    def test_bound_extrapolation(self):
+    def test_bound_extrapolation_simple(self):
         emd = EMD()
+        emd.extrema_detection = "simple"
         emd.nbsym = 1
         emd.DTYPE = np.int64
 
@@ -64,8 +63,7 @@ class ExtremaTest(unittest.TestCase):
         S = np.array(S)
         T = np.arange(len(S))
 
-        #pp = emd.preparePoints
-        pp = emd.preparePoints_coppiedFromMatlab
+        pp = emd.prepare_points
 
         # There are 4 cases for both (L)eft and (R)ight ends. In case of left (L) bound:
         # L1) ,/ -- ext[0] is min, s[0] < ext[1] (1st max)
@@ -78,7 +76,7 @@ class ExtremaTest(unittest.TestCase):
         s = S.copy()
         t = T.copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.findExtrema_simple(t, s)
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -94,7 +92,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[2:-1].copy()
         t = T[2:-1].copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.findExtrema_simple(t, s)
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -109,7 +107,7 @@ class ExtremaTest(unittest.TestCase):
         # L3, R3 -- no edge MAX & no edge MAX  
         s, t = S[3:-3], T[3:-3]
 
-        maxPos, maxVal, minPos, minVal, nz = emd.findExtrema_simple(t, s)
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -124,7 +122,7 @@ class ExtremaTest(unittest.TestCase):
         # L4, R4 -- edge MAX & edge MAX
         s, t = S[5:-4], T[5:-4]
 
-        maxPos, maxVal, minPos, minVal, nz = emd.findExtrema_simple(t, s)
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -134,6 +132,49 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([2,4,2,5], maxExtrema[1].tolist())
         self.assertEqual([3,7,12,18], minExtrema[0].tolist())
         self.assertEqual([-2,-2,0,0], minExtrema[1].tolist())
+
+    def test_find_extrema_parabol(self):
+        """
+        Simple test for extrema.
+        """
+        emd = EMD()
+        emd.extrema_detection = "parabol"
+
+        t = np.arange(10)
+        s = np.array([-1, 0, 1, 0, -1, 0, 3, 0, -9, 0])
+        expMaxPos = [2, 6]
+        expMaxVal = [1, 3]
+        expMinPos = [4, 8]
+        expMinVal = [-1, -9]
+
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+
+        self.assertEqual(maxPos.tolist(), expMaxPos)
+        self.assertEqual(maxVal.tolist(), expMaxVal)
+        self.assertEqual(minPos.tolist(), expMinPos)
+        self.assertEqual(minVal.tolist(), expMinVal)
+
+    def test_find_extrema_parabol_repeat(self):
+        """
+        Test what happens in /^^\ situation, i.e.
+        when extremum is somewhere between two consecutive pts.
+        """
+        emd = EMD()
+        emd.extrema_detection = "parabol"
+
+        t = np.arange(2,13)
+        s = np.array([-1, 0, 1, 1, 0, -1, 0, 3, 0, -9, 0])
+        expMaxPos = [4.5, 9]
+        expMaxVal = [1.25, 3]
+        expMinPos = [7, 11]
+        expMinVal = [-1, -9]
+
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+
+        self.assertEqual(maxPos.tolist(), expMaxPos)
+        self.assertEqual(maxVal.tolist(), expMaxVal)
+        self.assertEqual(minPos.tolist(), expMinPos)
+        self.assertEqual(minVal.tolist(), expMinVal)
 
     # TODO:
     #   - nbsym > 1
