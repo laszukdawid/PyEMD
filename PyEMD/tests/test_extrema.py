@@ -41,7 +41,7 @@ class ExtremaTest(unittest.TestCase):
 
         t = np.arange(2,13)
         s = np.array([-1, 0, 1, 1, 0, -1, 0, 3, 0, -9, 0])
-        expMaxPos = [5, 9]
+        expMaxPos = [4, 9]
         expMaxVal = [1, 3]
         expMinPos = [7, 11]
         expMinVal = [-1, -9]

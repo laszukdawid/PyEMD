@@ -594,7 +594,7 @@ class EMD:
                 dz = np.diff(np.append(np.append(0, zer), 0))
                 debz = np.nonzero(dz == 1)[0]
                 finz = np.nonzero(dz == -1)[0]-1
-                indz = np.round((debz+finz)/2)
+                indz = np.round((debz+finz)/2.)
             else:
                 indz = iz
 
@@ -634,10 +634,10 @@ class EMD:
                 for k in range(lc):
                     if d[debs[k]-1] > 0:
                         if d[fins[k]] < 0:
-                            imax.append(round((fins[k]+debs[k])/2.))
+                            imax.append(np.round((fins[k]+debs[k])/2.))
                     else:
                         if d[fins[k]] > 0:
-                            imin.append(round((fins[k]+debs[k])/2.))
+                            imin.append(np.round((fins[k]+debs[k])/2.))
 
             if len(imax) > 0:
                 indmax = indmax.tolist()

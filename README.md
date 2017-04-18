@@ -8,3 +8,6 @@ Yet another implementation of EMD in Python. Had this in my private collection f
 Don't hesitate to contact me with any questions/suggestions.
 
 Enjoy it!
+
+# Under refurbishment
+Coming soon, better, shinier and with documentation!
