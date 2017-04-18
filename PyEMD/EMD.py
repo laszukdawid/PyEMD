@@ -10,6 +10,7 @@
 
 from __future__ import print_function
 
+import logging
 import os
 import time
 
@@ -32,6 +33,8 @@ class EMD:
         Decomposition and its algorithms", IEEE-EURASIP Workshop on
         Nonlinear Signal and Image Processing NSIP-03, Grado (I), June 2003
     """
+    
+    logger = logging.getLogger(__name__)
 
     def __init__(self):
         # Declare constants
@@ -56,7 +59,7 @@ class EMD:
         self.FIXE = 0
         self.FIXE_H = 0
 
-        self.MAX_ITERATION = 10000
+        self.MAX_ITERATION = 1000
 
         if self.PLOT:
             import pylab as plt
@@ -82,10 +85,10 @@ class EMD:
         #~ maxPos, maxVal, minPos, minVal = self.findExtrema_new(T, S)
         maxPos, maxVal, minPos, minVal, indzer = self.findExtrema_simple(T, S)
 
-        if maxPos.dtype!=self.DTYPE: print('maxPos.dtype: ', maxPos.dtype)
-        if maxVal.dtype!=self.DTYPE: print('maxVal.dtype: ', maxVal.dtype)
-        if minPos.dtype!=self.DTYPE: print('minPos.dtype: ', minPos.dtype)
-        if minVal.dtype!=self.DTYPE: print('minVal.dtype: ', minVal.dtype)
+        if maxPos.dtype!=self.DTYPE: self.logger.error('maxPos.dtype: '+str(maxPos.dtype))
+        if maxVal.dtype!=self.DTYPE: self.logger.error('maxVal.dtype: '+str(maxVal.dtype))
+        if minPos.dtype!=self.DTYPE: self.logger.error('minPos.dtype: '+str(minPos.dtype))
+        if minVal.dtype!=self.DTYPE: self.logger.error('minVal.dtype: '+str(minVal.dtype))
         if len(maxPos) + len(minPos) < 3: return [-1]*4
 
         #########################################
@@ -101,9 +104,9 @@ class EMD:
         maxTSpline, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
         minTSpline, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
 
-        if maxExtrema.dtype!=self.DTYPE: print('maxExtrema.dtype: ', maxExtrema.dtype)
-        if maxSpline.dtype!=self.DTYPE: print('maxSpline.dtype: ', maxSpline.dtype)
-        if maxTSpline.dtype!=self.DTYPE: print('maxTSline.dtype: ', maxTSpline.dtype)
+        if maxExtrema.dtype!=self.DTYPE: self.logger.error('maxExtrema.dtype: '+str(maxExtrema.dtype))
+        if maxSpline.dtype!=self.DTYPE: self.logger.error('maxSpline.dtype: '+str(maxSpline.dtype))
+        if maxTSpline.dtype!=self.DTYPE: self.logger.error('maxTSline.dtype: '+str(maxTSpline.dtype))
 
         return maxSpline, minSpline, maxExtrema, minExtrema
 
@@ -269,8 +272,8 @@ class EMD:
         indmin = np.array([np.nonzero(T==t)[0] for t in minPos]).flatten()
         indmax = np.array([np.nonzero(T==t)[0] for t in maxPos]).flatten()
 
-        if S.dtype != self.DTYPE: print('S.dtype: ', S.dtype)
-        if T.dtype != self.DTYPE: print('T.dtype: ', T.dtype)
+        if S.dtype != self.DTYPE: self.logger.error('S.dtype: '+str(S.dtype))
+        if T.dtype != self.DTYPE: self.logger.error('T.dtype: '+str(T.dtype))
 
         # Local variables
         nbsym = self.nbsym
@@ -369,7 +372,7 @@ class EMD:
 
         maxExtrema = np.array([tmax, zmax])
         minExtrema = np.array([tmin, zmin])
-        if maxExtrema.dtype != self.DTYPE: print('maxExtrema.dtype: ', maxExtrema.dtype)
+        if maxExtrema.dtype != self.DTYPE: self.logger.error('maxExtrema.dtype: '+str(maxExtrema.dtype))
 
         # Make double sure, that each extremum is significant
         maxExtrema = np.delete(maxExtrema, np.where(maxExtrema[0,1:]==maxExtrema[0,:-1]),axis=1)
@@ -395,8 +398,8 @@ class EMD:
 
         kind = splineKind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
-        if t.dtype != self.DTYPE: print('t.dtype: ', t.dtype)
-        if extrema.dtype != self.DTYPE: print('extrema.dtype: ', extrema.dtype)
+        if t.dtype != self.DTYPE: self.logger.error('t.dtype: '+str(t.dtype))
+        if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: '+str(extrema.dtype))
 
         if kind == "akima":
             return t, self.akima(extrema[0], extrema[1], t)
@@ -479,7 +482,7 @@ class EMD:
         dx = np.diff(X)
         dy = np.diff(Y)
 
-        if dx.dtype != self.DTYPE: print('dx.dtype: ', dx.dtype)
+        if dx.dtype != self.DTYPE: self.logger.error('dx.dtype: '+str(dx.dtype))
 
         if np.any(dx <= 0):
             raise Exception('input x-array must be in strictly ascending order')
@@ -490,7 +493,7 @@ class EMD:
         # d - approximation of derivative
         # p, n - previous, next
         d = dy/dx
-        if d.dtype != self.DTYPE: print('d.dtype: ', d.dtype)
+        if d.dtype != self.DTYPE: self.logger.error('d.dtype: '+str(d.dtype))
 
         dpp = 2*d[0]-d[1]
         dp = 2*dpp - d[0]
@@ -514,9 +517,9 @@ class EMD:
         a2 = (3.0*d - 2.0*a1[0:n-1] - a1[1:n]) / dx
         a3 = (a1[0:n-1] + a1[1:n] - 2.0*d) / (dx*dx)
 
-        if a1.dtype != self.DTYPE: print('a1.dtype: ', a1.dtype)
-        if a2.dtype != self.DTYPE: print('a2.dtype: ', a2.dtype)
-        if a3.dtype != self.DTYPE: print('a3.dtype: ', a3.dtype)
+        if a1.dtype != self.DTYPE: self.logger.error('a1.dtype: '+str(a1.dtype))
+        if a2.dtype != self.DTYPE: self.logger.error('a2.dtype: '+str(a2.dtype))
+        if a3.dtype != self.DTYPE: self.logger.error('a3.dtype: '+str(a3.dtype))
 
         bins = np.digitize(x, X)
         bins = np.minimum(bins, n - 1) - 1
@@ -525,8 +528,8 @@ class EMD:
 
         out = ((_x*a3[bb] + a2[bb])*_x + a1[bb])*_x + Y[bb]
 
-        if _x.dtype != self.DTYPE: print('_x.dtype: ', _x.dtype)
-        if out.dtype != self.DTYPE: print('out.dtype: ', out.dtype)
+        if _x.dtype != self.DTYPE: self.logger.error('_x.dtype: '+str(_x.dtype))
+        if out.dtype != self.DTYPE: self.logger.error('out.dtype: '+str(out.dtype))
 
         return out
 
@@ -754,11 +757,11 @@ class EMD:
             #~ return True
 
         if np.max(tmp) - np.min(tmp) < self.rangeThreshold:
-            print("FINISHED -- RANGE")
+            self.logger.info("FINISHED -- RANGE")
             return True
 
         if np.sum(np.abs(tmp)) < self.totalPowerThreshold:
-            print("FINISHED -- SUM POWER")
+            self.logger.info("FINISHED -- SUM POWER")
             return True
 
     def checkImf(self, imfNew, imfOld, eMax, eMin, mean):
@@ -779,10 +782,10 @@ class EMD:
 
 
         if  scaledVar < self.scaledVarThreshold:
-            #~ print "Scaled variance -- PASSED"
+            #~ self.logger.info("Scaled variance -- PASSED")
             return True
         elif std < self.stdThreshold:
-            #~ print "Standard deviation -- PASSED"
+            #~ self.logger.info("Standard deviation -- PASSED")
             return True
         else:
             return False
@@ -832,11 +835,11 @@ class EMD:
 
         N = len(S)
 
-        if Res.dtype!=self.DTYPE: print('Res.dtype: ', Res.dtype)
-        if scaledS.dtype!=self.DTYPE: print('scaledS.dtype: ', scaledS.dtype)
-        if imf.dtype!=self.DTYPE: print('imf.dtype: ', imf.dtype)
-        if imfOld.dtype!=self.DTYPE: print('imfOld.dtype: ', imfOld.dtype)
-        if timeLine.dtype!=self.DTYPE: print('timeLine.dtype: ', timeLine.dtype)
+        if Res.dtype!=self.DTYPE: self.logger.error('Res.dtype: '+str(Res.dtype))
+        if scaledS.dtype!=self.DTYPE: self.logger.error('scaledS.dtype: '+str(scaledS.dtype))
+        if imf.dtype!=self.DTYPE: self.logger.error('imf.dtype: '+str(imf.dtype))
+        if imfOld.dtype!=self.DTYPE: self.logger.error('imfOld.dtype: '+str(imfOld.dtype))
+        if timeLine.dtype!=self.DTYPE: self.logger.error('timeLine.dtype: '+str(timeLine.dtype))
 
         if S.shape != timeLine.shape:
             info = "Time array should be the same size as signal."
@@ -853,7 +856,7 @@ class EMD:
         time0 = time.time()
 
         while(notFinish):
-            print('IMF -- ', imfNo)
+            self.logger.debug('IMF -- '+str(imfNo))
 
             Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
             #~ Res -= imf
@@ -869,11 +872,11 @@ class EMD:
 
             # Start on-screen displaying
             if self.PLOT and self.INTERACTIVE:
-                py.ion()
+                plt.ion()
 
             while(n<self.MAX_ITERATION):
                 n += 1
-                print("Iteration: ", n)
+                self.logger.debug("Iteration: "+str(n))
 
                 # Time of single iteration
                 singleTime = time.time()
@@ -886,18 +889,18 @@ class EMD:
 
                     # Plotting. Either into file, or on-screen display.
                     if n>1 and self.PLOT:
-                        py.clf()
-                        py.plot(timeLine, imf*scale, 'g')
-                        py.plot(timeLine, maxEnv*scale, 'b')
-                        py.plot(timeLine, minEnv*scale, 'r')
-                        py.plot(timeLine, mean*scale, 'k--')
-                        py.title("imf{}_{:02}".format(imfNo, n-1))
+                        plt.clf()
+                        plt.plot(timeLine, imf*scale, 'g')
+                        plt.plot(timeLine, maxEnv*scale, 'b')
+                        plt.plot(timeLine, minEnv*scale, 'r')
+                        plt.plot(timeLine, mean*scale, 'k--')
+                        plt.title("imf{}_{:02}".format(imfNo, n-1))
 
                         if self.INTERACTIVE:
-                            py.draw()
+                            plt.draw()
                         else:
                             fName = "imf{}_{:02}".format(imfNo, n-1)
-                            py.savefig(os.path.join(self.plotPath,fName))
+                            plt.savefig(os.path.join(self.plotPath,fName))
 
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale*mean
@@ -910,10 +913,10 @@ class EMD:
 
                     mean = 0.5*(maxEnv+minEnv)
 
-                    if maxEnv.dtype!=self.DTYPE: print('maxEnvimf.dtype: ', maxEnv.dtype   )
-                    if minEnv.dtype!=self.DTYPE: print('minEnvimf.dtype: ', minEnvimf.dtype)
-                    if imf.dtype!=self.DTYPE:    print('imf.dtype: ', imf.dtype            )
-                    if mean.dtype!=self.DTYPE:   print('mean.dtype: ', mean.dtype          )
+                    if maxEnv.dtype!=self.DTYPE: self.logger.error('maxEnvimf.dtype: '+str(maxEnv.dtype))
+                    if minEnv.dtype!=self.DTYPE: self.logger.error('minEnvimf.dtype: '+str(minEnvimf.dtype))
+                    if imf.dtype!=self.DTYPE: self.logger.error('imf.dtype: '+str(imf.dtype))
+                    if mean.dtype!=self.DTYPE: self.logger.error('mean.dtype: '+str(mean.dtype))
 
                     # Fix number of iterations
                     if self.FIXE:
@@ -988,8 +991,10 @@ class EMD:
 ## Beggining of program
 
 if __name__ == "__main__":
-    
+
     import pylab as plt
+
+    logging.basicConfig(level=logging.DEBUG)
 
     N = 400
     maxImf = -1
@@ -1009,7 +1014,7 @@ if __name__ == "__main__":
     print(S.dtype)
 
     emd = EMD()
-    emd.PLOT = 1
+    emd.PLOT = 0
     emd.FIXE_H = 1
     emd.nbsym = 2
     emd.splineKind = 'cubic'
@@ -1020,18 +1025,18 @@ if __name__ == "__main__":
     c = np.floor(np.sqrt(imfNo+3))
     r = np.ceil( (imfNo+3)/c)
 
-    py.ioff()
-    py.subplot(r,c,1)
-    py.plot(timeLine, S, 'r')
-    py.title("Original signal")
+    plt.ioff()
+    plt.subplot(r,c,1)
+    plt.plot(timeLine, S, 'r')
+    plt.title("Original signal")
 
-    py.subplot(r,c,2)
-    py.plot([EXT[i] for i in xrange(imfNo)], 'o')
-    py.title("Number of extrema")
+    plt.subplot(r,c,2)
+    plt.plot([EXT[i] for i in xrange(imfNo)], 'o')
+    plt.title("Number of extrema")
 
-    py.subplot(r,c,3)
-    py.plot([ITER[i] for i in xrange(imfNo)], 'o')
-    py.title("Number of iterations")
+    plt.subplot(r,c,3)
+    plt.plot([ITER[i] for i in xrange(imfNo)], 'o')
+    plt.title("Number of iterations")
 
     def extF(s):
         state1 = np.r_[np.abs(s[1:-1]) > np.abs(s[:-2])]
@@ -1039,10 +1044,10 @@ if __name__ == "__main__":
         return np.arange(1,len(s)-1)[state1 & state2]
 
     for num in xrange(imfNo):
-        py.subplot(r,c,num+4)
-        py.plot(timeLine, IMF[num],'g')
-        #~ py.plot(timeLine[extF(IMF[num])], IMF[num][extF(IMF[num])],'ok')
-        py.title("Imf no " +str(num) )
+        plt.subplot(r,c,num+4)
+        plt.plot(timeLine, IMF[num],'g')
+        #~ plt.plot(timeLine[extF(IMF[num])], IMF[num][extF(IMF[num])],'ok')
+        plt.title("Imf no " +str(num) )
 
-    py.tight_layout()
-    py.show()
+    plt.tight_layout()
+    plt.show()

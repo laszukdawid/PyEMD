@@ -4,7 +4,6 @@
 from __future__ import print_function
 
 import numpy as np
-import pylab as plt
 from PyEMD.EMD import EMD
 import unittest
 
@@ -59,10 +58,6 @@ class IMFTest(unittest.TestCase):
         self.assertTrue(diff1, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
         diff2 = self.compare_signals(IMF[1], c2, delta=0.2)
         self.assertTrue(diff2, "Expecting 2nd IMF to be trend\nMaxDiff = "+str(maxDiff(IMF[1],c2)))
-
-
-
-
 
 if __name__ == "__main__":
     unittest.main()
