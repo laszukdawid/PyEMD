@@ -19,7 +19,7 @@ class EEMD:
     def __init__(self):
 
         # Import libraries
-        from EMD_good_corr import EMD
+        from EMD import EMD
 
         # Declare constants
         self.stdThreshold = 0.5
