@@ -45,7 +45,7 @@ class IMFTest(unittest.TestCase):
         IMF, EXT, ITER, imfNo = emd.emd(S, t)
         self.assertEqual(len(IMF.keys()), 1, "Expecting sin + trend")
 
-        diff = self.compare_signals(IMF[0], c1, delta=1e-10)
+        diff = self.compare_signals(IMF[0], c1, delta=1e-7)
         self.assertTrue(diff, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
 
         # Input - linear function f(t) = siin(2Hz t) + 2*t

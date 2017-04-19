@@ -72,7 +72,7 @@ class ExtremaTest(unittest.TestCase):
         # L4) \ -- ext[0] is max, s[0] < ext[1] (1st min)
 
         ## CASE 1
-        # L1, R1 -- no edge MIN & no edge MIN 
+        # L1, R1 -- no edge MIN & no edge MIN
         s = S.copy()
         t = T.copy()
 
@@ -104,7 +104,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([-2,-3,-2,0,-2], minExtrema[1].tolist())
 
         ## CASE 3
-        # L3, R3 -- no edge MAX & no edge MAX  
+        # L3, R3 -- no edge MAX & no edge MAX
         s, t = S[3:-3], T[3:-3]
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
@@ -165,7 +165,7 @@ class ExtremaTest(unittest.TestCase):
         t = np.arange(2,13)
         s = np.array([-1, 0, 1, 1, 0, -1, 0, 3, 0, -9, 0])
         expMaxPos = [4.5, 9]
-        expMaxVal = [1.25, 3]
+        expMaxVal = [1.125, 3]
         expMinPos = [7, 11]
         expMinVal = [-1, -9]
 
@@ -176,9 +176,100 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual(minPos.tolist(), expMinPos)
         self.assertEqual(minVal.tolist(), expMinVal)
 
+    def test_bound_extrapolation_parabol(self):
+        emd = EMD()
+        emd.extrema_detection = "parabol"
+        emd.nbsym = 1
+        emd.DTYPE = np.int64
+
+        S = [ 2, 0,-3, 1, 2, 4, 3,-2, 0, 1, 2, 1, 0, 1, 2, 5, 4, 0,-2,-1]
+        S = np.array(S)
+        T = np.arange(len(S))
+
+        pp = emd.prepare_points
+
+        # There are 4 cases for both (L)eft and (R)ight ends. In case of left (L) bound:
+        # L1) ,/ -- ext[0] is min, s[0] < ext[1] (1st max)
+        # L2) / -- ext[0] is min, s[0] > ext[1] (1st max)
+        # L3) ^. -- ext[0] is max, s[0] > ext[1] (1st min)
+        # L4) \ -- ext[0] is max, s[0] < ext[1] (1st min)
+
+        ## CASE 1
+        # L1, R1 -- no edge MIN & no edge MIN
+        s = S.copy()
+        t = T.copy()
+
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+
+        # Should extrapolate left and right bounds
+        maxExtrema, minExtrema = pp(t, s, \
+                        maxPos, maxVal, minPos, minVal)
+
+        maxExtrema = np.round(maxExtrema, decimals=3)
+        minExtrema = np.round(minExtrema, decimals=3)
+
+        self.assertEqual([-1.31,5,10,15,21.083], maxExtrema[0].tolist())
+        self.assertEqual([4.042,4,2,5,5.125], maxExtrema[1].tolist())
+        self.assertEqual([-3.357,1,7,12,18,24.333], minExtrema[0].tolist())
+        self.assertEqual([-2.161,-3,-2,0,-2,0], minExtrema[1].tolist())
+
+        ## CASE 2
+        # L2, R2 -- edge MIN, edge MIN
+        s = S[2:-1].copy()
+        t = T[2:-1].copy()
+
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+
+        # Should extrapolate left and right bounds
+        maxExtrema, minExtrema = pp(t, s, \
+                        maxPos, maxVal, minPos, minVal)
+
+        maxExtrema = np.round(maxExtrema, decimals=3)
+        minExtrema = np.round(minExtrema, decimals=3)
+
+        self.assertEqual([-1.167,5,10,15,20.75], maxExtrema[0].tolist())
+        self.assertEqual([4.042,4,2,5,5.125], maxExtrema[1].tolist())
+        self.assertEqual([2,7,12,18], minExtrema[0].tolist())
+        self.assertEqual([-3,-2,0,-2], minExtrema[1].tolist())
+
+        ## CASE 3
+        # L3, R3 -- no edge MAX & no edge MAX
+        s, t = S[3:-3], T[3:-3]
+
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+
+        # Should extrapolate left and right bounds
+        maxExtrema, minExtrema = pp(t, s, \
+                        maxPos, maxVal, minPos, minVal)
+
+        maxExtrema = np.round(maxExtrema, decimals=3)
+        minExtrema = np.round(minExtrema, decimals=3)
+
+        self.assertEqual([0.833,5,10,15,20.5], maxExtrema[0].tolist())
+        self.assertEqual([4.042,4,2,5,2], maxExtrema[1].tolist())
+        self.assertEqual([3,7,12,18.5], minExtrema[0].tolist())
+        self.assertEqual([1,-2,0,0],     minExtrema[1].tolist())
+
+        ## CASE 4
+        # L4, R4 -- edge MAX & edge MAX
+        s, t = S[5:-4], T[5:-4]
+
+        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+
+        # Should extrapolate left and right bounds
+        maxExtrema, minExtrema = pp(t, s, \
+                        maxPos, maxVal, minPos, minVal)
+
+        maxExtrema = np.round(maxExtrema, decimals=3)
+        minExtrema = np.round(minExtrema, decimals=3)
+
+        self.assertEqual([5,10,15], maxExtrema[0].tolist())
+        self.assertEqual([4,2,5], maxExtrema[1].tolist())
+        self.assertEqual([2.786, 7, 12, 18], minExtrema[0].tolist())
+        self.assertEqual([-2.161,-2,0,0], minExtrema[1].tolist())
+
     # TODO:
     #   - nbsym > 1
-    #   - case when extremum doesn't go outside edge, mirror in ref to the sig's init
 
 if __name__ == "__main__":
     unittest.main()

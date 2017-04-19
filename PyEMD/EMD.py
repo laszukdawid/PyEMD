@@ -4,11 +4,11 @@
 # Author:   Dawid Laszuk
 # Contact:  laszukdawid@gmail.com
 #
-# Edited:   10/04/2017
+# Edited:   19/04/2017
 #
 # Feel free to contact for any information.
 
-from __future__ import print_function
+from __future__ import division, print_function
 
 import logging
 import numpy as np
@@ -47,14 +47,14 @@ class EMD:
 
         self.nbsym = 2
         self.reduceScale = 1.
-        self.scaleFactor = 100
+        self.scaleFactor = 100.
 
         self.PLOT = 0
         self.INTERACTIVE = 0
         self.plotPath = 'splineTest'
 
         self.splineKind = 'akima'
-        self.extrema_detection = 'parabol' # simple, parabol
+        self.extrema_detection = 'simple' # simple, parabol
 
         self.DTYPE = np.float64
         self.FIXE = 0
@@ -90,7 +90,6 @@ class EMD:
         #########################################
         # Extrapolation of signal (ober boundaries)
         maxExtrema, minExtrema = self.prepare_points(T, S, maxPos, maxVal, minPos, minVal)
-        # maxExtrema, minExtrema = self.prepare_points_coppiedFromMatlab(T, S, maxPos, maxVal, minPos, minVal)
 
         maxTSpline, maxSpline = self.spline_points(T, maxExtrema, self.splineKind)
         minTSpline, minSpline = self.spline_points(T, minExtrema, self.splineKind)
@@ -149,13 +148,6 @@ class EMD:
                 expandLeftMaxVal = maxVal[1:nbsym+1]
                 expandLeftMinVal = minVal[0:nbsym]
 
-            elif (S[0]>minVal[0]) and (np.abs(dPos)<=(maxPos[0]-T[0])):
-                # mirror signal to begining
-                expandLeftMaxPos = 2*T[0] - maxPos[0:nbsym]
-                expandLeftMinPos = 2*T[0] - minPos[0:nbsym]
-                expandLeftMaxVal = maxVal[0:nbsym]
-                expandLeftMinVal = minVal[0:nbsym]
-
             else:
                 # mirror signal to begining
                 expandLeftMaxPos = 2*T[0] - maxPos[0:nbsym]
@@ -171,12 +163,6 @@ class EMD:
                 expandLeftMinPos = 2*minPos[0] - minPos[1:nbsym+1]
                 expandLeftMaxVal = maxVal[0:nbsym]
                 expandLeftMinVal = minVal[1:nbsym+1]
-
-            elif (S[0] < maxVal[0]) and (np.abs(dPos)<(minPos[0]-T[0])):
-                expandLeftMaxPos = 2*T[0] - maxPos[0:nbsym]
-                expandLeftMinPos = 2*T[0] - minPos[0:nbsym]
-                expandLeftMaxVal = maxVal[0:nbsym]
-                expandLeftMinVal = minVal[0:nbsym]
 
             else:
                 # mirror signal to begining
@@ -196,7 +182,7 @@ class EMD:
         ####################################
         # Right bound
         dPos = maxPos[-1] - minPos[-1]
-        rightExtType = {True:"max", False:"min"}[dPos>0]
+        rightExtType = ["min","max"][dPos>0]
 
         if (rightExtType == "min"):
             if (S[-1] < maxVal[-1]) and (np.abs(dPos)>(T[-1]-minPos[-1])):
@@ -417,60 +403,6 @@ class EMD:
         else:
             raise Exception("No such interpolation method!")
 
-#    def find_extrema_new(self, t, s):
-#        dt = t[1]-t[0]
-#        scale = 2*dt*dt
-#
-#        idx = self.not_duplicate(s)
-#        t = t[idx]
-#        s = s[idx]
-#
-#        # p - previous
-#        # 0 - current
-#        # n - next
-#        tp, t0, tn = t[:-2], t[1:-1], t[2:]
-#        sp, s0, sn = s[:-2], s[1:-1], s[2:]
-#        #~ a = sn + sp - 2*s0
-#        #~ b = 2*(tn+tp)*s0 - ((tn+t0)*sp+(t0+tp)*sn)
-#        #~ c = sp*t0*tn -2*tp*s0*tn + tp*t0*sn
-#        tntp, t0tn, tpt0 = tn-tp, t0-tn, tp-t0
-#        scale = tp*tn*tn + tp*tp*t0 + t0*t0*tn - tp*tp*tn - tp*t0*t0 - t0*tn*tn
-#
-#        a = t0tn*sp + tntp*s0 + tpt0*sn
-#        b = (s0-sn)*tp**2 + (sn-sp)*t0**2 + (sp-s0)*tn**2
-#        c = t0*tn*t0tn*sp + tn*tp*tntp*s0 + tp*t0*tpt0*sn
-#
-#        a = a/scale
-#        b = b/scale
-#        c = c/scale
-#        tVertex = -0.5*b/a
-#        idx = np.r_[tVertex<t0 + 0.5*(tn-t0)] & np.r_[tVertex>=t0-0.5*(t0-tp)]
-#
-#        I = []
-#        for i in np.arange(len(idx))[idx]:#[:-1]:
-#            if i > 2 and (i < len(t0)-2):
-#                if  sp[i-1] >= s0[i-1] and sp[i] >= s0[i] and s0[i] >= sn[i] and s0[i+1] >= sn[i+1]:
-#                    pass
-#                elif sp[i-1] <= s0[i-1] and sp[i] <= s0[i] and  s0[i] <= sn[i] and s0[i+1] <= sn[i+1]:
-#                    pass
-#                else:
-#                    I.append(i)
-#            else:
-#                I.append(i)
-#
-#        idx = np.array(I)
-#        a, b, c = a[idx], b[idx], c[idx]
-#
-#        tVertex = tVertex[idx]
-#        T, S = t0[idx], s0[idx]
-#        #~ sVertex = a*(tVertex+T)*(tVertex-T) + b*(tVertex-T) + S
-#        sVertex = a*tVertex*tVertex + b*tVertex + c
-#
-#        localMaxPos, localMaxVal = tVertex[a<0], sVertex[a<0]
-#        localMinPos, localMinVal = tVertex[a>0], sVertex[a>0]
-#
-#        return localMaxPos, localMaxVal, localMinPos, localMinVal
-#
     def not_duplicate(self, s):
         idx = [0]
         for i in range(1,len(s)-1):
@@ -509,7 +441,6 @@ class EMD:
             localMinVal - values of local minima;
 
         """
-
         # Finds indexes of zero-crossings
         s1, s2 = s[:-1], s[1:]
         indzer = np.nonzero(s1*s2<0)[0]
@@ -521,44 +452,61 @@ class EMD:
                 dz = np.diff(np.append(np.append(0, zer), 0))
                 debz = np.nonzero(dz == 1)[0]
                 finz = np.nonzero(dz == -1)[0]-1
-                indz = np.round((debz+finz)/2)
+                indz = np.round((debz+finz)/2.)
             else:
                 indz = iz
 
             indzer = np.sort(np.append(indzer, indz))
 
+        dt = float(t[1]-t[0])
+        scale = 2.*dt*dt
 
-        d = np.append(s[1:] - s[:-1],1)
-        t = t[d!=0]
-        s = s[d!=0]
-
-        dt = t[1]-t[0]
-        tVertex = np.zeros(len(t)-2, dtype=self.DTYPE)
+        idx = self.not_duplicate(s)
+        t = t[idx]
+        s = s[idx]
 
         # p - previous
         # 0 - current
         # n - next
         tp, t0, tn = t[:-2], t[1:-1], t[2:]
         sp, s0, sn = s[:-2], s[1:-1], s[2:]
-        a = sn + sp - 2*s0
-        b = 2*(tn+tp)*s0 - ((tn+t0)*sp+(t0+tp)*sn)
+        #~ a = sn + sp - 2*s0
+        #~ b = 2*(tn+tp)*s0 - ((tn+t0)*sp+(t0+tp)*sn)
+        #~ c = sp*t0*tn -2*tp*s0*tn + tp*t0*sn
+        tntp, t0tn, tpt0 = tn-tp, t0-tn, tp-t0
+        scale = tp*tn*tn + tp*tp*t0 + t0*t0*tn - tp*tp*tn - tp*t0*t0 - t0*tn*tn
 
+        a = t0tn*sp + tntp*s0 + tpt0*sn
+        b = (s0-sn)*tp**2 + (sn-sp)*t0**2 + (sp-s0)*tn**2
+        c = t0*tn*t0tn*sp + tn*tp*tntp*s0 + tp*t0*tpt0*sn
 
-        # Vertex positions
-        idx = np.r_[a!=0]
-        tVertex[idx] = -0.5*b[idx]/a[idx]
+        a = a/scale
+        b = b/scale
+        c = c/scale
+        a[a==0] = 1e-14 #TODO: bad hack for zero div
+        tVertex = -0.5*b/a
+        idx = np.r_[tVertex<t0 + 0.5*(tn-t0)] & np.r_[tVertex>=t0-0.5*(t0-tp)]
 
+        I = []
+        for i in np.arange(len(idx))[idx]:#[:-1]:
+            if i > 2 and (i < len(t0)-2):
+                # TODO: Can't remember why these passes?!?!
+                if  sp[i-1] >= s0[i-1] and sp[i] >= s0[i] and s0[i] >= sn[i] and s0[i+1] >= sn[i+1]:
+                    pass
+                elif sp[i-1] <= s0[i-1] and sp[i] <= s0[i] and  s0[i] <= sn[i] and s0[i+1] <= sn[i+1]:
+                    pass
+                else:
+                    I.append(i)
+            else:
+                I.append(i)
 
-        # Extract only vertices in considered range
-        idx = np.r_[tVertex<tn-0.5*dt] & np.r_[tVertex>tp+0.5*dt]
-        a, b = a[idx], b[idx]
-        a, b = a/(2*dt*dt), b/(2*dt*dt)
+        idx = np.array(I)
+        a, b, c = a[idx], b[idx], c[idx]
 
         tVertex = tVertex[idx]
         T, S = t0[idx], s0[idx]
-
-        # Estimates value of vertex
-        sVertex = a*(tVertex+T)*(tVertex-T) + b*(tVertex-T) + S
+        #~ sVertex = a*(tVertex+T)*(tVertex-T) + b*(tVertex-T) + S
+        sVertex = a*tVertex*tVertex + b*tVertex + c
 
         localMaxPos, localMaxVal = tVertex[a<0], sVertex[a<0]
         localMinPos, localMinVal = tVertex[a>0], sVertex[a>0]
@@ -738,7 +686,7 @@ class EMD:
         self.DTYPE = S.dtype
 
         Res = S.astype(self.DTYPE)
-        scale = (max(Res) - min(Res))/self.scaleFactor
+        scale = (max(Res) - min(Res))/float(self.scaleFactor)
         Res, scaledS = Res/scale, S/scale
         imf = np.zeros(len(S), dtype=self.DTYPE)
         imfOld = Res.copy()
