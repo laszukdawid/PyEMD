@@ -59,7 +59,7 @@ class ExtremaTest(unittest.TestCase):
         emd.nbsym = 1
         emd.DTYPE = np.int64
 
-        S = [ 2, 0,-3, 1, 2, 4, 3,-2, 0, 1, 2, 1, 0, 1, 2, 5, 4, 0,-2,-1]
+        S = [0,-3, 1, 4, 3, 2,-2, 0, 1, 2, 1, 0, 1, 2, 5, 4, 0,-2,-1]
         S = np.array(S)
         T = np.arange(len(S))
 
@@ -82,15 +82,15 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([-1,5,10,15,21], maxExtrema[0].tolist())
+        self.assertEqual([-1,3,9,14,20], maxExtrema[0].tolist())
         self.assertEqual([4,4,2,5,5], maxExtrema[1].tolist())
-        self.assertEqual([-3,2,7,12,18,24], minExtrema[0].tolist())
+        self.assertEqual([-4,1,6,11,17,23], minExtrema[0].tolist())
         self.assertEqual([-2,-3,-2,0,-2,0], minExtrema[1].tolist())
 
         ## CASE 2
         # L2, R2 -- edge MIN, edge MIN
-        s = S[2:-1].copy()
-        t = T[2:-1].copy()
+        s = S[1:-1].copy()
+        t = T[1:-1].copy()
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -98,14 +98,14 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([-1,5,10,15,21], maxExtrema[0].tolist())
+        self.assertEqual([-1,3,9,14,20], maxExtrema[0].tolist())
         self.assertEqual([4,4,2,5,5], maxExtrema[1].tolist())
-        self.assertEqual([-3,2,7,12,18], minExtrema[0].tolist())
-        self.assertEqual([-2,-3,-2,0,-2], minExtrema[1].tolist())
+        self.assertEqual([1,6,11,17], minExtrema[0].tolist())
+        self.assertEqual([-3,-2,0,-2], minExtrema[1].tolist())
 
         ## CASE 3
         # L3, R3 -- no edge MAX & no edge MAX
-        s, t = S[3:-3], T[3:-3]
+        s, t = S[2:-3], T[2:-3]
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -113,14 +113,14 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([0,5,10,15,20], maxExtrema[0].tolist())
+        self.assertEqual([-3,3,9,14,19], maxExtrema[0].tolist())
         self.assertEqual([2,4,2,5,2], maxExtrema[1].tolist())
-        self.assertEqual([3,7,12,18], minExtrema[0].tolist())
+        self.assertEqual([0,6,11,17], minExtrema[0].tolist())
         self.assertEqual([-2,-2,0,0], minExtrema[1].tolist())
 
         ## CASE 4
         # L4, R4 -- edge MAX & edge MAX
-        s, t = S[5:-4], T[5:-4]
+        s, t = S[3:-4], T[3:-4]
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -128,9 +128,9 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([0,5,10,15], maxExtrema[0].tolist())
-        self.assertEqual([2,4,2,5], maxExtrema[1].tolist())
-        self.assertEqual([3,7,12,18], minExtrema[0].tolist())
+        self.assertEqual([3,9,14], maxExtrema[0].tolist())
+        self.assertEqual([4,2,5], maxExtrema[1].tolist())
+        self.assertEqual([0,6,11,17], minExtrema[0].tolist())
         self.assertEqual([-2,-2,0,0], minExtrema[1].tolist())
 
     def test_find_extrema_parabol(self):
@@ -180,9 +180,9 @@ class ExtremaTest(unittest.TestCase):
         emd = EMD()
         emd.extrema_detection = "parabol"
         emd.nbsym = 1
-        emd.DTYPE = np.int64
+        emd.DTYPE = np.float64
 
-        S = [ 2, 0,-3, 1, 2, 4, 3,-2, 0, 1, 2, 1, 0, 1, 2, 5, 4, 0,-2,-1]
+        S = [0,-3, 1, 4, 3, 2,-2, 0, 1, 2, 1, 0, 1, 2, 5, 4, 0,-2,-1]
         S = np.array(S)
         T = np.arange(len(S))
 
@@ -208,15 +208,15 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema = np.round(maxExtrema, decimals=3)
         minExtrema = np.round(minExtrema, decimals=3)
 
-        self.assertEqual([-1.31,5,10,15,21.083], maxExtrema[0].tolist())
-        self.assertEqual([4.042,4,2,5,5.125], maxExtrema[1].tolist())
-        self.assertEqual([-3.357,1,7,12,18,24.333], minExtrema[0].tolist())
-        self.assertEqual([-2.161,-3,-2,0,-2,0], minExtrema[1].tolist())
+        self.assertEqual([-1.393,3.25,9,14.25,20.083], maxExtrema[0].tolist())
+        self.assertEqual([4.125,4.125,2,5.125,5.125], maxExtrema[1].tolist())
+        self.assertEqual([-4.31,0.929,6.167,11,17.167,23.333], minExtrema[0].tolist())
+        self.assertEqual([-2.083,-3.018,-2.083,0,-2.042,0], minExtrema[1].tolist())
 
         ## CASE 2
         # L2, R2 -- edge MIN, edge MIN
-        s = S[2:-1].copy()
-        t = T[2:-1].copy()
+        s = S[1:-1].copy()
+        t = T[1:-1].copy()
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -227,14 +227,15 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema = np.round(maxExtrema, decimals=3)
         minExtrema = np.round(minExtrema, decimals=3)
 
-        self.assertEqual([-1.167,5,10,15,20.75], maxExtrema[0].tolist())
-        self.assertEqual([4.042,4,2,5,5.125], maxExtrema[1].tolist())
-        self.assertEqual([2,7,12,18], minExtrema[0].tolist())
-        self.assertEqual([-3,-2,0,-2], minExtrema[1].tolist())
+        self.assertEqual([-1.25,3.25,9,14.25,19.75], maxExtrema[0].tolist())
+        self.assertEqual([4.125,4.125,2,5.125,5.125], maxExtrema[1].tolist())
+        self.assertEqual([1,6.167,11,17], minExtrema[0].tolist())
+        self.assertEqual([-3,-2.083,0,-2], minExtrema[1].tolist())
 
         ## CASE 3
         # L3, R3 -- no edge MAX & no edge MAX
-        s, t = S[3:-3], T[3:-3]
+        s = S[2:-3].copy()
+        t = T[2:-3].copy()
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -245,14 +246,15 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema = np.round(maxExtrema, decimals=3)
         minExtrema = np.round(minExtrema, decimals=3)
 
-        self.assertEqual([0.833,5,10,15,20.5], maxExtrema[0].tolist())
-        self.assertEqual([4.042,4,2,5,2], maxExtrema[1].tolist())
-        self.assertEqual([3,7,12,18.5], minExtrema[0].tolist())
-        self.assertEqual([1,-2,0,0],     minExtrema[1].tolist())
+        self.assertEqual([-2.5,3.25,9,14.25,19.5], maxExtrema[0].tolist())
+        self.assertEqual([2,4.125,2,5.125,2], maxExtrema[1].tolist())
+        self.assertEqual([0.333,6.167,11,17.5], minExtrema[0].tolist())
+        self.assertEqual([-2.083,-2.083,0,0],     minExtrema[1].tolist())
 
         ## CASE 4
         # L4, R4 -- edge MAX & edge MAX
-        s, t = S[5:-4], T[5:-4]
+        s = S[3:-4].copy()
+        t = T[3:-4].copy()
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -263,10 +265,10 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema = np.round(maxExtrema, decimals=3)
         minExtrema = np.round(minExtrema, decimals=3)
 
-        self.assertEqual([5,10,15], maxExtrema[0].tolist())
+        self.assertEqual([3,9,14], maxExtrema[0].tolist())
         self.assertEqual([4,2,5], maxExtrema[1].tolist())
-        self.assertEqual([2.786, 7, 12, 18], minExtrema[0].tolist())
-        self.assertEqual([-2.161,-2,0,0], minExtrema[1].tolist())
+        self.assertEqual([-0.167,6.167,11,17], minExtrema[0].tolist())
+        self.assertEqual([-2.083,-2.083,0,0], minExtrema[1].tolist())
 
     # TODO:
     #   - nbsym > 1

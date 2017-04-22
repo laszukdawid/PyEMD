@@ -13,6 +13,7 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 import os
+import pdb
 import time
 
 from scipy.interpolate import interp1d
@@ -159,6 +160,7 @@ class EMD:
         elif (leftExtType == "min"):
             if (S[0] < maxVal[0]) and (np.abs(dPos)>(minPos[0]-T[0])):
                 # mirror signal to first extrem
+#               pdb.set_trace()
                 expandLeftMaxPos = 2*minPos[0] - maxPos[0:nbsym]
                 expandLeftMinPos = 2*minPos[0] - minPos[1:nbsym+1]
                 expandLeftMaxVal = maxVal[0:nbsym]
@@ -275,7 +277,7 @@ class EMD:
                 lsym = indmax[0]
             else:
                 lmax = indmax[0:min(endMax,nbsym)][::-1]
-                lmin = np.append(indmin[0:min(endMin,nbsym)][::-1],0)
+                lmin = np.append(indmin[0:min(endMin,nbsym-1)][::-1],0)
                 lsym = 0
         else:
             if S[0] < S[indmax[0]]:
@@ -283,7 +285,7 @@ class EMD:
                 lmin = indmin[1:min(endMin,nbsym+1)][::-1]
                 lsym = indmin[0]
             else:
-                lmax = np.append(indmax[0:min(endMax,nbsym)][::-1],0)
+                lmax = np.append(indmax[0:min(endMax,nbsym-1)][::-1],0)
                 lmin = indmin[0:min(endMin,nbsym)][::-1]
                 lsym = 0
 
@@ -445,7 +447,7 @@ class EMD:
         s1, s2 = s[:-1], s[1:]
         indzer = np.nonzero(s1*s2<0)[0]
         if np.any(s == 0):
-            iz = np.nonzero( s==0 )[0]
+            iz = np.nonzero(s==0)[0]
             indz = []
             if np.any(np.diff(iz)==1):
                 zer = s == 0
@@ -485,22 +487,8 @@ class EMD:
         c = c/scale
         a[a==0] = 1e-14 #TODO: bad hack for zero div
         tVertex = -0.5*b/a
-        idx = np.r_[tVertex<t0 + 0.5*(tn-t0)] & np.r_[tVertex>=t0-0.5*(t0-tp)]
+        idx = np.r_[tVertex<t0+0.5*(tn-t0)] & np.r_[tVertex>=t0-0.5*(t0-tp)]
 
-        I = []
-        for i in np.arange(len(idx))[idx]:#[:-1]:
-            if i > 2 and (i < len(t0)-2):
-                # TODO: Can't remember why these passes?!?!
-                if  sp[i-1] >= s0[i-1] and sp[i] >= s0[i] and s0[i] >= sn[i] and s0[i+1] >= sn[i+1]:
-                    pass
-                elif sp[i-1] <= s0[i-1] and sp[i] <= s0[i] and  s0[i] <= sn[i] and s0[i+1] <= sn[i+1]:
-                    pass
-                else:
-                    I.append(i)
-            else:
-                I.append(i)
-
-        idx = np.array(I)
         a, b, c = a[idx], b[idx], c[idx]
 
         tVertex = tVertex[idx]
