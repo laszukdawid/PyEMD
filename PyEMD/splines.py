@@ -1,46 +1,14 @@
+from __future__ import division
 import numpy as np
 
-def spline_hermite(T, P0, M0, P1, M1, alpha=None):
-    """
-    Based on two points values (P) and derivatives (M)
-    calculates a spline on time range T, i.e. returns S(T).
-    """
-    # Normalized time - range (0,1)
-    t = (T-T[0])/(T[-1]-T[0])
-    t2 = t*t
-    t3 = t2*t
-
-    if alpha is None:
-        alpha = 0.2
-
-    return P0*( 2*t3 - 3*t2 + 1) + \
-           M0*(   t3 - 2*t2 + t)*alpha + \
-           P1*(-2*t3 + 3*t2) + \
-           M1*(   t3 -   t2)*alpha
-
-def spline_interplolate(T, P0, M0, P1, M1):
-    """
-    Spline interpolation:
-    http://en.wikipedia.org/wiki/Spline_interpolation.
-    """
-
-    t0, t1 = T[0], T[-1]
-    a =  M0*(t1-t0) - (P1-P0)
-    b = -M1*(t1-t0) + (P1-P0)
-
-    t = (T-T[0])/(T[-1]-T[0])
-
-    # q = (1-t)*y0 + t*y1 + t*(1-t)*(a*(1-t) + b*t)
-    return (1-t)*P0 + t*P1 + t*(1-t)*(a*(1-t) + b*t)
-
-def cubicSpline_3points(T, extrema):
+def cubic_spline_3pts(x, y, T):
     """
     Apperently scipy.interpolate.interp1d does not support
     cubic spline for less than 4 points.
     """
 
-    x0, x1, x2 = extrema[0]
-    y0, y1, y2 = extrema[1]
+    x0, x1, x2 = x
+    y0, y1, y2 = y
 
     x1x0, x2x1 = x1-x0, x2-x1
     y1y0, y2y1 = y1-y0, y2-y1
@@ -96,14 +64,20 @@ def akima(X, Y, x):
     if (len(X) != len(Y)):
         raise Exception('Input x and y arrays must be of same length')
 
+    X = np.array(X)
+    Y = np.array(Y)
+
     dx = np.diff(X)
     dy = np.diff(Y)
 
     if np.any(dx <= 0):
         raise Exception('Input x-array must be in strictly ascending order')
 
-    if np.any(x<X[0]) or np.any(x>X[-1]):
-        raise Exception('All interpolation points xi must lie between x(1) and x(n)')
+    if x[0]<X[0] or x[-1]>X[-1]:
+        msg = 'All interpolation points xi must lie between x[0] and x[-1]'
+        raise Exception(msg)
+
+    x = np.array(x)
 
     # d - approximation of derivative
     # p, n - previous, next

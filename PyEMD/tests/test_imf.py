@@ -9,11 +9,6 @@ import unittest
 
 class IMFTest(unittest.TestCase):
 
-    def compare_signals(self, a, b, delta=None):
-        if delta==None:
-            delta = 1e-13
-        return np.all(np.abs(a-b)<delta)
-
     def test_trend(self):
         """
         Input is trend. Expeting no shifting process.
@@ -45,7 +40,7 @@ class IMFTest(unittest.TestCase):
         IMF, EXT, ITER, imfNo = emd.emd(S, t)
         self.assertEqual(len(IMF.keys()), 1, "Expecting sin + trend")
 
-        diff = self.compare_signals(IMF[0], c1, delta=1e-7)
+        diff = np.allclose(IMF[0], c1)
         self.assertTrue(diff, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
 
         # Input - linear function f(t) = siin(2Hz t) + 2*t
@@ -54,9 +49,9 @@ class IMFTest(unittest.TestCase):
         IMF, EXT, ITER, imfNo = emd.emd(S, t)
 
         self.assertEqual(len(IMF.keys()), 2, "Expecting sin + trend")
-        diff1 = self.compare_signals(IMF[0], c1, delta=0.2)
+        diff1 = np.allclose(IMF[0], c1, atol=0.2)
         self.assertTrue(diff1, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
-        diff2 = self.compare_signals(IMF[1], c2, delta=0.2)
+        diff2 = np.allclose(IMF[1], c2, atol=0.2)
         self.assertTrue(diff2, "Expecting 2nd IMF to be trend\nMaxDiff = "+str(maxDiff(IMF[1],c2)))
 
 if __name__ == "__main__":

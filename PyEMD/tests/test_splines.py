@@ -1,0 +1,82 @@
+#!/usr/bin/python
+# Coding: UTF-8
+
+from __future__ import division, print_function
+
+import numpy as np
+from PyEMD.EMD import EMD
+from PyEMD.splines import *
+import unittest
+
+class IMFTest(unittest.TestCase):
+    """
+    Since these tests depend heavily on NumPy & SciPy,
+    make sure you have NumPy >= 1.12 and SciPy >= 0.19.
+    """
+
+    def test_akima(self):
+        dtype = np.float32
+
+        emd = EMD()
+        emd.splineKind = 'akima'
+        emd.DTYPE = dtype
+
+        T = np.array([0, 1, 2, 3, 4], dtype)
+        S = np.array([0, 1, -1, -1, 5], dtype)
+        t = np.array([i/2. for i in range(9)], dtype)
+
+        _t, s = emd.spline_points(t, np.array((T,S)))
+        s_true = np.array([S[0], 1.15625, S[1], 0.01041667,
+                  S[2],-1.35416667, S[3], 1.0625, S[4]], dtype)
+
+        self.assertTrue(np.allclose(s_true, s), "Comparing akima with true")
+
+        s_np = akima(np.array(T), np.array(S), np.array(t))
+        self.assertTrue(np.allclose(s, s_np), "Shouldn't matter if with numpy")
+
+    def test_cubic(self):
+        dtype = np.float64
+
+        emd = EMD()
+        emd.splineKind = 'cubic'
+        emd.DTYPE = dtype
+
+        T = np.array([0, 1, 2, 3, 4], dtype=dtype)
+        S = np.array([0, 1, -1, -1, 5], dtype=dtype)
+        t = np.arange(9, dtype=dtype)/2.
+
+        # TODO: Something weird with float32.
+        # Seems to be SciPy problem.
+        _t, s = emd.spline_points(t, np.array((T,S)))
+
+        s_true = np.array([S[0], 1.203125, S[1], 0.046875, \
+                    S[2], -1.515625, S[3], 1.015625, S[4]], dtype=dtype)
+        self.assertTrue(np.allclose(s, s_true), "Comparing cubic")
+
+        T = T[:-2].copy()
+        S = S[:-2].copy()
+        t = np.arange(5, dtype=dtype)/2.
+
+        _t, s3 = emd.spline_points(t, np.array((T,S)))
+
+        s3_true = np.array([S[0], 0.78125, S[1], 0.28125, S[2]], dtype=dtype)
+        self.assertTrue(np.allclose(s3, s3_true), "Compare cubic 3pts")
+
+    def test_slinear(self):
+        dtype = np.float64
+
+        emd = EMD()
+        emd.splineKind = 'slinear'
+        emd.DTYPE = dtype
+
+        T = np.array([0, 1, 2, 3, 4], dtype=dtype)
+        S = np.array([0, 1, -1, -1, 5], dtype=dtype)
+        t = np.arange(9, dtype=dtype)/2.
+
+        _t, s = emd.spline_points(t, np.array((T,S)))
+
+        s_true = np.array([S[0], 0.5, S[1], 0, \
+                    S[2], -1, S[3], 2, S[4]], dtype=dtype)
+        self.assertTrue(np.allclose(s, s_true), "Comparing SLinear")
+if __name__ == "__main__":
+    unittest.main()

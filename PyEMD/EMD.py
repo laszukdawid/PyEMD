@@ -91,8 +91,8 @@ class EMD:
         # Extrapolation of signal (ober boundaries)
         maxExtrema, minExtrema = self.prepare_points(T, S, maxPos, maxVal, minPos, minVal)
 
-        maxTSpline, maxSpline = self.spline_points(T, maxExtrema, self.splineKind)
-        minTSpline, minSpline = self.spline_points(T, minExtrema, self.splineKind)
+        maxTSpline, maxSpline = self.spline_points(T, maxExtrema)
+        minTSpline, minSpline = self.spline_points(T, minExtrema)
 
         if maxExtrema.dtype!=self.DTYPE: self.logger.error('maxExtrema.dtype: '+str(maxExtrema.dtype))
         if maxSpline.dtype!=self.DTYPE: self.logger.error('maxSpline.dtype: '+str(maxSpline.dtype))
@@ -367,7 +367,7 @@ class EMD:
 
         return maxExtrema, minExtrema
 
-    def spline_points(self, T, extrema, splineKind):
+    def spline_points(self, T, extrema):
         """
         Constructs spline over given points.
 
@@ -383,7 +383,7 @@ class EMD:
             spline: Spline over the given points.
         """
 
-        kind = splineKind.lower()
+        kind = self.splineKind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
         if t.dtype != self.DTYPE: self.logger.error('t.dtype: '+str(t.dtype))
         if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: '+str(extrema.dtype))
@@ -393,9 +393,9 @@ class EMD:
 
         elif kind == 'cubic':
             if extrema.shape[1]>3:
-                return t, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
+                return t, interp1d(extrema[0], extrema[1], kind=kind)(t)
             else:
-                return cubicSpline_3points(T, extrema)
+                return cubic_spline_3pts(extrema[0], extrema[1], t)
 
         elif kind in ['slinear', 'quadratic', 'linear']:
             return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
