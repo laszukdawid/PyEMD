@@ -62,7 +62,7 @@ def akima(X, Y, x):
 
     n = len(X)
     if (len(X) != len(Y)):
-        raise Exception('Input x and y arrays must be of same length')
+        raise ValueError('Input x and y arrays must be of same length')
 
     X = np.array(X)
     Y = np.array(Y)
@@ -71,11 +71,11 @@ def akima(X, Y, x):
     dy = np.diff(Y)
 
     if np.any(dx <= 0):
-        raise Exception('Input x-array must be in strictly ascending order')
+        raise ValueError('Input x-array must be in strictly ascending order')
 
     if x[0]<X[0] or x[-1]>X[-1]:
         msg = 'All interpolation points xi must lie between x[0] and x[-1]'
-        raise Exception(msg)
+        raise ValueError(msg)
 
     x = np.array(x)
 

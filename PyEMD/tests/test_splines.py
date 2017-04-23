@@ -21,6 +21,25 @@ class IMFTest(unittest.TestCase):
         emd.splineKind = 'akima'
         emd.DTYPE = dtype
 
+        arr = lambda x: np.array(x)
+
+        # Test error: len(X)!=len(Y)
+        with self.assertRaises(ValueError):
+            akima(arr([0]), arr([1,2]), arr([0,1,2]))
+
+        # Test error: any(dt) <= 0
+        with self.assertRaises(ValueError):
+            akima(arr([1,0,2]), arr([1,2]), arr([0,1,2]))
+        with self.assertRaises(ValueError):
+            akima(arr([0,0,2]), arr([1,2]), arr([0,1,1]))
+
+        # Test error: extrapolation, i.e. x outside X
+        with self.assertRaises(ValueError):
+            akima(arr([1,2,3]), arr([1,0,2]), arr([0,1,2,3]))
+        with self.assertRaises(ValueError):
+            akima(arr([1,2,3]), arr([1,0,2]), arr([1,2,3,4]))
+
+        # Test for correct responses
         T = np.array([0, 1, 2, 3, 4], dtype)
         S = np.array([0, 1, -1, -1, 5], dtype)
         t = np.array([i/2. for i in range(9)], dtype)
