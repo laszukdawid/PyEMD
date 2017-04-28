@@ -1,0 +1,7 @@
+include .travis.yml
+include MANIFEST.in
+include README.rst
+include requirements.txt
+include PyEMD
+
+include PyEMD/tests/*.py
