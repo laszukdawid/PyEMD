@@ -19,7 +19,7 @@ class EEMD:
     def __init__(self):
 
         # Import libraries
-        from EMD import EMD
+        from PyEMD import EMD
 
         # Declare constants
         self.stdThreshold = 0.5
@@ -51,7 +51,7 @@ class EEMD:
         E_ITER = np.zeros(1)
 
 
-        for trial in xrange(self.trials):
+        for trial in range(self.trials):
             self.logger.debug("trial: "+str(trial))
 
             noise = np.random.normal(loc=0, scale=self.noiseWidth, size=N)
@@ -112,11 +112,11 @@ if __name__ == "__main__":
     py.title("Original signal")
 
     py.subplot(r,c,2)
-    py.plot([EXT[i] for i in xrange(imfNo)], 'o')
+    py.plot([EXT[i] for i in range(imfNo)], 'o')
     py.title("Number of extrema")
 
     py.subplot(r,c,3)
-    py.plot([ITER[i] for i in xrange(imfNo)], 'o')
+    py.plot([ITER[i] for i in range(imfNo)], 'o')
     py.title("Number of iterations")
 
     def extF(s):
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         state2 = np.r_[np.abs(s[1:-1]) > np.abs(s[2:])]
         return np.arange(1,len(s)-1)[state1 & state2]
 
-    for num in xrange(imfNo):
+    for num in range(imfNo):
         py.subplot(r,c,num+4)
         py.plot(timeLine, IMF[num],'g')
         #~ py.plot(timeLine[extF(IMF[num])], IMF[num][extF(IMF[num])],'ok')

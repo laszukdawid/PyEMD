@@ -702,7 +702,7 @@ class EMD:
     def endCondition(self, Res, IMF):
         # When to stop EMD
         tmp = Res.copy()
-        for imfNo in IMF.keys():
+        for imfNo in list(IMF.keys()):
             tmp -= IMF[imfNo]
 
         #~ # Power is enought
@@ -961,7 +961,7 @@ class EMD:
 
         #~ # Saving residuum
         #~ Res -= imf
-        #~ #Res = scaledS - np.sum([IMF[i] for i in xrange(imfNo)],axis=0)
+        #~ #Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
         #~ IMF[imfNo] = Res
         #~ ITER[imfNo] = 0
         #~ EXT[imfNo] = self.getExtremaNo(Res)
@@ -969,7 +969,7 @@ class EMD:
         #~ imfNo += 1
         time1 = time.time()
 
-        for key in IMF.keys():
+        for key in list(IMF.keys()):
             IMF[key] *= scale
         #return IMF, EXT, TIME, ITER, imfNo
         return IMF, EXT, ITER, imfNo
@@ -1026,11 +1026,11 @@ if __name__ == "__main__":
     py.title("Original signal")
 
     py.subplot(r,c,2)
-    py.plot([EXT[i] for i in xrange(imfNo)], 'o')
+    py.plot([EXT[i] for i in range(imfNo)], 'o')
     py.title("Number of extrema")
 
     py.subplot(r,c,3)
-    py.plot([ITER[i] for i in xrange(imfNo)], 'o')
+    py.plot([ITER[i] for i in range(imfNo)], 'o')
     py.title("Number of iterations")
 
     def extF(s):
@@ -1038,7 +1038,7 @@ if __name__ == "__main__":
         state2 = np.r_[np.abs(s[1:-1]) > np.abs(s[2:])]
         return np.arange(1,len(s)-1)[state1 & state2]
 
-    for num in xrange(imfNo):
+    for num in range(imfNo):
         py.subplot(r,c,num+4)
         py.plot(timeLine, IMF[num],'g')
         #~ py.plot(timeLine[extF(IMF[num])], IMF[num][extF(IMF[num])],'ok')

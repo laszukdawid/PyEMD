@@ -593,7 +593,7 @@ class EMD:
     def end_condition(self, Res, IMF):
         # When to stop EMD
         tmp = Res.copy()
-        for imfNo in IMF.keys():
+        for imfNo in list(IMF.keys()):
             tmp -= IMF[imfNo]
 
         #~ # Power is enought
@@ -810,11 +810,11 @@ class EMD:
 
         #~ # Saving residuum
         #~ Res -= imf
-        #~ #Res = scaledS - np.sum([IMF[i] for i in xrange(imfNo)],axis=0)
+        #~ #Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
         #~ IMF[imfNo] = Res
         #~ imfNo += 1
 
-        for key in IMF.keys():
+        for key in list(IMF.keys()):
             IMF[key] *= scale
         nIMF = np.array([IMF[k] for k in sorted(IMF.keys())])
         return nIMF
@@ -862,7 +862,7 @@ if __name__ == "__main__":
     plt.plot(timeLine, S, 'r')
     plt.title("Original signal")
 
-    for num in xrange(imfNo):
+    for num in range(imfNo):
         plt.subplot(r,c,num+2)
         plt.plot(timeLine, nIMF[num],'g')
         plt.title("Imf no " +str(num) )

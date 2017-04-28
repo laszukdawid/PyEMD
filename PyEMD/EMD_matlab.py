@@ -693,7 +693,7 @@ class EMD:
                 break
 
         #~ Saving residuum if meaningful
-        Res = scaledS - np.sum([IMF[i] for i in xrange(imfNo)],axis=0)
+        Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
         if np.sum(np.abs(Res)) > 1e-10:
             IMF[imfNo] = Res
             ITER[imfNo] = 0
@@ -701,7 +701,7 @@ class EMD:
             TIME[imfNo] = 0
             imfNo += 1
 
-        for key in IMF.keys():
+        for key in list(IMF.keys()):
             IMF[key] *= scale
         return IMF, EXT, ITER, imfNo
 
@@ -770,16 +770,16 @@ if __name__ == "__main__":
     py.ylabel('Amplitude')
 
     #~ py.subplot(r,c,2)
-    #~ py.plot([EXT[i] for i in xrange(imfNo)], 'o')
-    #~ py.ylim(0, max([EXT[i] for i in xrange(imfNo)])+1)
+    #~ py.plot([EXT[i] for i in range(imfNo)], 'o')
+    #~ py.ylim(0, max([EXT[i] for i in range(imfNo)])+1)
     #~ py.title("Number of extrema")
     #~
     #~ py.subplot(r,c,3)
-    #~ py.plot([ITER[i] for i in xrange(imfNo)], 'o')
-    #~ py.ylim(0, max([ITER[i] for i in xrange(imfNo)])+1)
+    #~ py.plot([ITER[i] for i in range(imfNo)], 'o')
+    #~ py.ylim(0, max([ITER[i] for i in range(imfNo)])+1)
     #~ py.title("Number of iterations")
 
-    for num in xrange(imfNo):
+    for num in range(imfNo):
         #~ py.subplot(r,c,num+4)
         py.subplot(r,c,num+2)
         py.plot(timeLine, IMF[num],'g')

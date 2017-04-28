@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-VERSION="0.1"
+VERSION="0.1.0"
 
-DESCRIPTION = "Implementation of Empirical Mode Decomposition (EMD) and its variaties"
+DESCRIPTION = "Implementation of Empirical Mode Decomposition (EMD) and its variations"
 
 def main():
     import io
@@ -15,15 +15,32 @@ def main():
     with open('requirements.txt') as f:
         required = f.read().splitlines()
 
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: Science/Research",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Scientific/Engineering :: Mathematics"
+    ]
+
     setup_params = dict(
         name="EMD-signal",
         version=VERSION,
         description=DESCRIPTION,
         long_description=long_description,
-        packages=["PyEMD"],
+        url="https://github.com/laszukdawid/PyEMD",
         author="Dawid Laszuk",
         author_email="laszukdawid@gmail.com",
-        url="https://github.com/laszukdawid/PyEMD",
+        classifiers=classifiers,
+        keywords="signal decomposition data analysis",
+        packages=["PyEMD"],
         install_requires=required,
         test_suite="PyEMD.tests"
     )
