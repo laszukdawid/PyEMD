@@ -13,7 +13,6 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 import os
-import pdb
 import time
 
 from scipy.interpolate import interp1d
@@ -160,7 +159,6 @@ class EMD:
         elif (leftExtType == "min"):
             if (S[0] < maxVal[0]) and (np.abs(dPos)>(minPos[0]-T[0])):
                 # mirror signal to first extrem
-#               pdb.set_trace()
                 expandLeftMaxPos = 2*minPos[0] - maxPos[0:nbsym]
                 expandLeftMinPos = 2*minPos[0] - minPos[1:nbsym+1]
                 expandLeftMaxVal = maxVal[0:nbsym]
@@ -693,9 +691,6 @@ class EMD:
 
         # Create arrays
         IMF = {} # Dic for imfs signals
-        EXT = {} # Dic for number of extrema
-        ITER = {} # Dic for number of iterations
-        TIME = {} # Dic for time of computation
         imfNo = 0
         notFinish = True
 
@@ -705,7 +700,6 @@ class EMD:
             self.logger.debug('IMF -- '+str(imfNo))
 
             Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
-            #~ Res -= imf
             imf = Res.copy()
             mean = np.zeros(len(S), dtype=self.DTYPE)
 
@@ -804,14 +798,10 @@ class EMD:
                         if f1 and f2: break
 
                 else:
-                    EXT[imfNo] = extNo
                     notFinish = False
                     break
 
             IMF[imfNo] = imf.copy()
-            ITER[imfNo] = n
-            EXT[imfNo] = extNo
-            TIME[imfNo] = time.time() - t0
             imfNo += 1
 
             if self.end_condition(scaledS, IMF) or imfNo==maxImf:
@@ -822,16 +812,12 @@ class EMD:
         #~ Res -= imf
         #~ #Res = scaledS - np.sum([IMF[i] for i in xrange(imfNo)],axis=0)
         #~ IMF[imfNo] = Res
-        #~ ITER[imfNo] = 0
-        #~ EXT[imfNo] = self.getExtremaNo(Res)
-        #~ TIME[imfNo] = 0
         #~ imfNo += 1
-        time1 = time.time()
 
         for key in IMF.keys():
             IMF[key] *= scale
-        #return IMF, EXT, TIME, ITER, imfNo
-        return IMF, EXT, ITER, imfNo
+        nIMF = np.array([IMF[k] for k in sorted(IMF.keys())])
+        return nIMF
 
 ###################################################
 ## Beggining of program
@@ -864,34 +850,21 @@ if __name__ == "__main__":
     emd.FIXE_H = 1
     emd.nbsym = 2
     emd.splineKind = 'cubic'
-    #IMF, EXT, TIME, ITER, imfNo = emd.emd(S, timeLine, maxImf)
-    IMF, EXT, ITER, imfNo = emd.emd(S, timeLine, maxImf)
+    nIMF = emd.emd(S, timeLine, maxImf)
 
-    c = np.floor(np.sqrt(imfNo+3))
-    r = np.ceil( (imfNo+3)/c)
+    imfNo = nIMF.shape[0]
+
+    c = 1
+    r = np.ceil((imfNo+1)/c)
 
     plt.ioff()
     plt.subplot(r,c,1)
     plt.plot(timeLine, S, 'r')
     plt.title("Original signal")
 
-    plt.subplot(r,c,2)
-    plt.plot([EXT[i] for i in xrange(imfNo)], 'o')
-    plt.title("Number of extrema")
-
-    plt.subplot(r,c,3)
-    plt.plot([ITER[i] for i in xrange(imfNo)], 'o')
-    plt.title("Number of iterations")
-
-    def extF(s):
-        state1 = np.r_[np.abs(s[1:-1]) > np.abs(s[:-2])]
-        state2 = np.r_[np.abs(s[1:-1]) > np.abs(s[2:])]
-        return np.arange(1,len(s)-1)[state1 & state2]
-
     for num in xrange(imfNo):
-        plt.subplot(r,c,num+4)
-        plt.plot(timeLine, IMF[num],'g')
-        #~ plt.plot(timeLine[extF(IMF[num])], IMF[num][extF(IMF[num])],'ok')
+        plt.subplot(r,c,num+2)
+        plt.plot(timeLine, nIMF[num],'g')
         plt.title("Imf no " +str(num) )
 
     plt.tight_layout()

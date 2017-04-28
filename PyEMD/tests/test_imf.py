@@ -19,8 +19,8 @@ class IMFTest(unittest.TestCase):
         S = 2*t
 
         # Input - linear function f(t) = 2*t
-        IMF, EXT, ITER, imfNo = emd.emd(S, t)
-        self.assertEqual(len(IMF.keys()), 1, "Expecting single IMF")
+        IMF = emd.emd(S, t)
+        self.assertEqual(IMF.shape[0], 1, "Expecting single IMF")
 
     def test_single_imf(self):
         """
@@ -37,8 +37,8 @@ class IMFTest(unittest.TestCase):
         S = c1.copy()
 
         # Input - linear function f(t) = sin(2Hz t)
-        IMF, EXT, ITER, imfNo = emd.emd(S, t)
-        self.assertEqual(len(IMF.keys()), 1, "Expecting sin + trend")
+        IMF = emd.emd(S, t)
+        self.assertEqual(IMF.shape[0], 1, "Expecting sin + trend")
 
         diff = np.allclose(IMF[0], c1)
         self.assertTrue(diff, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
@@ -46,9 +46,9 @@ class IMFTest(unittest.TestCase):
         # Input - linear function f(t) = siin(2Hz t) + 2*t
         c2 = 5*(t+2)
         S += c2.copy()
-        IMF, EXT, ITER, imfNo = emd.emd(S, t)
+        IMF = emd.emd(S, t)
 
-        self.assertEqual(len(IMF.keys()), 2, "Expecting sin + trend")
+        self.assertEqual(IMF.shape[0], 2, "Expecting sin + trend")
         diff1 = np.allclose(IMF[0], c1, atol=0.2)
         self.assertTrue(diff1, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
         diff2 = np.allclose(IMF[1], c2, atol=0.2)

@@ -33,19 +33,13 @@ class IMFTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             akima(arr([0,0,2]), arr([1,2]), arr([0,1,1]))
 
-        # Test error: extrapolation, i.e. x outside X
-        with self.assertRaises(ValueError):
-            akima(arr([1,2,3]), arr([1,0,2]), arr([0,1,2,3]))
-        with self.assertRaises(ValueError):
-            akima(arr([1,2,3]), arr([1,0,2]), arr([1,2,3,4]))
-
         # Test for correct responses
         T = np.array([0, 1, 2, 3, 4], dtype)
         S = np.array([0, 1, -1, -1, 5], dtype)
         t = np.array([i/2. for i in range(9)], dtype)
 
         _t, s = emd.spline_points(t, np.array((T,S)))
-        s_true = np.array([S[0], 1.15625, S[1], 0.01041667,
+        s_true = np.array([S[0], 0.9125, S[1], 0.066666,
                   S[2],-1.35416667, S[3], 1.0625, S[4]], dtype)
 
         self.assertTrue(np.allclose(s_true, s), "Comparing akima with true")
