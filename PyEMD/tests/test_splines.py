@@ -14,6 +14,15 @@ class IMFTest(unittest.TestCase):
     make sure you have NumPy >= 1.12 and SciPy >= 0.19.
     """
 
+    def test_unsupporter_spline(self):
+        emd = EMD()
+        emd.splineKind = "waterfall"
+
+        S = np.random.random(20)
+
+        with self.assertRaises(ValueError):
+            emd.emd(S)
+
     def test_akima(self):
         dtype = np.float32
 

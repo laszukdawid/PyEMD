@@ -9,6 +9,15 @@ import unittest
 
 class ExtremaTest(unittest.TestCase):
 
+    def test_wrong_extrema_detection_type(self):
+        emd = EMD()
+        emd.extrema_detection = "very_complicated"
+
+        t = np.arange(10)
+        s = np.array([-1, 0, 1, 0, -1, 0, 3, 0, -9, 0])
+
+        with self.assertRaises(ValueError):
+            maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
     def test_find_extrema_simple(self):
         """

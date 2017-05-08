@@ -9,6 +9,14 @@ import unittest
 
 class IMFTest(unittest.TestCase):
 
+    def test_different_length_input(self):
+        T = np.arange(20)
+        S = np.random.random(len(T)+7)
+
+        emd = EMD()
+        with self.assertRaises(ValueError):
+            emd.emd(S, T)
+
     def test_trend(self):
         """
         Input is trend. Expeting no shifting process.

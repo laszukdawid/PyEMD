@@ -108,7 +108,7 @@ class EMD:
         else:
             msg = "Incorrect extrema detection type. Please try: "
             msg+= "'simple' or 'parabol'."
-            raise(msg)
+            raise ValueError(msg)
 
     def _prepare_points_parabol(self, T, S, maxPos, maxVal, minPos, minVal):
         """
@@ -401,7 +401,7 @@ class EMD:
             return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
 
         else:
-            raise Exception("No such interpolation method!")
+            raise ValueError("No such interpolation method!")
 
     def not_duplicate(self, s):
         idx = [0]
@@ -421,7 +421,7 @@ class EMD:
         else:
             msg = "Incorrect extrema detection type. Please try: "
             msg+= "'simple' or 'parabol'."
-            raise(msg)
+            raise ValueError(msg)
 
     def _find_extrema_parabol(self, t, s):
         """
@@ -687,7 +687,7 @@ class EMD:
 
         if S.shape != timeLine.shape:
             info = "Time array should be the same size as signal."
-            raise Exception(info)
+            raise ValueError(info)
 
         # Create arrays
         IMF = {} # Dic for imfs signals
