@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-VERSION="0.1.1"
+VERSION="0.1.11"
 
 DESCRIPTION = "Implementation of Empirical Mode Decomposition (EMD) and its variations"
 
