@@ -59,20 +59,37 @@ Packaged obtained from PyPi is/will be slightly behind this project, so some fea
 Example
 *******
 
-Probably in most cases default settings are enough. In such case simply
+EMD
+===
+
+In most cases default settings are enough. Simply
 import ``EMD`` and pass your signal to ``emd()`` method.
 
 .. code:: python
 
-    from PyEMD import EMD
+    from PyEMD.EMD import EMD
 
     s = np.random.random(100)
-    IMFs = EMD().emd(s)
+    emd = EMD()
+    IMFs = emd.emd(s)
 
 The Figure below was produced with input:
 :math:`S(t) = cos(22 \pi t^2) + 6t^2` 
 
 |simpleExample|
+
+EEMD
+====
+
+Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing your signal to ``eemd()`` method.
+
+.. code:: python
+
+    from PyEMD.EEMD import EEMD
+
+    s = np.random.random(100)
+    eemd = EEMD()
+    eIMFs = eemd.eemd(s)
 
 Contact
 *******
@@ -91,4 +108,4 @@ favourite web search.
    :target: https://codecov.io/gh/laszukdawid/PyEMD
 .. |BuildStatus| image:: https://travis-ci.org/laszukdawid/PyEMD.png?branch=master
    :target: https://travis-ci.org/laszukdawid/PyEMD
-.. |simpleExample| image:: PyEMD/example/simple_example.png?raw=true
+.. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/simple_example.png?raw=true
