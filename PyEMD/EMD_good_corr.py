@@ -22,7 +22,7 @@ class EMD:
     Empirical Mode Decomposition
 
     *Note:*
-    Default package for EMD is EMD.py.
+    Default and recommended package for EMD is EMD.py.
     Advantage of this is that it utilises Kahan summation algorithm,
     which reduces numerical error when subtracting numerically.
 
