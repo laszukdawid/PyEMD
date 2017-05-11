@@ -4,21 +4,28 @@
 # Author:   Dawid Laszuk
 # Contact:  laszukdawid@gmail.com
 #
+# Edited:   11/05/2017
+#
 # Feel free to contact for any information.
 
-from __future__ import print_function
+from __future__ import division, print_function
 
 import logging
+import numpy as np
 import os
 import time
 
-import numpy as np
-import pylab as py
 from scipy.interpolate import interp1d
+from PyEMD.splines import *
 
 class EMD:
     """
     Empirical Mode Decomposition
+
+    *Note:*
+    Default and recommended package for EMD is EMD.py.
+    This is meant to provide with the same results as MATLAB version of EMD,
+    which is not necessarily the most efficient or numerically accurate.
 
     Method of decomposing signal into Intrinsic Mode Functions (IMFs)
     based on algorithm presented in Huang et al. [1].
@@ -37,7 +44,6 @@ class EMD:
 
     def __init__(self):
 
-        #~ self.splineKind = 'akima'
         self.splineKind = 'cubic'
 
         self.nbsym = 2
@@ -60,7 +66,7 @@ class EMD:
 
         self.TIME = False
 
-    def extractMaxMinSpline(self, S, T):
+    def extractMaxMinSpline(self, T, S):
         """
         Input:
         -----------------
@@ -75,16 +81,8 @@ class EMD:
             minExtrema - Position (1st row) and values (2nd row) of minma.
         """
 
-        if S.dtype != self.DTYPE: self.logger.error('S.dtype: '+str(S.dtype))
-        if T.dtype != self.DTYPE: self.logger.error('T.dtype: '+str(T.dtype))
-
         # Get indexes of extrema
-        maxPos, maxVal, minPos, minVal, indzer = self.findExtrema(S, T)
-
-        if maxPos.dtype != self.DTYPE: self.logger.error('maxPos.dtype: '+str(maxPos.dtype))
-        if maxVal.dtype != self.DTYPE: self.logger.error('maxVal.dtype: '+str(maxVal.dtype))
-        if minPos.dtype != self.DTYPE: self.logger.error('minPos.dtype: '+str(minPos.dtype))
-        if minPos.dtype != self.DTYPE: self.logger.error('minVal.dtype: '+str(minVal.dtype))
+        maxPos, maxVal, minPos, minVal, indzer = self.findExtrema(T, S)
 
         if len(maxPos) + len(minPos) < 3: return [-1]*4
 
@@ -93,12 +91,6 @@ class EMD:
 
         maxTSpline, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
         minTSpline, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
-
-        if maxTSpline.dtype != self.DTYPE: self.logger.error('maxTSpline.dtype: '+str(maxTSpline.dtype))
-        if minTSpline.dtype != self.DTYPE: self.logger.error('minTSpline.dtype: '+str(minTSpline.dtype))
-        if maxSpline.dtype != self.DTYPE: self.logger.error('maxSpline.dtype: '+str(maxSpline.dtype))
-        if minSpline.dtype != self.DTYPE: self.logger.error('minSpline.dtype: '+str(minSpline.dtype))
-
 
         return maxSpline, minSpline, maxExtrema, minExtrema
 
@@ -221,9 +213,8 @@ class EMD:
         zmin = np.append(zlmin, np.append(S[indmin], zrmin))
         zmax = np.append(zlmax, np.append(S[indmax], zrmax))
 
-        maxExtrema = np.array([tmax, zmax])
-        minExtrema = np.array([tmin, zmin])
-        if maxExtrema.dtype != self.DTYPE: self.logger.error('maxExtrema.dtype: '+str(maxExtrema.dtype))
+        maxExtrema = np.array([tmax, zmax], dtype=self.DTYPE)
+        minExtrema = np.array([tmin, zmin], dtype=self.DTYPE)
 
         # Make double sure, that each extremum is significant
         maxExtrema = np.delete(maxExtrema, np.where(maxExtrema[0,1:]==maxExtrema[0,:-1]),axis=1)
@@ -253,7 +244,7 @@ class EMD:
         if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: ',+str(xtrema.dtype))
 
         if kind == "akima":
-            return t, self.akima(extrema[0], extrema[1], t)
+            return t, akima(extrema[0], extrema[1], t)
 
         elif kind == 'cubic':
             if extrema.shape[1]>3:
@@ -265,7 +256,7 @@ class EMD:
             return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
 
         else:
-            raise Exception("No such interpolation method!")
+            raise ValueError("No such interpolation method!")
 
     def cubicSpline_3points(self, T, extrema):
         """
@@ -308,83 +299,7 @@ class EMD:
 
         return t, q.astype(self.DTYPE)
 
-    def akima(self, X, Y, x):
-        """
-        Interpolates curve based on Akima's method [1].
-
-        [1] H. Akima, "A new method of interpolation and smooth
-            curve fitting based on local procedures", 1970.
-
-        Input:
-        ---------
-            X: Position.
-            Y: Values.
-            x: Positions for interpolated spline.
-
-        Output:
-        ---------
-            y: Interpolated spline.
-        """
-
-        n = len(X)
-        if (len(X) != len(Y)):
-            raise Exception('input x and y arrays must be of same length')
-
-        dx = np.diff(X)
-        dy = np.diff(Y)
-
-        if dx.dtype != self.DTYPE: self.logger.error('dx.dtype: '+str(dx.dtype))
-
-        if np.any(dx <= 0):
-            raise Exception('input x-array must be in strictly ascending order')
-
-        if np.any(x<X[0]) or np.any(x>X[-1]):
-            raise Exception('All interpolation points xi must lie between x(1) and x(n)')
-
-        # d - approximation of derivative
-        # p, n - previous, next
-        d = dy/dx
-        if d.dtype != self.DTYPE: self.logger.error('d.dtype: '+str(d.dtype))
-
-        dpp = 2*d[0]-d[1]
-        dp = 2*dpp - d[0]
-
-        dn = 2*d[n-2]-d[n-3]
-        dnn = 2*dn-d[n-2]
-
-        d1 = np.concatenate(([dpp], [dp], d, [dn], [dnn]))
-        d1 = d1.astype(self.DTYPE)
-
-        w = np.abs(np.diff(d1), dtype=self.DTYPE)
-        # w1 = w_{i-1} = |d_{i+1}-d_{i}|
-        # w2 = w_{i} = |d_{i-1}-d_{i-2}|
-        w1, w2 = w[2:n+2], w[:n]
-        w12 = w1+w2
-
-        idx = np.nonzero(w12 > 1e-9*np.max(w12))[0]
-        a1 = d1[1:n + 1].copy()
-
-        a1[idx] = (w1[idx]*d1[idx+1] + w2[idx]*d1[idx+2])/w12[idx]
-        a2 = (3.0*d - 2.0*a1[0:n-1] - a1[1:n]) / dx
-        a3 = (a1[0:n-1] + a1[1:n] - 2.0*d) / (dx*dx)
-
-        if a1.dtype != self.DTYPE: self.logger.error('a1.dtype: '+str(a1.dtype))
-        if a2.dtype != self.DTYPE: self.logger.error('a2.dtype: '+str(a2.dtype))
-        if a3.dtype != self.DTYPE: self.logger.error('a3.dtype: '+str(a3.dtype))
-
-        bins = np.digitize(x, X)
-        bins = np.minimum(bins, n - 1) - 1
-        bb = bins[0:len(x)]
-        _x = x - X[bb]
-
-        out = ((_x*a3[bb] + a2[bb])*_x + a1[bb])*_x + Y[bb]
-
-        if _x.dtype != self.DTYPE: self.logger.error('_x.dtype: '+str(_x.dtype))
-        if out.dtype != self.DTYPE: self.logger.error('out.dtype: '+str(out.dtype))
-
-        return out
-
-    def findExtrema(self, s, t):
+    def findExtrema(self, t, s):
         """
         Finds extrema and zero-crossings.
 
@@ -405,14 +320,14 @@ class EMD:
         # Finds indexes of zero-crossings
         s1, s2 = s[:-1], s[1:]
         indzer = np.nonzero(s1*s2<0)[0]
-        if np.any(s == 0):
-            iz = np.nonzero( s==0 )[0]
+        if np.any(s==0):
+            iz = np.nonzero(s==0)[0]
             indz = []
             if np.any(np.diff(iz)==1):
-                zer = s == 0
+                zer = (s==0)
                 dz = np.diff(np.append(np.append(0, zer), 0))
-                debz = np.nonzero(dz == 1)[0]
-                finz = np.nonzero(dz == -1)[0]-1
+                debz = np.nonzero(dz==1)[0]
+                finz = np.nonzero(dz==-1)[0]-1
                 indz = np.round((debz+finz)/2)
             else:
                 indz = iz
@@ -433,9 +348,9 @@ class EMD:
 
             bad = (d==0)
             dd = np.diff(np.append(np.append(0, bad), 0))
-            debs = np.nonzero(dd == 1)[0]
-            fins = np.nonzero(dd == -1)[0]
-            if debs[0] == 1:
+            debs = np.nonzero(dd==1)[0]
+            fins = np.nonzero(dd==-1)[0]
+            if debs[0]==1:
                 if len(debs) > 1:
                     debs, fins = debs[1:], fins[1:]
                 else:
@@ -517,7 +432,7 @@ class EMD:
 
         return x, y
 
-    def emd(self, S, timeLine=None, maxImf=None):
+    def emd(self, S, T=None, maxImf=None):
         """
         Performs Emerical Mode Decomposition on signal S.
         The decomposition is limited to maxImf imf. No limitation as default.
@@ -526,7 +441,7 @@ class EMD:
         Input:
         ---------
             S: Signal.
-            timeLine: Positions of signal. If none passed numpy arange is created.
+            T: Positions of signal. If none passed numpy arange is created.
             maxImf: IMF number to which decomposition should be performed.
                     As a default, all IMFs are returned.
 
@@ -539,11 +454,11 @@ class EMD:
             imfNo: Number of IMFs.
         """
 
-        if timeLine is None: timeLine = np.arange(len(S), dtype=S.dtype)
+        if T is None: T = np.arange(len(S), dtype=S.dtype)
         if maxImf is None: maxImf = -1
 
         # Make sure same types are dealt
-        S, timeLine = self._common_dtype(S, timeLine)
+        S, T = self._common_dtype(S, T)
         self.DTYPE = S.dtype
 
         Res = S.astype(self.DTYPE)
@@ -556,9 +471,9 @@ class EMD:
         if scaledS.dtype!=self.DTYPE: self.logger.error('scaledS.dtype: '+str(scaledS.dtype))
         if imf.dtype!=self.DTYPE: self.logger.error('imf.dtype: '+str(imf.dtype))
         if imfOld.dtype!=self.DTYPE: self.logger.error('imfOld.dtype: '+str(imfOld.dtype))
-        if timeLine.dtype!=self.DTYPE: self.logger.error('timeLine.dtype: '+str(timeLine.dtype))
+        if T.dtype!=self.DTYPE: self.logger.error('T.dtype: '+str(T.dtype))
 
-        if S.shape != timeLine.shape:
+        if S.shape != T.shape:
             info = "Time array should be the same size as signal."
             raise Exception(info)
 
@@ -589,7 +504,7 @@ class EMD:
 
             # Start on-screen displaying
             if self.PLOT and self.INTERACTIVE:
-                py.ion()
+                plt.ion()
 
             while(n<self.MAX_ITERATION):
                 n += 1
@@ -597,7 +512,7 @@ class EMD:
                 if self.TIME:
                     self.logger.info("Execution time: "+str(time.time() - singleTime))
                     singleTime = time.time()
-                MP, MV, mP, mV, indzer = self.findExtrema(imf, timeLine)
+                MP, MV, mP, mV, indzer = self.findExtrema(T, imf)
                 extNo = len(mP)+len(MP)
                 nzm = len(indzer)
 
@@ -605,30 +520,30 @@ class EMD:
 
                     # Plotting. Either into file, or on-screen display.
                     if n>1 and self.PLOT:
-                        py.clf()
-                        py.plot(MP, MV*scale, 'bo')
-                        py.plot(mP, mV*scale, 'ro')
-                        py.plot(timeLine, imf*scale, 'g')
-                        py.plot(timeLine, imf*scale, 'g')
-                        py.plot(timeLine, maxEnv*scale, 'b')
-                        py.plot(timeLine, minEnv*scale, 'r')
-                        py.plot(timeLine, mean*scale, 'k--')
+                        plt.clf()
+                        plt.plot(MP, MV*scale, 'bo')
+                        plt.plot(mP, mV*scale, 'ro')
+                        plt.plot(T, imf*scale, 'g')
+                        plt.plot(T, imf*scale, 'g')
+                        plt.plot(T, maxEnv*scale, 'b')
+                        plt.plot(T, minEnv*scale, 'r')
+                        plt.plot(T, mean*scale, 'k--')
 
-                        py.xlabel('Time [s]')
-                        py.ylabel('Amplitude')
-                        py.title('imf{}_{:2}'.format(imfNo, n-1))
+                        plt.xlabel('Time [s]')
+                        plt.ylabel('Amplitude')
+                        plt.title('imf{}_{:2}'.format(imfNo, n-1))
 
                         if self.INTERACTIVE:
-                            py.draw()
+                            plt.draw()
                         else:
                             fName = "imf{}_{:02}".format(imfNo, n-1)
-                            py.savefig(os.path.join('fig',fName))
-                            #~ py.show()
+                            plt.savefig(os.path.join('fig',fName))
+                            #~ plt.show()
 
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale*mean
 
-                    maxEnv, minEnv, eMax, eMin = self.extractMaxMinSpline(imf, timeLine)
+                    maxEnv, minEnv, eMax, eMin = self.extractMaxMinSpline(T, imf)
 
                     if type(maxEnv) == type(-1):
                         notFinish = True
@@ -654,7 +569,7 @@ class EMD:
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
 
-                        mP,mV,MP,MV, indzer = self.findExtrema(imf, timeLine)
+                        mP, mV, MP, MV, indzer = self.findExtrema(T, imf)
                         extNo = len(mP)+len(MP)
                         nzm = len(indzer)
 
@@ -668,7 +583,7 @@ class EMD:
                     # Stops after default stopping criteria are meet.
                     else:
 
-                        mP,mV,MP,MV, indzer = self.findExtrema(imf, timeLine)
+                        mP,mV,MP,MV, indzer = self.findExtrema(T, imf)
                         extNo = len(mP)+len(MP)
                         nzm = len(indzer)
 
@@ -710,19 +625,19 @@ class EMD:
 
 if __name__ == "__main__":
 
-    N = 10000
+    import pylab as plt
+
+    # Logging options
+    logging.basicConfig(level=logging.DEBUG)
+
+    # EMD options
     maxImf = -1
+    DTYPE = np.float64
 
-    TYPE = 64
-    if   TYPE == 16: DTYPE = np.float16
-    elif TYPE == 32: DTYPE = np.float32
-    elif TYPE == 64: DTYPE = np.float64
-    else:            DTYPE = np.float64
-
-    #~ t = np.linspace(1*np.pi, 4*np.pi, N)
-    t = np.linspace(0, 1, N)
-    timeLine = t.astype(DTYPE)
-    t = t.astype(DTYPE)
+    # Signal options
+    N = 1000
+    tMin, tMax = 0, 1
+    T = np.linspace(tMin, tMax, N, dtype=DTYPE)
 
     sin = np.sin
     cos = np.cos
@@ -732,29 +647,27 @@ if __name__ == "__main__":
     #~ tS = 't**(sin(2.76*t)-cos(t**2))'
     #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**1.7)'
     #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**(t/8))'
-    #~ tS = '6*t + cos(8*pi**t)+0.5*cos(40*pi*t)'
-    #~ tS = '6*t**2 + cos(10*pi*t*(1+t))'
-    tS = 'sin(8*pi*t)'
+    tS = '6*T + cos(8*pi**T)+0.5*cos(40*pi*T)'
 
     S = eval(tS)
     S = S.astype(DTYPE)
     print("Input S.dtype: "+str(S.dtype))
 
-    # EMD processing
+    # Prepare and run EMD
     emd = EMD()
-    emd.DTYPE = DTYPE
-    emd.FIXE_H = 4
-    #~ emd.FIXE = 10
-    emd.nbsym = 3
-    #~ emd.splineKind = 'akima'
     emd.PLOT = 0
-    IMF, EXT, ITER, imfNo = emd.emd(S, timeLine, maxImf)
+    emd.FIXE_H = 5
+    #~ emd.FIXE = 10
+    emd.nbsym = 2
+    emd.splineKind = 'cubic'
+    emd.DTYPE = DTYPE
+    IMF, EXT, ITER, imfNo = emd.emd(S, T, maxImf)
 
     # Save results (IMFs) into file
     npIMF = np.zeros((imfNo, N), dtype=DTYPE)
     for i in range(imfNo): npIMF[i] = IMF[i]
 
-    np.save('gen_my_f{}'.format(TYPE), npIMF)
+    np.save('imfs', npIMF)
 
     # Plotting
     #~ c = np.floor(np.sqrt(imfNo+3))
@@ -762,35 +675,34 @@ if __name__ == "__main__":
     c = np.floor(np.sqrt(imfNo+1))
     r = np.ceil( (imfNo+1)/c)
 
-    py.ioff()
-    py.subplot(r,c,1)
-    py.plot(timeLine, S, 'r')
-    py.title("Original signal")
-    py.xlabel('Time [s]')
-    py.ylabel('Amplitude')
+    plt.ioff()
+    plt.subplot(r,c,1)
+    plt.plot(T, S, 'r')
+    plt.title("Original signal")
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude')
 
-    #~ py.subplot(r,c,2)
-    #~ py.plot([EXT[i] for i in range(imfNo)], 'o')
-    #~ py.ylim(0, max([EXT[i] for i in range(imfNo)])+1)
-    #~ py.title("Number of extrema")
+    #~ plt.subplot(r,c,2)
+    #~ plt.plot([EXT[i] for i in range(imfNo)], 'o')
+    #~ plt.ylim(0, max([EXT[i] for i in range(imfNo)])+1)
+    #~ plt.title("Number of extrema")
     #~
-    #~ py.subplot(r,c,3)
-    #~ py.plot([ITER[i] for i in range(imfNo)], 'o')
-    #~ py.ylim(0, max([ITER[i] for i in range(imfNo)])+1)
-    #~ py.title("Number of iterations")
+    #~ plt.subplot(r,c,3)
+    #~ plt.plot([ITER[i] for i in range(imfNo)], 'o')
+    #~ plt.ylim(0, max([ITER[i] for i in range(imfNo)])+1)
+    #~ plt.title("Number of iterations")
 
     for num in range(imfNo):
-        #~ py.subplot(r,c,num+4)
-        py.subplot(r,c,num+2)
-        py.plot(timeLine, IMF[num],'g')
-        py.xlabel('Time')
-        py.ylabel('Amplitude')
+        #~ plt.subplot(r,c,num+4)
+        plt.subplot(r,c,num+2)
+        plt.plot(T, IMF[num],'g')
+        plt.xlabel('Time')
+        plt.ylabel('Amplitude')
 
         if num == imfNo-1:
-            py.title('Residue')
+            plt.title('Residue')
         else:
-            py.title("Imf no " +str(num) )
+            plt.title("Imf "+str(num))
 
-
-    py.tight_layout()
-    py.show()
+    plt.tight_layout()
+    plt.show()

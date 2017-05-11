@@ -10,7 +10,6 @@ from __future__ import print_function
 
 import logging
 import numpy as np
-import pylab as py
 
 class EEMD:
 
@@ -22,16 +21,16 @@ class EEMD:
         from PyEMD.EMD import EMD
 
         # Ensemble constants
-        self.noiseWidth = 0.3
+        self.noise_width = 0.3
         self.trials = 100
 
         self.EMD = EMD()
         self.EMD.FIXE_H = 5
 
-    def eemd(self, S, timeLine=None, maxImf=None):
+    def eemd(self, S, T=None, max_imf=None):
 
-        if timeLine is None: timeLine = np.arange(len(S), dtype=S.dtype)
-        if maxImf is None: maxImf = -1
+        if T is None: T = np.arange(len(S), dtype=S.dtype)
+        if max_imf is None: max_imf = -1
 
         N = len(S)
         E_IMF = np.zeros((1,N))
@@ -39,62 +38,68 @@ class EEMD:
         for trial in range(self.trials):
             self.logger.debug("trial: "+str(trial))
 
-            noise = np.random.normal(loc=0, scale=self.noiseWidth, size=N)
+            noise = np.random.normal(loc=0, scale=self.noise_width, size=N)
 
-            tmpIMFs = self.emd(S+noise, timeLine, maxImf)
-            imfNo = tmpIMFs.shape[0]
+            IMFs = self.emd(S+noise, T, max_imf)
+            imfNo = IMFs.shape[0]
 
             while(E_IMF.shape[0] < imfNo):
                 E_IMF = np.vstack((E_IMF, np.zeros(N)))
 
-            E_IMF[:imfNo] += tmpIMFs
+            E_IMF[:imfNo] += IMFs
 
         E_IMF /= self.trials
 
         return E_IMF
 
-    def emd(self, S, timeLine, maxImf=-1):
-        return self.EMD.emd(S, timeLine, maxImf)
+    def emd(self, S, T, max_imf=-1):
+        return self.EMD.emd(S, T, max_imf)
 
 ###################################################
-## Beggining of program
+## Beginning of program
 
 if __name__ == "__main__":
+
+    import pylab as plt
 
     # Logging options
     logging.basicConfig(level=logging.INFO)
 
+    # EEMD options
     PLOT = 0
     INTERACTIVE = 1
-
     REPEATS = 1
 
+    max_imf = -1
+
+    # Signal options
     N = 500
-    maxImf = -1
+    tMin, tMax = 0, 2*np.pi
+    T = np.linspace(tMin, tMax, N)
 
-    t = timeLine = np.linspace(0, 2*np.pi, N)
+    S = 3*np.sin(4*T) + 4*np.cos(9*T) + np.sin(8.11*T+1.2)
 
-    n = 2
-    s1 = 3*np.sin(4*t)
-    s2 = 4*np.sin(9*t)
-    s3 = np.sin(11*t)
-    S = np.sum( [-eval("s%i"%i) for i in range(1,1+n)], axis=0)
+    # Prepare and run EEMD 
+    eemd = EEMD()
+    eemd.trials = 50
 
-    S = np.random.normal(0,1, len(t))
-    IMFs = EEMD().eemd(S, timeLine, maxImf)
-    imfNo  = IMFs.shape[0]
+    E_IMFs = eemd.eemd(S, T, max_imf)
+    imfNo  = E_IMFs.shape[0]
 
+    # Plot results in a grid
     c = np.floor(np.sqrt(imfNo+1))
     r = np.ceil( (imfNo+1)/c)
 
-    py.ioff()
-    py.subplot(r,c,1)
-    py.plot(timeLine, S, 'r')
-    py.title("Original signal")
+    plt.ioff()
+    plt.subplot(r,c,1)
+    plt.plot(T, S, 'r')
+    plt.xlim((tMin, tMax))
+    plt.title("Original signal")
 
     for num in range(imfNo):
-        py.subplot(r,c,num+2)
-        py.plot(timeLine, IMFs[num],'g')
-        py.title("Imf no " +str(num) )
+        plt.subplot(r,c,num+2)
+        plt.plot(T, E_IMFs[num],'g')
+        plt.xlim((tMin, tMax))
+        plt.title("Imf "+str(num+1))
 
-    py.show()
+    plt.show()
