@@ -708,7 +708,6 @@ class EMD:
             n_h = 0 # counts when |#zero - #ext| <=1
 
             t0 = time.time()
-            singleTime = time.time()
 
             # Start on-screen displaying
             if self.PLOT and self.INTERACTIVE:
@@ -717,9 +716,6 @@ class EMD:
             while(n<self.MAX_ITERATION):
                 n += 1
                 self.logger.debug("Iteration: "+str(n))
-
-                # Time of single iteration
-                singleTime = time.time()
 
                 maxPos, maxVal, minPos, minVal, indzer = self.find_extrema(timeLine, imf)
                 extNo = len(minPos)+len(maxPos)
@@ -837,20 +833,21 @@ if __name__ == "__main__":
     elif TYPE == 64: DTYPE = np.float64
     else:            DTYPE = np.float64
 
-    timeLine = t = np.linspace(0, 2*np.pi, N, dtype=DTYPE)
+    tMin, tMax = 0, 2*np.pi
+    T = np.linspace(tMin, tMax, N, dtype=DTYPE)
 
-    tS = 'np.sin(20*t*(1+0.2*t)) + t**2 + np.sin(13*t)'
-    tS = 'np.sin(20*t)'
+    tS = 'np.sin(20*T*(1+0.2*T)) + T**2 + np.sin(13*T)'
     S = eval(tS)
     S = S.astype(DTYPE)
     print("Input S.dtype: "+str(S.dtype))
 
     emd = EMD()
     emd.PLOT = 0
-    emd.FIXE_H = 1
+    emd.FIXE_H = 5
     emd.nbsym = 2
     emd.splineKind = 'cubic'
-    nIMF = emd.emd(S, timeLine, maxImf)
+    emd.DTYPE = DTYPE
+    nIMF = emd.emd(S, T, maxImf)
 
     imfNo = nIMF.shape[0]
 
@@ -859,13 +856,15 @@ if __name__ == "__main__":
 
     plt.ioff()
     plt.subplot(r,c,1)
-    plt.plot(timeLine, S, 'r')
+    plt.plot(T, S, 'r')
+    plt.xlim((tMin, tMax))
     plt.title("Original signal")
 
     for num in range(imfNo):
         plt.subplot(r,c,num+2)
-        plt.plot(timeLine, nIMF[num],'g')
-        plt.title("Imf no " +str(num) )
+        plt.plot(T, nIMF[num],'g')
+        plt.xlim((tMin, tMax))
+        plt.ylabel("Imf " +str(num+1) )
 
     plt.tight_layout()
     plt.show()
