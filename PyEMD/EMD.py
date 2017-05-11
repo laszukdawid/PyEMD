@@ -13,7 +13,6 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 import os
-import time
 
 from scipy.interpolate import interp1d
 from PyEMD.splines import *
@@ -88,7 +87,7 @@ class EMD:
         if len(maxPos) + len(minPos) < 3: return [-1]*4
 
         #########################################
-        # Extrapolation of signal (ober boundaries)
+        # Extrapolation of signal (over boundaries)
         maxExtrema, minExtrema = self.prepare_points(T, S, maxPos, maxVal, minPos, minVal)
 
         maxTSpline, maxSpline = self.spline_points(T, maxExtrema)
@@ -142,14 +141,14 @@ class EMD:
 
         if (leftExtType == "max"):
             if (S[0]>minVal[0]) and (np.abs(dPos)>(maxPos[0]-T[0])):
-                # mirror signal to first extrem
+                # mirror signal to first extrema
                 expandLeftMaxPos = 2*maxPos[0] - maxPos[1:nbsym+1]
                 expandLeftMinPos = 2*maxPos[0] - minPos[0:nbsym]
                 expandLeftMaxVal = maxVal[1:nbsym+1]
                 expandLeftMinVal = minVal[0:nbsym]
 
             else:
-                # mirror signal to begining
+                # mirror signal to beginning
                 expandLeftMaxPos = 2*T[0] - maxPos[0:nbsym]
                 expandLeftMinPos = 2*T[0] - np.append(T[0], minPos[0:nbsym-1])
                 expandLeftMaxVal = maxVal[0:nbsym]
@@ -158,14 +157,14 @@ class EMD:
 
         elif (leftExtType == "min"):
             if (S[0] < maxVal[0]) and (np.abs(dPos)>(minPos[0]-T[0])):
-                # mirror signal to first extrem
+                # mirror signal to first extrema
                 expandLeftMaxPos = 2*minPos[0] - maxPos[0:nbsym]
                 expandLeftMinPos = 2*minPos[0] - minPos[1:nbsym+1]
                 expandLeftMaxVal = maxVal[0:nbsym]
                 expandLeftMinVal = minVal[1:nbsym+1]
 
             else:
-                # mirror signal to begining
+                # mirror signal to beginning
                 expandLeftMaxPos = 2*T[0] - np.append(T[0], maxPos[0:nbsym-1])
                 expandLeftMinPos = 2*T[0] - minPos[0:nbsym]
                 expandLeftMaxVal = np.append(S[0], maxVal[0:nbsym-1])
@@ -186,7 +185,7 @@ class EMD:
 
         if (rightExtType == "min"):
             if (S[-1] < maxVal[-1]) and (np.abs(dPos)>(T[-1]-minPos[-1])):
-                # mirror signal to last extrem
+                # mirror signal to last extrema
                 idxMax = max(0, endMax-nbsym)
                 idxMin = max(0, endMin-nbsym-1)
                 expandRightMaxPos = 2*minPos[-1] - maxPos[idxMax:]
@@ -374,7 +373,7 @@ class EMD:
         Input:
         ---------
             T: Time array.
-            extrema: Poistion (1st row) and values (2nd row) of points.
+            extrema: Position (1st row) and values (2nd row) of points.
             splineKind: Type of spline.
 
         Output:
@@ -425,7 +424,7 @@ class EMD:
 
     def _find_extrema_parabol(self, t, s):
         """
-        Estimates position and value of extrema by parabolical
+        Estimates position and value of extrema by parabolic
         interpolation based on three consecutive points.
 
         Input:
@@ -596,7 +595,7 @@ class EMD:
         for imfNo in list(IMF.keys()):
             tmp -= IMF[imfNo]
 
-        #~ # Power is enought
+        #~ # Power is enough
         #~ if np.log10(np.abs(tmp).sum()/np.abs(Res).sum()) < powerThreshold:
             #~ print "FINISHED -- POWER RATIO"
             #~ return True
@@ -642,33 +641,29 @@ class EMD:
 
         return x, y
 
-    def emd(self, S, timeLine=None, maxImf=None):
+    def emd(self, S, T=None, maxImf=None):
         """
-        Performs Emerical Mode Decomposition on signal S.
+        Performs Empirical Mode Decomposition on signal S.
         The decomposition is limited to maxImf imf. No limitation as default.
-        Returns IMF functions in dic format. IMF = {0:imf0, 1:imf1...}.
+        Returns IMF functions in numpy array format.
 
         Input:
         ---------
             S: Signal.
-            timeLine: Positions of signal. If none passed numpy arange is created.
+            T: Positions of signal. If none passed numpy arange is created.
             maxImf: IMF number to which decomposition should be performed.
                     As a default, all IMFs are returned.
 
         Output:
         ---------
-        return IMF, EXT, TIME, ITER, imfNo
-            IMF: Signal IMFs in dictionary type. IMF = {0:imf0, 1:imf1...}
-            EXT: Number of extrema for each IMF. IMF = {0:ext0, 1:ext1...}
-            ITER: Number of iteration for each IMF.
-            imfNo: Number of IMFs.
+            IMF: Signal IMFs in numpy array form.
         """
 
-        if timeLine is None: timeLine = np.arange(len(S), dtype=S.dtype)
+        if T is None: T = np.arange(len(S), dtype=S.dtype)
         if maxImf is None: maxImf = -1
 
         # Make sure same types are dealt
-        S, timeLine = self._common_dtype(S, timeLine)
+        S, T = self._common_dtype(S, T)
         self.DTYPE = S.dtype
 
         Res = S.astype(self.DTYPE)
@@ -683,18 +678,16 @@ class EMD:
         if scaledS.dtype!=self.DTYPE: self.logger.error('scaledS.dtype: '+str(scaledS.dtype))
         if imf.dtype!=self.DTYPE: self.logger.error('imf.dtype: '+str(imf.dtype))
         if imfOld.dtype!=self.DTYPE: self.logger.error('imfOld.dtype: '+str(imfOld.dtype))
-        if timeLine.dtype!=self.DTYPE: self.logger.error('timeLine.dtype: '+str(timeLine.dtype))
+        if T.dtype!=self.DTYPE: self.logger.error('T.dtype: '+str(T.dtype))
 
-        if S.shape != timeLine.shape:
+        if S.shape != T.shape:
             info = "Time array should be the same size as signal."
             raise ValueError(info)
 
         # Create arrays
-        IMF = {} # Dic for imfs signals
+        IMF = {} # Dict for imfs signals
         imfNo = 0
         notFinish = True
-
-        time0 = time.time()
 
         while(notFinish):
             self.logger.debug('IMF -- '+str(imfNo))
@@ -707,8 +700,6 @@ class EMD:
             n = 0   # All iterations for current imf.
             n_h = 0 # counts when |#zero - #ext| <=1
 
-            t0 = time.time()
-
             # Start on-screen displaying
             if self.PLOT and self.INTERACTIVE:
                 plt.ion()
@@ -717,7 +708,7 @@ class EMD:
                 n += 1
                 self.logger.debug("Iteration: "+str(n))
 
-                maxPos, maxVal, minPos, minVal, indzer = self.find_extrema(timeLine, imf)
+                maxPos, maxVal, minPos, minVal, indzer = self.find_extrema(T, imf)
                 extNo = len(minPos)+len(maxPos)
                 nzm = len(indzer)
 
@@ -726,10 +717,10 @@ class EMD:
                     # Plotting. Either into file, or on-screen display.
                     if n>1 and self.PLOT:
                         plt.clf()
-                        plt.plot(timeLine, imf*scale, 'g')
-                        plt.plot(timeLine, maxEnv*scale, 'b')
-                        plt.plot(timeLine, minEnv*scale, 'r')
-                        plt.plot(timeLine, mean*scale, 'k--')
+                        plt.plot(T, imf*scale, 'g')
+                        plt.plot(T, maxEnv*scale, 'b')
+                        plt.plot(T, minEnv*scale, 'r')
+                        plt.plot(T, mean*scale, 'k--')
                         plt.title("imf{}_{:02}".format(imfNo, n-1))
 
                         if self.INTERACTIVE:
@@ -741,7 +732,7 @@ class EMD:
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale*mean
 
-                    maxEnv, minEnv, eMax, eMin = self.extract_max_min_spline(timeLine, imf)
+                    maxEnv, minEnv, eMax, eMin = self.extract_max_min_spline(T, imf)
 
                     if type(maxEnv) == type(-1):
                         notFinish = True
@@ -762,7 +753,7 @@ class EMD:
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
 
-                        maxPos, maxVal, minPos, minVal, indZer = self.find_extrema(timeLine, imf)
+                        maxPos, maxVal, minPos, minVal, indZer = self.find_extrema(T, imf)
                         extNo = len(maxPos)+len(minPos)
                         nzm = len(indZer)
 
@@ -782,7 +773,7 @@ class EMD:
                     # Stops after default stopping criteria are meet.
                     else:
 
-                        maxPos, maxVal, minPos, minVal, indZer = self.find_extrema(timeLine, imf)
+                        maxPos, maxVal, minPos, minVal, indZer = self.find_extrema(T, imf)
                         extNo = len(maxPos) + len(minPos)
                         nzm = len(indZer)
 
@@ -816,41 +807,40 @@ class EMD:
         return nIMF
 
 ###################################################
-## Beggining of program
+## Beginning of program
 
 if __name__ == "__main__":
 
     import pylab as plt
 
+    # Logging options
     logging.basicConfig(level=logging.DEBUG)
 
-    N = 400
+    # EMD options
     maxImf = -1
+    DTYPE = np.float64
 
-    TYPE = 64
-    if   TYPE == 16: DTYPE = np.float16
-    elif TYPE == 32: DTYPE = np.float32
-    elif TYPE == 64: DTYPE = np.float64
-    else:            DTYPE = np.float64
-
+    # Signal options
+    N = 400
     tMin, tMax = 0, 2*np.pi
     T = np.linspace(tMin, tMax, N, dtype=DTYPE)
 
-    tS = 'np.sin(20*T*(1+0.2*T)) + T**2 + np.sin(13*T)'
-    S = eval(tS)
+    S = np.sin(20*T*(1+0.2*T)) + T**2 + np.sin(13*T)
     S = S.astype(DTYPE)
     print("Input S.dtype: "+str(S.dtype))
 
+    # Prepare and run EMD
     emd = EMD()
     emd.PLOT = 0
     emd.FIXE_H = 5
     emd.nbsym = 2
     emd.splineKind = 'cubic'
     emd.DTYPE = DTYPE
-    nIMF = emd.emd(S, T, maxImf)
 
+    nIMF = emd.emd(S, T, maxImf)
     imfNo = nIMF.shape[0]
 
+    # Plot results
     c = 1
     r = np.ceil((imfNo+1)/c)
 
@@ -864,7 +854,7 @@ if __name__ == "__main__":
         plt.subplot(r,c,num+2)
         plt.plot(T, nIMF[num],'g')
         plt.xlim((tMin, tMax))
-        plt.ylabel("Imf " +str(num+1) )
+        plt.ylabel("Imf "+str(num+1))
 
     plt.tight_layout()
     plt.show()
