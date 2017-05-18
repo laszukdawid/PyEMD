@@ -1,11 +1,14 @@
 language: python
 python:
-  - "3.5"
+  - 2.7
+  - 3.4
+  - 3.5
 # command to run tests
 before_install:
+  - pip install --upgrade pip setuptools wheel
+install:
   - pip install --only-binary=numpy,scipy numpy scipy
   - pip install -r requirements.txt
-install:
   - pip install codecov
 script: 
   - python -m PyEMD.tests.test_all
