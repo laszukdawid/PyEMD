@@ -1,11 +1,9 @@
 language: python
 python:
-  - "2.7"
-  - "3.4"
   - "3.5"
 # command to run tests
 before_install:
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then pip install --only-binary=numpy,scipy numpy scipy
+  - pip install --only-binary=numpy,scipy numpy scipy
   - pip install -r requirements.txt
 install:
   - pip install codecov
