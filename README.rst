@@ -1,4 +1,4 @@
-|CoverageStatus| |codecov| |BuildStatus|
+|codecov| |BuildStatus|
 
 
 *****
@@ -102,8 +102,6 @@ Contact me either through gmail ({my\_username}@gmail) or search me
 favourite web search.
 
 
-.. |CoverageStatus| image:: https://coveralls.io/repos/github/laszukdawid/PyEMD/badge.svg?branch=master
-   :target: https://coveralls.io/github/laszukdawid/PyEMD?branch=master
 .. |codecov| image:: https://codecov.io/gh/laszukdawid/PyEMD/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/laszukdawid/PyEMD
 .. |BuildStatus| image:: https://travis-ci.org/laszukdawid/PyEMD.png?branch=master
