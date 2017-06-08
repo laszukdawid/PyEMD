@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 import numpy as np
-from PyEMD.EMD import EMD
+from PyEMD import EMD
 import unittest
 
 class IMFTest(unittest.TestCase):
@@ -29,6 +29,7 @@ class IMFTest(unittest.TestCase):
         # Input - linear function f(t) = 2*t
         IMF = emd.emd(S, t)
         self.assertEqual(IMF.shape[0], 1, "Expecting single IMF")
+        self.assertTrue(np.allclose(S, IMF[0]))
 
     def test_single_imf(self):
         """
@@ -38,7 +39,7 @@ class IMFTest(unittest.TestCase):
         maxDiff = lambda a,b: np.max(np.abs(a-b))
 
         emd = EMD()
-        emd.FIXE_H = 5
+        emd.FIXE_H = 2
 
         t = np.arange(0, 1, 0.001)
         c1 = np.cos(4*2*np.pi*t) # 2 Hz

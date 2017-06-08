@@ -18,7 +18,7 @@ class EEMD:
     def __init__(self):
 
         # Import libraries
-        from PyEMD.EMD import EMD
+        from PyEMD import EMD
 
         # Ensemble constants
         self.noise_width = 0.3
