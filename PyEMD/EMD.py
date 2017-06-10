@@ -40,7 +40,6 @@ class EMD:
 
     References
     ----------
-
     [1] N. E. Huang et al., "The empirical mode decomposition and the
         Hilbert spectrum for non-linear and non stationary time series
         analysis", Proc. Royal Soc. London A, Vol. 454, pp. 903-995, 1998
