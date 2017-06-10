@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 import numpy as np
-from PyEMD.EEMD import EEMD
+from PyEMD import EEMD
 import unittest
 
 class ExtremaTest(unittest.TestCase):

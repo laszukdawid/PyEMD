@@ -4,7 +4,7 @@
 from __future__ import division, print_function
 
 import numpy as np
-from PyEMD.EMD import EMD
+from PyEMD import EMD
 from PyEMD.splines import *
 import unittest
 
@@ -16,7 +16,7 @@ class IMFTest(unittest.TestCase):
 
     def test_unsupporter_spline(self):
         emd = EMD()
-        emd.splineKind = "waterfall"
+        emd.spline_kind = "waterfall"
 
         S = np.random.random(20)
 
@@ -27,7 +27,7 @@ class IMFTest(unittest.TestCase):
         dtype = np.float32
 
         emd = EMD()
-        emd.splineKind = 'akima'
+        emd.spline_kind = 'akima'
         emd.DTYPE = dtype
 
         arr = lambda x: np.array(x)
@@ -60,7 +60,7 @@ class IMFTest(unittest.TestCase):
         dtype = np.float64
 
         emd = EMD()
-        emd.splineKind = 'cubic'
+        emd.spline_kind = 'cubic'
         emd.DTYPE = dtype
 
         T = np.array([0, 1, 2, 3, 4], dtype=dtype)
@@ -88,7 +88,7 @@ class IMFTest(unittest.TestCase):
         dtype = np.float64
 
         emd = EMD()
-        emd.splineKind = 'slinear'
+        emd.spline_kind = 'slinear'
         emd.DTYPE = dtype
 
         T = np.array([0, 1, 2, 3, 4], dtype=dtype)

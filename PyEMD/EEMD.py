@@ -12,37 +12,89 @@ import logging
 import numpy as np
 
 class EEMD:
+    """Ensemble Empirical Mode Decomposition
 
+    This is noise-assisted technique, which is meant to be more robust
+    than vanilla Empirical Mode Decomposition (EMD). The robustness is
+    checked by performing many decompositions on signals slightly
+    perturbed from their initial position. In the grand average over
+    all IMF results the noise will cancel each other out and the result
+    is pure decomposition.
+
+    Parameters
+    ----------
+    trials : int (default: 100)
+        Number of trails or EMD performance with added noise.
+    noise_width : float (default: 0.3)
+        Standard deviation of Gaussian noise.
+    ext_EMD : EMD (default: None)
+        One can pass EMD object defined outside, which will be
+        used to compute IMF decompositions in each trial. If none
+        is passed then EMD with default options is used.
+
+    References
+    ----------
+    [1] Z. Wu and N. E. Huang, "Ensemble empirical mode decomposition: 
+        A noise-assisted data analysis method", Advances in Adaptive
+        Data Analysis, Vol. 1, No. 1 (2009) 1-41.
+    """
     logger = logging.getLogger(__name__)
 
-    def __init__(self):
-
-        # Import libraries
-        from PyEMD.EMD import EMD
+    def __init__(self, trials=100, noise_width=0.3, ext_EMD=None, **kwargs):
 
         # Ensemble constants
-        self.noise_width = 0.3
-        self.trials = 100
+        self.trials = trials
+        self.noise_width = noise_width
 
-        self.EMD = EMD()
-        self.EMD.FIXE_H = 5
+        if ext_EMD is None:
+            from PyEMD import EMD
+            self.EMD = EMD()
+            self.EMD.FIXE_H = 5
+        else:
+            self.EMD = ext_EMD
 
-    def eemd(self, S, T=None, max_imf=None):
+        #TODO: Test this!
+        # Update based on options
+        for key in kwargs.keys():
+            if key in self.__dict__.keys():
+                self.__dict__[key] = kwargs[key]
+            elif key in self.EMD.__dict__.keys():
+                self.EMD.__dict__[key] = kwargs[key]
 
+    def eemd(self, S, T=None, max_imf=-1):
+        """
+        Performs EEMD on provided signal.
+
+        For a large number of iterations defined by `trails` attr
+        the method performs EMD on a signal with added white noise.
+
+        Parameters
+        ----------
+        T : numpy array (default: None)
+            If none passed samples are numerated.
+        max_imf : int (default: -1)
+            Defines up to how many IMFs each decompoisition should
+            be performed. By default (negative value) it decomposes
+            all IMFs.
+        """
         if T is None: T = np.arange(len(S), dtype=S.dtype)
-        if max_imf is None: max_imf = -1
 
         N = len(S)
         E_IMF = np.zeros((1,N))
 
+        # For trail number of iterations perform EMD on a signal
+        # with added white noise
         for trial in range(self.trials):
             self.logger.debug("trial: "+str(trial))
 
+            # Generate noise
             noise = np.random.normal(loc=0, scale=self.noise_width, size=N)
 
             IMFs = self.emd(S+noise, T, max_imf)
             imfNo = IMFs.shape[0]
 
+            # If new decompoisiton has more IMFs than any previous
+            # then add empty rows (holders)
             while(E_IMF.shape[0] < imfNo):
                 E_IMF = np.vstack((E_IMF, np.zeros(N)))
 

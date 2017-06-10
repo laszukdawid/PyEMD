@@ -67,7 +67,7 @@ import ``EMD`` and pass your signal to ``emd()`` method.
 
 .. code:: python
 
-    from PyEMD.EMD import EMD
+    from PyEMD import EMD
 
     s = np.random.random(100)
     emd = EMD()
@@ -85,7 +85,7 @@ Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing 
 
 .. code:: python
 
-    from PyEMD.EEMD import EEMD
+    from PyEMD import EEMD
 
     s = np.random.random(100)
     eemd = EEMD()
