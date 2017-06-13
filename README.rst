@@ -1,4 +1,4 @@
-|codecov| |BuildStatus|
+|codecov| |BuildStatus| |DocStatus|
 
 
 *****
@@ -106,4 +106,6 @@ favourite web search.
    :target: https://codecov.io/gh/laszukdawid/PyEMD
 .. |BuildStatus| image:: https://travis-ci.org/laszukdawid/PyEMD.png?branch=master
    :target: https://travis-ci.org/laszukdawid/PyEMD
+.. |DocStatus| image:: https://readthedocs.org/projects/pyemd/badge/?version=latest
+   :target https://pyemd.readthedocs.io/
 .. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/simple_example.png?raw=true
