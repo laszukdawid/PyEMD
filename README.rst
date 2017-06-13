@@ -5,12 +5,22 @@
 PyEMD
 *****
 
-The project is ongoing. This is very limited part of my private
+*The project is ongoing. This is very limited part of my private
 collection, but before I upload everything I want to make sure it works
 as it should. If there is something you wish to have, do email me as
 there is high chance that I have already done it, but it just sits
-around and waits until I'll have more time. Don't hesitate contacting me
-for anything.
+around and waits until I'll have more time. Don't hesitate to contact me
+for anything.*
+
+
+Links
+*****
+- HTML documentation: https://pyemd.readthedocs.org
+- Issue tracker: https://github.com/laszukdawid/pyemd/issues
+- Source code repository: https://github.com/laszukdawid/pyemd
+
+Introduction
+************
 
 This is yet another Python implementation of Empirical Mode
 Decomposition (EMD). The package contains many EMD variations, like
@@ -107,5 +117,5 @@ favourite web search.
 .. |BuildStatus| image:: https://travis-ci.org/laszukdawid/PyEMD.png?branch=master
    :target: https://travis-ci.org/laszukdawid/PyEMD
 .. |DocStatus| image:: https://readthedocs.org/projects/pyemd/badge/?version=latest
-   :target https://pyemd.readthedocs.io/
+   :target: https://pyemd.readthedocs.io/
 .. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/simple_example.png?raw=true
