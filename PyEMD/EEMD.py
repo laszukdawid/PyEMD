@@ -12,10 +12,12 @@ import logging
 import numpy as np
 
 class EEMD:
-    """Ensemble Empirical Mode Decomposition
+    """
+    **Ensemble Empirical Mode Decomposition**
 
-    This is noise-assisted technique, which is meant to be more robust
-    than vanilla Empirical Mode Decomposition (EMD). The robustness is
+    Ensemble empirical mode decomposition (EEMD) [Wu2009]_
+    is noise-assisted technique, which is meant to be more robust
+    than simple Empirical Mode Decomposition (EMD). The robustness is
     checked by performing many decompositions on signals slightly
     perturbed from their initial position. In the grand average over
     all IMF results the noise will cancel each other out and the result
@@ -25,8 +27,10 @@ class EEMD:
     ----------
     trials : int (default: 100)
         Number of trails or EMD performance with added noise.
-    noise_width : float (default: 0.3)
-        Standard deviation of Gaussian noise.
+    noise_width : float (default: 0.05)
+        Standard deviation of Gaussian noise. It's relative to
+        absolute amplitude of the signal, i.e.
+        std = noise_width*abs(max(S)-min(S))
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
@@ -34,13 +38,14 @@ class EEMD:
 
     References
     ----------
-    [1] Z. Wu and N. E. Huang, "Ensemble empirical mode decomposition: 
+    .. [Wu2009] Z. Wu and N. E. Huang, "Ensemble empirical mode decomposition:
         A noise-assisted data analysis method", Advances in Adaptive
         Data Analysis, Vol. 1, No. 1 (2009) 1-41.
     """
+
     logger = logging.getLogger(__name__)
 
-    def __init__(self, trials=100, noise_width=0.3, ext_EMD=None, **kwargs):
+    def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, **kwargs):
 
         # Ensemble constants
         self.trials = trials
@@ -65,22 +70,33 @@ class EEMD:
         """
         Performs EEMD on provided signal.
 
-        For a large number of iterations defined by `trails` attr
-        the method performs EMD on a signal with added white noise.
+        For a large number of iterations defined by *trails* attr
+        the method performs :py:func: `EMD.emd` on a signal with added white noise.
 
         Parameters
         ----------
-        T : numpy array (default: None)
+        S : numpy array,
+            Input signal on which EEMD is performed.
+        T : numpy array, (default: None)
             If none passed samples are numerated.
-        max_imf : int (default: -1)
+        max_imf : int, (default: -1)
             Defines up to how many IMFs each decompoisition should
             be performed. By default (negative value) it decomposes
             all IMFs.
+
+        Returns
+        -------
+        eIMF : numpy array
+            Set of ensembled IMFs producesed from input signal. In general,
+            these do not have to be, and most likely will not be, same as IMFs
+            produced using EMD.
         """
         if T is None: T = np.arange(len(S), dtype=S.dtype)
 
         N = len(S)
         E_IMF = np.zeros((1,N))
+
+        scale = self.noise_width*np.abs(np.max(S)-np.min(S))
 
         # For trail number of iterations perform EMD on a signal
         # with added white noise
@@ -88,7 +104,7 @@ class EEMD:
             self.logger.debug("trial: "+str(trial))
 
             # Generate noise
-            noise = np.random.normal(loc=0, scale=self.noise_width, size=N)
+            noise = np.random.normal(loc=0, scale=scale, size=N)
 
             IMFs = self.emd(S+noise, T, max_imf)
             imfNo = IMFs.shape[0]
@@ -105,6 +121,7 @@ class EEMD:
         return E_IMF
 
     def emd(self, S, T, max_imf=-1):
+        """Reference to emd method of passed EMD class."""
         return self.EMD.emd(S, T, max_imf)
 
 ###################################################

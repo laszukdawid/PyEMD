@@ -19,12 +19,12 @@ from PyEMD.splines import *
 
 class EMD:
     """
-    Empirical Mode Decomposition
+    **Empirical Mode Decomposition**
 
     Method of decomposing signal into Intrinsic Mode Functions (IMFs)
-    based on algorithm presented in Huang et al. [1].
+    based on algorithm presented in Huang et al. [Huang1998]_.
 
-    Algorithm was validated with Rilling et al. [2] Matlab's version from 3.2007.
+    Algorithm was validated with Rilling et al. [Rilling2003]_ Matlab's version from 3.2007.
 
     Parameters
     ----------
@@ -35,15 +35,16 @@ class EMD:
         Number of extrema used in boundary mirroring.
     extrema_detection : string, (default: 'simple')
         How extrema are defined.
-        'simple' - Ext point is one above/below neighbours.
-        'parabol' - Ext point is a peak of a parabola.
+
+        * *simple* - Ext point is one above/below neighbours.
+        * *parabol* - Ext point is a peak of a parabola.
 
     References
     ----------
-    [1] N. E. Huang et al., "The empirical mode decomposition and the
+    .. [Huang1998] N. E. Huang et al., "The empirical mode decomposition and the
         Hilbert spectrum for non-linear and non stationary time series
         analysis", Proc. Royal Soc. London A, Vol. 454, pp. 903-995, 1998
-    [2] G. Rilling, P. Flandrin and P. Goncalves, "On Empirical Mode
+    .. [Rilling2003] G. Rilling, P. Flandrin and P. Goncalves, "On Empirical Mode
         Decomposition and its algorithms", IEEE-EURASIP Workshop on
         Nonlinear Signal and Image Processing NSIP-03, Grado (I), June 2003
 
@@ -57,7 +58,6 @@ class EMD:
     >>> IMFs = emd.emd(S)
     >>> IMFs.shape
     (1, 100)
-
     """
 
     logger = logging.getLogger(__name__)
@@ -100,19 +100,19 @@ class EMD:
         Extracts top and bottom envelopes based on the signal,
         which are constructed based on maxima and minima, respectively.
 
-        Input
-        -----
-            T : numpy array
-                Time array.
-            S : numpy array
-                Input data S(T).
+        Parameters
+        ----------
+        T : numpy array
+            Position or time array.
+        S : numpy array
+            Input data S(T).
 
-        Output
-        ------
-            max_spline : numpy array
-                Spline spanned on S maxima.
-            min_spline : numpy array
-                Spline spanned on S minima.
+        Returns
+        -------
+        max_spline : numpy array
+            Spline spanned on S maxima.
+        min_spline : numpy array
+            Spline spanned on S minima.
         """
 
         # Get indexes of extrema
@@ -148,30 +148,30 @@ class EMD:
     def prepare_points(self, T, S, max_pos, max_val, min_pos, min_val):
         """
         Performs extrapolation on edges by adding extra extrema, also known
-        as mirroring signal. The number of added points depends on 'nbsym'
+        as mirroring signal. The number of added points depends on *nbsym*
         variable.
 
-        Input:
-        ---------
-            S : numpy array
-                Input signal.
-            T : numpy array
-                Time array.
-            max_pos : iterable
-                Sorted time positions of maxima.
-            max_vali : iterable
-                Signal values at max_pos positions.
-            min_pos : iterable
-                Sorted time positions of minima.
-            min_val : iterable
-                Signal values at min_pos positions.
+        Input
+        -----
+        S : numpy array
+            Input signal.
+        T : numpy array
+            Position or time array.
+        max_pos : iterable
+            Sorted time positions of maxima.
+        max_vali : iterable
+            Signal values at max_pos positions.
+        min_pos : iterable
+            Sorted time positions of minima.
+        min_val : iterable
+            Signal values at min_pos positions.
 
-        Output:
-        ---------
-            min_extrema : numpy array (2 rows)
-                Position (1st row) and values (2nd row) of minima.
-            min_extrema : numpy array (2 rows)
-                Position (1st row) and values (2nd row) of maxima.
+        Returns
+        -------
+        min_extrema : numpy array (2 rows)
+            Position (1st row) and values (2nd row) of minima.
+        min_extrema : numpy array (2 rows)
+            Position (1st row) and values (2nd row) of maxima.
         """
         if self.extrema_detection=="parabol":
             return self._prepare_points_parabol(T, S, max_pos, max_val, min_pos, min_val)
@@ -430,19 +430,19 @@ class EMD:
         """
         Constructs spline over given points.
 
-        Input
-        -----
-            T : numpy array
-                Time array.
-            extrema : numpy array
-                Position (1st row) and values (2nd row) of points.
+        Parameters
+        ----------
+        T : numpy array
+            Position or time array.
+        extrema : numpy array
+            Position (1st row) and values (2nd row) of points.
 
-        Output
-        ------
-            T : numpy array
-                Position array.
-            spline : numpy array
-                Spline array over given positions T.
+        Returns
+        -------
+        T : numpy array
+            Position array (same as input).
+        spline : numpy array
+            Spline array over given positions T.
         """
 
         kind = self.spline_kind.lower()
@@ -467,14 +467,14 @@ class EMD:
         else:
             raise ValueError("No such interpolation method!")
 
-    def not_duplicate(self, S):
+    def _not_duplicate(self, S):
         """
         Returns indices for not repeating values, where there is no extremum.
 
         Example
         -------
         >>> S = [0, 1, 1, 1, 2, 3]
-        >>> idx = self.not_duplicate(S)
+        >>> idx = self._not_duplicate(S)
         [0, 1, 3, 4, 5]
         """
         idx = [0]
@@ -489,27 +489,26 @@ class EMD:
     def find_extrema(self, T, S):
         """
         Returns extrema (minima and maxima) for given signal S.
-        Detection and definition of the extrema depends on 
-        'self.extrema_detection' variable, set on initiation of EMD.
+        Detection and definition of the extrema depends on
+        **extrema_detection** variable, set on initiation of EMD.
 
-        Input
-        -----
-            T : numpy array
-                Time array.
-            S : numpy array
-                Input data S(T).
+        Parameters
+        ----------
+        T : numpy array
+            Position or time array.
+        S : numpy array
+            Input data S(T).
 
-        Output
-        ------
-            local_max_pos : numpy array
-                Position of local maxima.
-            local_max_val : numpy array
-                Values of local maxima.
-            local_min_pos : numpy array
-                Position of local minima.
-            local_min_val : numpy array
-                Values of local minima.
-
+        Returns
+        -------
+        local_max_pos : numpy array
+            Position of local maxima.
+        local_max_val : numpy array
+            Values of local maxima.
+        local_min_pos : numpy array
+            Position of local minima.
+        local_min_val : numpy array
+            Values of local minima.
         """
         if self.extrema_detection=="parabol":
             return self._find_extrema_parabol(T, S)
@@ -548,7 +547,7 @@ class EMD:
         dt = float(T[1]-T[0])
         scale = 2.*dt*dt
 
-        idx = self.not_duplicate(S)
+        idx = self._not_duplicate(S)
         T = T[idx]
         S = S[idx]
 
@@ -667,11 +666,26 @@ class EMD:
 
         return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer
 
-    def end_condition(self, Res, IMF):
-        """Tests for end condition of whole EMD"""
+    def end_condition(self, S, IMF):
+        """Tests for end condition of whole EMD. The procedure will stop if:
+
+        * Absolute amplitude (max - min) is below *range_thr* threshold, or
+        * Metric L1 (mean absolute difference) is below *total_power_thr* threshold.
+
+        Parameters
+        ----------
+        S : numpy array
+            Original signal on which EMD was performed.
+        IMF : numpy 2D array
+            Set of IMFs where each row is IMF. Their order is not important.
+
+        Returns
+        -------
+        end : bool
+            Is this the end?
+        """
         # When to stop EMD
-        tmp = Res.copy()
-        tmp = Res.copy() - np.sum(IMF, axis=0)
+        tmp = S.copy() - np.sum(IMF, axis=0)
 
 #       # Power is enough
 #       if np.log10(np.abs(tmp).sum()/np.abs(Res).sum()) < self.power_thr:
@@ -686,9 +700,11 @@ class EMD:
             self.logger.info("FINISHED -- SUM POWER")
             return True
 
+        return False
+
     def check_imf(self, imf_new, imf_old, eMax, eMin, mean):
         """
-        Huang criteria for IMF (similar to Cauchy convergence test).
+        Huang criteria for **IMF** (similar to Cauchy convergence test).
         Signal is an IMF if consecutive siftings do not affect signal
         in a significant manner.
         """
@@ -714,7 +730,7 @@ class EMD:
         return False
 
     def _common_dtype(self, x, y):
-        """Determines common dtype for arrays."""
+        """Determines common numpy DTYPE for arrays."""
 
         dtype = np.find_common_type([x.dtype, y.dtype], [])
         if x.dtype != dtype: x = x.astype(dtype)
@@ -725,23 +741,23 @@ class EMD:
     def emd(self, S, T=None, max_imf=None):
         """
         Performs Empirical Mode Decomposition on signal S.
-        The decomposition is limited to max_imf imfs.
+        The decomposition is limited to *max_imf* imfs.
         Returns IMF functions in numpy array format.
 
-        Input
-        -----
-            S : numpy array
-                Input signal.
-            T : numpy array (default: None)
-                Position array. If None passed numpy arange is created.
-            max_imf : int (default: -1)
-                IMF number to which decomposition should be performed.
-                Negative value means `all`.
+        Parameters
+        ----------
+        S : numpy array,
+            Input signal.
+        T : numpy array, (default: None)
+            Position or time array. If None passed numpy arange is created.
+        max_imf : int, (default: -1)
+            IMF number to which decomposition should be performed.
+            Negative value means *all*.
 
-        Output
-        ------
-            IMF : numpy array
-                Set of IMFs producesed from input signal.
+        Returns
+        -------
+        IMF : numpy array
+            Set of IMFs producesed from input signal.
         """
 
         if T is None: T = np.arange(len(S), dtype=S.dtype)
@@ -771,7 +787,7 @@ class EMD:
             self.logger.error('T.dtype: '+str(T.dtype))
 
         if S.shape != T.shape:
-            info = "Time array should be the same size as signal."
+            info = "Position or time array should be the same size as signal."
             raise ValueError(info)
 
         # Create arrays

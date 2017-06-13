@@ -14,6 +14,8 @@ coverage:
 
   ignore:
     - test_*.py
+    - doc/*
+    - PyEMD/example/*
 
 comment:
   layout: "header, diff, changes"
