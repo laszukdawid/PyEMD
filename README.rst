@@ -40,7 +40,7 @@ Installation
 Recommended
 ===========
 
-Simply download this directory either directly from GitHub, or via command line:
+Simply download this directory either directly from GitHub, or using command line:
 
     $ git clone https://github.com/laszukdawid/PyEMD
 

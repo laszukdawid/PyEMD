@@ -1,16 +1,18 @@
-.. PyEMD documentation master file, created by
-   sphinx-quickstart on Tue Jun  6 17:46:14 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to PyEMD's documentation!
-=================================
+PyEMD's documentation
+=====================
+
+Writing documentation is hard. If more clarifications are needed, or you think others might benefit from extra explanation, don't hesitate to contact me through contact page.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Table of Content
 
-
+   intro
+   examples
+   emd
+   eemd
+   contact
 
 Indices and tables
 ==================
