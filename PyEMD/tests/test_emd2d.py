@@ -14,7 +14,11 @@ class ExtremaTest(unittest.TestCase):
     def _generate_image(self, r=64, c=64):
         return np.random.random((r,c))
 
-    def _gen_Gauss(self, x, y, pos, std, amp=1):
+    def _generate_linear_image(self, r=16, c=16):
+        rows = np.arange(r)
+        return np.repeat(rows, c).reshape(r,c)
+
+    def _generate_Gauss(self, x, y, pos, std, amp=1):
         x_s = x-pos[0]
         y_s = y-pos[1]
         x2 = x_s*x_s
@@ -39,7 +43,7 @@ class ExtremaTest(unittest.TestCase):
         xv, yv = np.meshgrid(x,y)
         pos = (10, 20)
         std = 5
-        img_max = self._gen_Gauss(xv, yv, pos, std)
+        img_max = self._generate_Gauss(xv, yv, pos, std)
 
         idx_min, idx_max = self.emd2d.find_extrema(img_max)
         x_min, y_min = xv[idx_min], yv[idx_min]
@@ -55,7 +59,7 @@ class ExtremaTest(unittest.TestCase):
         xv, yv = np.meshgrid(x,y)
         pos = (10, 20)
         std = 5
-        img_max = (-1)*self._gen_Gauss(xv, yv, pos, std, 10)
+        img_max = (-1)*self._generate_Gauss(xv, yv, pos, std, 10)
 
         idx_min, idx_max = self.emd2d.find_extrema(img_max)
         x_min, y_min = xv[idx_min], yv[idx_min]
@@ -76,7 +80,7 @@ class ExtremaTest(unittest.TestCase):
         # Construct image with few Gausses
         img = np.zeros(xv.shape)
         for peak in max_peaks+min_peaks:
-            img = img + self._gen_Gauss(xv, yv, peak[0], peak[1], peak[2])
+            img = img + self._generate_Gauss(xv, yv, peak[0], peak[1], peak[2])
 
         # Extract extrema
         idx_min, idx_max = self.emd2d.find_extrema(img)
@@ -154,6 +158,49 @@ class ExtremaTest(unittest.TestCase):
         for n in range(xi.size):
             nth_row = interpolated_image[n]
             self.assertTrue(np.allclose(nth_row, n))
+
+    def test_emd2d_noExtrema(self):
+        linear_image = self._generate_linear_image()
+
+        IMFs = self.emd2d.emd(linear_image)
+
+        self.assertTrue(np.all(linear_image == IMFs))
+
+    def test_emd2d_simpleIMF(self):
+        rows, cols = 64, 64
+
+        # Sinusoidal IMF
+        Y = np.arange(rows)
+        sin_1d = np.sin(Y)
+        sin_2d = np.repeat(sin_1d, cols).reshape(rows, cols)
+
+        image = sin_2d
+        IMFs = self.emd2d.emd(image)
+
+        self.assertTrue(np.allclose(IMFs[0], sin_2d))
+
+    def test_emd2d_linearBackground_simpleIMF(self):
+        rows, cols = 64, 64
+        linear_background = 0.5*self._generate_linear_image(rows, cols)
+
+        # Sinusoidal IMF
+        Y = np.arange(rows)
+        sin_1d = 2*np.sin(Y)
+        sin_2d = np.repeat(sin_1d, cols).reshape(rows, cols)
+
+        image = linear_background + sin_2d
+        IMFs = self.emd2d.emd(image)
+
+        print(IMFs)
+        print(sin_2d)
+        # Check that only two IMFs were extracted
+        self.assertTrue(IMFs.shape==(2,rows,cols), "Shape is "+str(IMFs.shape))
+
+        # First IMF should be sin
+        self.assertTrue(np.allclose(IMFs[0], sin_2d))
+
+        # Second IMF should be linear trend
+        self.assertTrue(np.allclose(IMFs[1], linear_background))
 
 
 if __name__ == "__main__":

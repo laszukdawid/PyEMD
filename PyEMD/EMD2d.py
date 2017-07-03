@@ -27,7 +27,7 @@ class EMD2D:
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self, nbsym=2, **kwargs):
+    def __init__(self, **kwargs):
         # Declare constants
         self.std_thr = 0.2
         self.svar_thr = 0.001
@@ -35,9 +35,9 @@ class EMD2D:
         self.total_power_thr = 0.01
         self.range_thr = 0.001
 
-        self.nbsym = nbsym
-        self.reduce_scale = 1.
-        self.scale_factor = 1.
+        # ProtoIMF related
+        self.inst_thr = 0.05
+        self.mse_thr = 0.01
 
         self.PLOT = 0
         self.INTERACTIVE = 0
@@ -54,12 +54,19 @@ class EMD2D:
             if key in self.__dict__.keys():
                 self.__dict__[key] = kwargs[key]
 
-        if self.PLOT:
-            import pylab as plt
+    def extract_max_min_spline(self, image):
 
+        min_peaks, max_peaks = self.find_extrema(image)
 
-    def extract_max_min_spline(self, T, S):
-        return True
+        # Prepare grid for interpolation. Doesn't seem necessary.
+        X = np.arange(image.shape[0])
+        Y = np.arange(image.shape[1])
+        xi, yi = np.meshgrid(X, Y)
+
+        min_env = self.spline_points(min_peaks[0], min_peaks[1], image, xi, yi)
+        max_env = self.spline_points(max_peaks[0], max_peaks[1], image, xi, yi)
+
+        return min_env, max_env
 
     def prepare_points(self, image):
         """Extrapolates how extrapolation should behave on edges."""
@@ -110,22 +117,119 @@ class EMD2D:
         max_peaks[[0,-1],:] = False
         max_peaks[:,[0,-1]] = False
 
+        min_peaks = (X_min, Y_min) = np.nonzero(min_peaks)
+        max_peaks = (X_max, Y_max) = np.nonzero(max_peaks)
+
 	return min_peaks, max_peaks
 
-    def end_condition(self, img, IMFs):
+    def end_condition(self, image, IMFs):
         rec = np.sum(IMFs, axis=0)
 
         # If reconstruction is perfect, no need for more tests
-        if np.allclose(img, rec):
+        if np.allclose(image, rec):
             return True
 
         return False
 
+    def check_proto_imf(self, proto_imf):
+
+        # No speck above inst_thr
+        if np.any(proto_imf > self.inst_thr):
+            return False
+
+        # Everything relatively close to 0
+        mse_proto_imf = np.mean(proto_imf*proto_imf)
+        if mse_proto_imf > self.mse_thr:
+            return False
+
+        return True
+
     def check_imf(self, imf_new, imf_old, eMax, eMin, mean):
         return True
 
-    def emd(self, img, max_imf=-1):
-        return img
+    def emd(self, image, max_imf=-1):
+
+        res = image.copy()
+        imf = np.zeros(image.shape)
+        imf_olf = imf.copy()
+
+        imfNo = 0
+        IMF = np.empty((imfNo,)+imf.shape)
+        notFinished = True
+
+        while(notFinished):
+            self.logger.debug('IMF -- '+str(imfNo))
+
+            res = image - np.sum(IMF[:imfNo], axis=0)
+            imf = res.copy()
+            mean = np.zeros(image.shape)
+
+            # Counters
+            n = 0   # All iterations for current imf.
+            n_h = 0 # counts when mean(proto_imf) < threshold
+
+            while(n<self.MAX_ITERATION):
+                n += 1
+                self.logger.debug("Iteration: "+str(n))
+
+                min_peaks, max_peaks = self.find_extrema(imf)
+
+                if len(min_peaks)>2 and len(max_peaks):
+
+                    imf_old = imf.copy()
+                    imf = imf - mean
+
+                    max_env, min_env, eMax, eMin = self.extract_max_min_spline(T, imf)
+
+                    mean = 0.5*(max_env+min_env)
+
+                    imf_old = imf.copy()
+                    imf = imf - mean
+
+                    # Fix number of iterations
+                    if self.FIXE:
+                        if n>=self.FIXE+1: break
+
+                    # Fix number of iterations after number of zero-crossings
+                    # and extrema differ at most by one.
+                    elif self.FIXE_H:
+
+                        if n == 1: continue
+                        if self.imf_check(imf):
+                            n_h += 1
+                        else:
+                            n_h = 0
+
+                        # STOP if enough n_h
+                        if n_h >= self.FIXE_H: break
+
+                    # Stops after default stopping criteria are met
+                    else:
+                        pass
+              #         ext_res = self.find_extrema(T, imf)
+              #         max_pos, max_val, min_pos, min_val, ind_zer = ext_res
+              #         extNo = len(max_pos) + len(min_pos)
+              #         nzm = len(ind_zer)
+
+              #         f1 = self.check_imf(imf, max_env, min_env, mean, extNo)
+              #         #f2 = np.all(max_val>0) and np.all(min_val<0)
+              #         f2 = abs(extNo - nzm)<2
+
+              #         # STOP
+              #         if f1 and f2: break
+
+                else:
+                    notFinish = False
+                    break
+
+            IMF = np.vstack((IMF, imf.copy()[None,:]))
+            imfNo += 1
+
+            if self.end_condition(image, IMF) or imfNo==max_imf:
+                notFinish = False
+                break
+
+        return IMF
 
 ########################################
 if __name__ == "__main__":
@@ -134,6 +238,8 @@ if __name__ == "__main__":
 
     pi2 = 2*np.pi
     img = np.sin(x*pi2)*np.cos(y*3*pi2)+x
-    e = extrema2D(img)
-    print(e)
 
+    emd2d = EMD2D()
+    IMFs = emd2d.emd(img)
+    print(IMFs)
+    print(IMFs.shape)
