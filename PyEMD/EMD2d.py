@@ -19,6 +19,8 @@ from scipy.ndimage.filters import maximum_filter
 from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 from scipy.interpolate import SmoothBivariateSpline as SBS
 
+import pdb
+
 class EMD2D:
     """
     **Empirical Mode Decompoition** on 2D objects like images.
@@ -38,6 +40,7 @@ class EMD2D:
         # ProtoIMF related
         self.inst_thr = 0.05
         self.mse_thr = 0.01
+        self.mean_thr = 0.1
 
         self.PLOT = 0
         self.INTERACTIVE = 0
@@ -56,21 +59,66 @@ class EMD2D:
 
     def extract_max_min_spline(self, image):
 
-        min_peaks, max_peaks = self.find_extrema(image)
+
+        big_image = self.prepare_image(image)
+        big_min_peaks, big_max_peaks = self.find_extrema(big_image)
 
         # Prepare grid for interpolation. Doesn't seem necessary.
-        X = np.arange(image.shape[0])
-        Y = np.arange(image.shape[1])
-        xi, yi = np.meshgrid(X, Y)
+        xi = np.arange(image.shape[0],image.shape[0]*2)
+        yi = np.arange(image.shape[1],image.shape[1]*2)
 
-        min_env = self.spline_points(min_peaks[0], min_peaks[1], image, xi, yi)
-        max_env = self.spline_points(max_peaks[0], max_peaks[1], image, xi, yi)
+        big_min_image_val = big_image[big_min_peaks]
+        big_max_image_val = big_image[big_max_peaks]
+        min_env = self.spline_points(big_min_peaks[0], big_min_peaks[1], big_min_image_val, xi, yi)
+        max_env = self.spline_points(big_max_peaks[0], big_max_peaks[1], big_max_image_val, xi, yi)
 
         return min_env, max_env
 
-    def prepare_points(self, image):
-        """Extrapolates how extrapolation should behave on edges."""
-        return image
+    def prepare_image(self, image):
+        """Prepares image for edge extrapolation.
+        Method bloats image by mirroring it along all axes. This
+        turns extrapolation on edges into interpolation within
+        bigger image.
+        """
+
+        #TODO: This is nasty. Instead of bloating whole image and then trying to
+        #      find all extrema, it's better to deal directly with indices.
+        shape = image.shape
+        big_image = np.zeros((shape[0]*3, shape[1]*3))
+
+        image_lr = np.fliplr(image)
+        image_ud = np.flipud(image)
+        image_ud_lr = np.flipud(image_lr)
+        image_lr_ud = np.fliplr(image_ud)
+
+        # Fill center with default image
+        big_image[shape[0]:2*shape[0], shape[1]:2*shape[1]] = image
+
+        # Fill left center
+        big_image[shape[0]:2*shape[0],:shape[1]] = image_lr
+
+        # Fill right center
+        big_image[shape[0]:2*shape[0],2*shape[1]:] = image_lr
+
+        # Fill center top
+        big_image[:shape[0],shape[1]:shape[1]*2] = image_ud
+
+        # Fill center bottom
+        big_image[2*shape[0]:, shape[1]:2*shape[1]] = image_ud
+
+        # Fill left top
+        big_image[:shape[0], :shape[1]] = image_ud_lr
+
+        # Fill left bottom
+        big_image[2*shape[0]:, :shape[1]] = image_ud_lr
+
+        # Fill right top
+        big_image[:shape[0], 2*shape[1]:] = image_lr_ud
+
+        # Fill right bottom
+        big_image[2*shape[0]:, 2*shape[1]:] = image_lr_ud
+
+        return big_image
 
     def spline_points(self, X, Y, Z, xi, yi):
         """Interpolates for given set of points"""
@@ -78,12 +126,7 @@ class EMD2D:
         # SBS requires at least m=(kx+1)*(ky+1) points,
         # where kx=ky=3 (default) is the degree of bivariate spline.
         # Thus, if less than 16=(3+1)*(3+1) points, adjust kx & ky.
-        k = {}
-        if X.size < 16:
-            k['kx'] = int(np.floor(np.sqrt(len(X)))-1)
-            k['ky'] = k['kx']
-
-        spline = SBS(X, Y, Z, **k)
+        spline = SBS(X, Y, Z)
         return spline(xi, yi)
 
     def find_extrema(self, image):
@@ -131,11 +174,16 @@ class EMD2D:
 
         return False
 
-    def check_proto_imf(self, proto_imf):
+    def check_proto_imf(self, proto_imf, proto_imf_prev):
 
-        # No speck above inst_thr
-        if np.any(proto_imf > self.inst_thr):
-            return False
+        #pdb.set_trace()
+       #if np.all(np.mean(proto_imf, axis=0) < self.mean_thr) and \
+       #        np.all(np.mean(proto_imf, axis=1) < self.mean_thr):
+        if np.mean(proto_imf)<self.mean_thr:
+            return True
+#       # No speck above inst_thr
+#       if np.any(proto_imf > self.inst_thr):
+#           return False
 
         # Everything relatively close to 0
         mse_proto_imf = np.mean(proto_imf*proto_imf)
@@ -144,7 +192,7 @@ class EMD2D:
 
         return True
 
-    def check_imf(self, imf_new, imf_old, eMax, eMin, mean):
+    def check_imf(self, imf_new, imf_old):
         return True
 
     def emd(self, image, max_imf=-1):
@@ -174,14 +222,14 @@ class EMD2D:
 
                 min_peaks, max_peaks = self.find_extrema(imf)
 
-                if len(min_peaks)>2 and len(max_peaks):
+                if len(min_peaks[0])>4 and len(max_peaks[0])>4:
 
                     imf_old = imf.copy()
                     imf = imf - mean
 
-                    max_env, min_env, eMax, eMin = self.extract_max_min_spline(T, imf)
+                    min_env, max_env = self.extract_max_min_spline(imf)
 
-                    mean = 0.5*(max_env+min_env)
+                    mean = 0.5*(min_env+max_env)
 
                     imf_old = imf.copy()
                     imf = imf - mean
@@ -195,7 +243,7 @@ class EMD2D:
                     elif self.FIXE_H:
 
                         if n == 1: continue
-                        if self.imf_check(imf):
+                        if self.check_imf(imf, imf_old):
                             n_h += 1
                         else:
                             n_h = 0
@@ -205,13 +253,13 @@ class EMD2D:
 
                     # Stops after default stopping criteria are met
                     else:
-                        pass
               #         ext_res = self.find_extrema(T, imf)
               #         max_pos, max_val, min_pos, min_val, ind_zer = ext_res
               #         extNo = len(max_pos) + len(min_pos)
               #         nzm = len(ind_zer)
 
-              #         f1 = self.check_imf(imf, max_env, min_env, mean, extNo)
+                        f1 = self.check_proto_imf(imf, imf_old)
+                        if f1: break
               #         #f2 = np.all(max_val>0) and np.all(min_val<0)
               #         f2 = abs(extNo - nzm)<2
 
@@ -219,14 +267,14 @@ class EMD2D:
               #         if f1 and f2: break
 
                 else:
-                    notFinish = False
+                    notFinished = False
                     break
 
             IMF = np.vstack((IMF, imf.copy()[None,:]))
             imfNo += 1
 
             if self.end_condition(image, IMF) or imfNo==max_imf:
-                notFinish = False
+                notFinished = False
                 break
 
         return IMF

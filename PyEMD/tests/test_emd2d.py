@@ -7,7 +7,7 @@ import numpy as np
 from PyEMD import EMD2D
 import unittest
 
-class ExtremaTest(unittest.TestCase):
+class ImageEMDTest(unittest.TestCase):
 
     emd2d = EMD2D()
 
@@ -167,40 +167,49 @@ class ExtremaTest(unittest.TestCase):
         self.assertTrue(np.all(linear_image == IMFs))
 
     def test_emd2d_simpleIMF(self):
-        rows, cols = 64, 64
+        rows, cols = 128, 128
 
         # Sinusoidal IMF
+        X = np.arange(cols)[None,:].T
         Y = np.arange(rows)
-        sin_1d = np.sin(Y)
-        sin_2d = np.repeat(sin_1d, cols).reshape(rows, cols)
+        sin_1d = np.sin(Y*0.3)
+        cos_1d = np.cos(X*0.4)
+        comp_2d = 10*cos_1d*sin_1d
+        comp_2d -= np.mean(comp_2d)
 
-        image = sin_2d
+        image = comp_2d
         IMFs = self.emd2d.emd(image)
 
-        self.assertTrue(np.allclose(IMFs[0], sin_2d))
+        # Image = IMF + noise
+        self.assertTrue(IMFs.shape[0] <= 2,
+                "Depending on spline, there should be an IMF and possibly trend")
+
+        self.assertTrue(np.allclose(IMFs[0], image, atol=0.5),
+                "Output: \n"+str(IMFs[0])+"\nInput: \n"+str(comp_2d))
 
     def test_emd2d_linearBackground_simpleIMF(self):
-        rows, cols = 64, 64
-        linear_background = 0.5*self._generate_linear_image(rows, cols)
+        rows, cols = 128, 128
+        linear_background = 0.2*self._generate_linear_image(rows, cols)
 
         # Sinusoidal IMF
+        X = np.arange(cols)[None,:].T
         Y = np.arange(rows)
-        sin_1d = 2*np.sin(Y)
-        sin_2d = np.repeat(sin_1d, cols).reshape(rows, cols)
+        x_comp_1d = np.sin(X*0.3)
+        y_comp_1d = np.sin(Y*0.2)
+        comp_2d = 10*x_comp_1d*y_comp_1d
+        comp_2d = comp_2d
 
-        image = linear_background + sin_2d
+        image = linear_background + comp_2d
         IMFs = self.emd2d.emd(image)
 
-        print(IMFs)
-        print(sin_2d)
         # Check that only two IMFs were extracted
         self.assertTrue(IMFs.shape==(2,rows,cols), "Shape is "+str(IMFs.shape))
 
         # First IMF should be sin
-        self.assertTrue(np.allclose(IMFs[0], sin_2d))
+        self.assertTrue(np.allclose(IMFs[0], comp_2d, atol=1.5))
 
         # Second IMF should be linear trend
-        self.assertTrue(np.allclose(IMFs[1], linear_background))
+        self.assertTrue(np.allclose(IMFs[1], linear_background, atol=1.5))
 
 
 if __name__ == "__main__":
