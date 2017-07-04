@@ -19,8 +19,6 @@ from scipy.ndimage.filters import maximum_filter
 from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 from scipy.interpolate import SmoothBivariateSpline as SBS
 
-import pdb
-
 class EMD2D:
     """
     **Empirical Mode Decompoition** on 2D objects like images.
@@ -130,30 +128,30 @@ class EMD2D:
         return spline(xi, yi)
 
     def find_extrema(self, image):
-	"""
-	takes an image and detect the peaks usingthe local maximum filter.
-	returns a boolean mask of the peaks (i.e. 1 when
-	the pixel's value is the neighborhood maximum, 0 otherwise)
-	"""
+        """
+        takes an image and detect the peaks usingthe local maximum filter.
+        returns a boolean mask of the peaks (i.e. 1 when
+        the pixel's value is the neighborhood maximum, 0 otherwise)
+        """
 
-	# define an 8-connected neighborhood
-	neighborhood = generate_binary_structure(2,2)
+        # define an 8-connected neighborhood
+        neighborhood = generate_binary_structure(2,2)
 
-	#apply the local maximum filter; all pixel of maximal value 
-	#in their neighborhood are set to 1
-	local_min = maximum_filter(-image, footprint=neighborhood)==-image
-	local_max = maximum_filter(image, footprint=neighborhood)==image
+        #apply the local maximum filter; all pixel of maximal value 
+        #in their neighborhood are set to 1
+        local_min = maximum_filter(-image, footprint=neighborhood)==-image
+        local_max = maximum_filter(image, footprint=neighborhood)==image
 
-	# can't distinguish between background zero and filter zero
-	background = (image==0)
+        # can't distinguish between background zero and filter zero
+        background = (image==0)
 
-	#appear along the background border (artifact of the local maximum filter)
-	eroded_background = binary_erosion(background, structure=neighborhood, border_value=1)
+        #appear along the background border (artifact of the local maximum filter)
+        eroded_background = binary_erosion(background, structure=neighborhood, border_value=1)
 
-	#we obtain the final mask, containing only peaks, 
-	#by removing the background from the local_max mask (xor operation)
-	min_peaks = local_min ^ eroded_background
-	max_peaks = local_max ^ eroded_background
+        #we obtain the final mask, containing only peaks, 
+        #by removing the background from the local_max mask (xor operation)
+        min_peaks = local_min ^ eroded_background
+        max_peaks = local_max ^ eroded_background
 
         min_peaks[[0,-1],:] = False
         min_peaks[:,[0,-1]] = False
@@ -163,7 +161,7 @@ class EMD2D:
         min_peaks = (X_min, Y_min) = np.nonzero(min_peaks)
         max_peaks = (X_max, Y_max) = np.nonzero(max_peaks)
 
-	return min_peaks, max_peaks
+        return min_peaks, max_peaks
 
     def end_condition(self, image, IMFs):
         rec = np.sum(IMFs, axis=0)
@@ -176,9 +174,6 @@ class EMD2D:
 
     def check_proto_imf(self, proto_imf, proto_imf_prev):
 
-        #pdb.set_trace()
-       #if np.all(np.mean(proto_imf, axis=0) < self.mean_thr) and \
-       #        np.all(np.mean(proto_imf, axis=1) < self.mean_thr):
         if np.mean(proto_imf)<self.mean_thr:
             return True
 #       # No speck above inst_thr
