@@ -211,6 +211,30 @@ class ImageEMDTest(unittest.TestCase):
         # Second IMF should be linear trend
         self.assertTrue(np.allclose(IMFs[1], linear_background, atol=1.5))
 
+    def test_emd2d_limitImfNo(self):
+
+        # Create image
+        rows, cols = 128, 128
+        linear_background = 0.2*self._generate_linear_image(rows, cols)
+
+        # Sinusoidal IMF
+        X = np.arange(cols)[None,:].T
+        Y = np.arange(rows)
+        x_comp_1d = np.sin(X*0.3) + np.cos(X*2.9)**2
+        y_comp_1d = np.sin(Y*0.2)
+        comp_2d = 10*x_comp_1d*y_comp_1d
+        comp_2d = comp_2d
+
+        image = linear_background + comp_2d
+
+        # Limit number of IMFs
+        max_imf = 2
+
+        # decompose image
+        IMFs = self.emd2d.emd(image, max_imf=max_imf)
+
+        # It should have no more than 2 (max_imf)
+        self.assertTrue(IMFs.shape[0]==max_imf)
 
 if __name__ == "__main__":
     unittest.main()

@@ -21,30 +21,23 @@ from scipy.interpolate import SmoothBivariateSpline as SBS
 
 class EMD2D:
     """
-    **Empirical Mode Decompoition** on 2D objects like images.
+    **Empirical Mode Decomposition** on images.
 
+    Method decomposes images into 2D representations of loose Intrinsic Mode Functions (IMFs).
+
+    Current version of the algorithm detects local extrema, separately minima and maxima,
+    and then connects them to create envelops. These are then used to create mean trend and
+    subtracted from input.
     """
 
     logger = logging.getLogger(__name__)
 
     def __init__(self, **kwargs):
-        # Declare constants
-        self.std_thr = 0.2
-        self.svar_thr = 0.001
-        self.power_thr = -5
-        self.total_power_thr = 0.01
-        self.range_thr = 0.001
-
         # ProtoIMF related
         self.inst_thr = 0.05
         self.mse_thr = 0.01
         self.mean_thr = 0.1
 
-        self.PLOT = 0
-        self.INTERACTIVE = 0
-        self.plotPath = 'splineTest'
-
-        self.DTYPE = np.float64
         self.FIXE = 0
         self.FIXE_H = 0
 
@@ -74,9 +67,19 @@ class EMD2D:
 
     def prepare_image(self, image):
         """Prepares image for edge extrapolation.
-        Method bloats image by mirroring it along all axes. This
-        turns extrapolation on edges into interpolation within
-        bigger image.
+        Method bloats image by mirroring it along all axes. This turns
+        extrapolation on edges into interpolation within bigger image.
+
+        Parameters
+        ----------
+        image : numpy 2D array
+            Image for which interpolation is required,
+
+        Returns
+        -------
+        image : numpy 2D array
+            Big image based on the input. Grid 3x3 where the center block is input and
+            neighbouring panels are respective mirror images.
         """
 
         #TODO: This is nasty. Instead of bloating whole image and then trying to
@@ -125,31 +128,45 @@ class EMD2D:
         # where kx=ky=3 (default) is the degree of bivariate spline.
         # Thus, if less than 16=(3+1)*(3+1) points, adjust kx & ky.
         spline = SBS(X, Y, Z)
+
         return spline(xi, yi)
 
     def find_extrema(self, image):
         """
-        takes an image and detect the peaks usingthe local maximum filter.
-        returns a boolean mask of the peaks (i.e. 1 when
-        the pixel's value is the neighborhood maximum, 0 otherwise)
+        Finds extrema, both mininma and maxima, based on local maximum filter.
+        Returns extrema in form of two rows, where the first and second are
+        positions of x and y, respectively.
+
+        Parameters
+        ----------
+        image : numpy 2D array
+            Monochromatic image or any 2D array.
+
+        Returns
+        -------
+        min_peaks : numpy array
+            Minima positions.
+        max_peaks : numpy array
+            Maxima positions.
         """
 
-        # define an 8-connected neighborhood
+        # define an 3x3 neighborhood
         neighborhood = generate_binary_structure(2,2)
 
-        #apply the local maximum filter; all pixel of maximal value 
-        #in their neighborhood are set to 1
+        # apply the local maximum filter; all pixel of maximal value 
+        # in their neighborhood are set to 1
         local_min = maximum_filter(-image, footprint=neighborhood)==-image
         local_max = maximum_filter(image, footprint=neighborhood)==image
 
         # can't distinguish between background zero and filter zero
         background = (image==0)
 
-        #appear along the background border (artifact of the local maximum filter)
-        eroded_background = binary_erosion(background, structure=neighborhood, border_value=1)
+        #appear along the bg border (artifact of the local max filter)
+        eroded_background = binary_erosion(background,
+                                structure=neighborhood, border_value=1)
 
-        #we obtain the final mask, containing only peaks, 
-        #by removing the background from the local_max mask (xor operation)
+        # we obtain the final mask, containing only peaks, 
+        # by removing the background from the local_max mask (xor operation)
         min_peaks = local_min ^ eroded_background
         max_peaks = local_max ^ eroded_background
 
@@ -164,6 +181,16 @@ class EMD2D:
         return min_peaks, max_peaks
 
     def end_condition(self, image, IMFs):
+        """Determins whether decomposition should be stopped.
+
+        Parameters
+        ----------
+        image : numpy 2D array
+            Input image which is decomposed.
+        IMFs : numpy 3D array
+            Array for which first dimensions relates to respective IMF,
+            i.e. (numIMFs, imageX, imageY).
+        """
         rec = np.sum(IMFs, axis=0)
 
         # If reconstruction is perfect, no need for more tests
@@ -173,6 +200,9 @@ class EMD2D:
         return False
 
     def check_proto_imf(self, proto_imf, proto_imf_prev):
+        """Check whether passed (proto) IMF is actual IMF.
+        Current condition is solely based on checking whether the mean is below threshold.
+        """
 
         if np.mean(proto_imf)<self.mean_thr:
             return True
@@ -187,10 +217,23 @@ class EMD2D:
 
         return True
 
-    def check_imf(self, imf_new, imf_old):
-        return True
-
     def emd(self, image, max_imf=-1):
+        """Performs EMD on input image with specified parameters.
+
+        Parameters
+        ----------
+        image : numpy 2D array,
+            Image which will be decomposed.
+        max_imf : int, (default: -1)
+            IMF number to which decomposition should be performed.
+            Negative value means *all*.
+
+        Returns
+        -------
+        IMFs : numpy 3D array
+            Set of IMFs in form of numpy array where the first dimension
+            relates to IMF's ordinary number.
+        """
 
         res = image.copy()
         imf = np.zeros(image.shape)
@@ -199,6 +242,8 @@ class EMD2D:
         imfNo = 0
         IMF = np.empty((imfNo,)+imf.shape)
         notFinished = True
+
+        stop_sifting = False
 
         while(notFinished):
             self.logger.debug('IMF -- '+str(imfNo))
@@ -211,7 +256,7 @@ class EMD2D:
             n = 0   # All iterations for current imf.
             n_h = 0 # counts when mean(proto_imf) < threshold
 
-            while(n<self.MAX_ITERATION):
+            while(not stop_sifting and n<self.MAX_ITERATION):
                 n += 1
                 self.logger.debug("Iteration: "+str(n))
 
@@ -231,7 +276,8 @@ class EMD2D:
 
                     # Fix number of iterations
                     if self.FIXE:
-                        if n>=self.FIXE+1: break
+                        if n>=self.FIXE+1:
+                            stop_sifting = True
 
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
@@ -244,26 +290,18 @@ class EMD2D:
                             n_h = 0
 
                         # STOP if enough n_h
-                        if n_h >= self.FIXE_H: break
+                        if n_h >= self.FIXE_H:
+                            stop_sifting = True
 
                     # Stops after default stopping criteria are met
                     else:
-              #         ext_res = self.find_extrema(T, imf)
-              #         max_pos, max_val, min_pos, min_val, ind_zer = ext_res
-              #         extNo = len(max_pos) + len(min_pos)
-              #         nzm = len(ind_zer)
 
-                        f1 = self.check_proto_imf(imf, imf_old)
-                        if f1: break
-              #         #f2 = np.all(max_val>0) and np.all(min_val<0)
-              #         f2 = abs(extNo - nzm)<2
-
-              #         # STOP
-              #         if f1 and f2: break
+                        if self.check_proto_imf(imf, imf_old):
+                            stop_sifting = True
 
                 else:
                     notFinished = False
-                    break
+                    stop_sifting = True
 
             IMF = np.vstack((IMF, imf.copy()[None,:]))
             imfNo += 1

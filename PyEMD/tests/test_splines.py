@@ -73,7 +73,7 @@ class IMFTest(unittest.TestCase):
 
         s_true = np.array([S[0], 1.203125, S[1], 0.046875, \
                     S[2], -1.515625, S[3], 1.015625, S[4]], dtype=dtype)
-        self.assertTrue(np.allclose(s, s_true), "Comparing cubic")
+        self.assertTrue(np.allclose(s, s_true, atol=0.01), "Comparing cubic")
 
         T = T[:-2].copy()
         S = S[:-2].copy()
