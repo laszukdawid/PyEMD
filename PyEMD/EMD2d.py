@@ -204,8 +204,14 @@ class EMD2D:
         Current condition is solely based on checking whether the mean is below threshold.
         """
 
+        # If very little change with sifting
+        if np.allclose(proto_imf, proto_imf_prev):
+            return True
+
+        # If IMF mean close to zero (below threshold)
         if np.mean(proto_imf)<self.mean_thr:
             return True
+
 #       # No speck above inst_thr
 #       if np.any(proto_imf > self.inst_thr):
 #           return False
@@ -215,7 +221,7 @@ class EMD2D:
         if mse_proto_imf > self.mse_thr:
             return False
 
-        return True
+        return False
 
     def emd(self, image, max_imf=-1):
         """Performs EMD on input image with specified parameters.
@@ -243,7 +249,6 @@ class EMD2D:
         IMF = np.empty((imfNo,)+imf.shape)
         notFinished = True
 
-        stop_sifting = False
 
         while(notFinished):
             self.logger.debug('IMF -- '+str(imfNo))
@@ -251,6 +256,7 @@ class EMD2D:
             res = image - np.sum(IMF[:imfNo], axis=0)
             imf = res.copy()
             mean = np.zeros(image.shape)
+            stop_sifting = False
 
             # Counters
             n = 0   # All iterations for current imf.
@@ -262,6 +268,7 @@ class EMD2D:
 
                 min_peaks, max_peaks = self.find_extrema(imf)
 
+                self.logger.debug("min_peaks = %i  |  max_peaks = %i" %(len(min_peaks[0]), len(max_peaks[0])))
                 if len(min_peaks[0])>4 and len(max_peaks[0])>4:
 
                     imf_old = imf.copy()
@@ -284,7 +291,7 @@ class EMD2D:
                     elif self.FIXE_H:
 
                         if n == 1: continue
-                        if self.check_imf(imf, imf_old):
+                        if self.check_proto_imf(imf, imf_old):
                             n_h += 1
                         else:
                             n_h = 0
@@ -306,7 +313,7 @@ class EMD2D:
             IMF = np.vstack((IMF, imf.copy()[None,:]))
             imfNo += 1
 
-            if self.end_condition(image, IMF) or imfNo==max_imf:
+            if self.end_condition(image, IMF) or imfNo>=max_imf:
                 notFinished = False
                 break
 
@@ -314,13 +321,40 @@ class EMD2D:
 
 ########################################
 if __name__ == "__main__":
-    x = np.arange(50)
-    y = np.arange(50).reshape((-1,1))
+
+    PLOT = True
+    # Generate image
+    rows, cols = 512, 512
+    x = np.arange(rows)/float(rows)
+    y = np.arange(cols).reshape((-1,1))/float(cols)
 
     pi2 = 2*np.pi
-    img = np.sin(x*pi2)*np.cos(y*3*pi2)+x
+    img = np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
+    img = img + 3*np.sin(7*pi2*x)+2
+    img = img + 2*np.sin(10*pi2*y*x)*(2*x+0.1)
+    img = img + 5*x*y + 2*(y-0.2)*y
+    img[img<-4.2] = np.sin(2*img[img<-4.2])
 
+    # Perform decomposition
     emd2d = EMD2D()
-    IMFs = emd2d.emd(img)
-    print(IMFs)
-    print(IMFs.shape)
+    IMFs = emd2d.emd(img, max_imf=4)
+
+    if PLOT:
+        import pylab as plt
+
+        # Save image for preview
+        plt.figure()
+        plt.imshow(img)
+        plt.colorbar()
+        plt.title("Input image")
+        plt.savefig("input_image")
+
+        # Save reconstruction
+        plt.figure()
+        for n, imf in enumerate(IMFs):
+            plt.subplot(IMFs.shape[0], 1, n+1)
+            plt.imshow(imf)
+            plt.colorbar()
+            plt.title("IMF %i"%(n+1))
+
+        plt.savefig("output_imfs")
