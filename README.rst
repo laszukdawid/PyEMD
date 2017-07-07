@@ -23,8 +23,10 @@ Introduction
 ************
 
 This is yet another Python implementation of Empirical Mode
-Decomposition (EMD). The package contains many EMD variations, like
-Ensemble EMD (EEMD), and different settings.
+Decomposition (EMD). The package contains many EMD variations, like:
+    - Ensemble EMD (EEMD),
+    - Image decomposotion (EMD2D),
+    - different settings and configurations of vanilla EMD.
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
 and extrema interpolation.
@@ -69,6 +71,8 @@ Packaged obtained from PyPi is/will be slightly behind this project, so some fea
 Example
 *******
 
+More detailed examples are included in documentation. 
+
 EMD
 ===
 
@@ -100,6 +104,20 @@ Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing 
     s = np.random.random(100)
     eemd = EEMD()
     eIMFs = eemd.eemd(s)
+
+EMD2D
+=====
+
+Simplest case is to pass image as monochromatic numpy 2D array.
+
+.. code:: python
+
+    from PyEMD import EMD2D
+
+    x, y = np.arange(128), np.arange(128).reshape((-1,1))
+    img = np.sin(0.1*x)*np.cos(0.2*y)
+    emd2d= EMD2D()
+    IMFs_2D = emd2d.emd(img)
 
 Contact
 *******

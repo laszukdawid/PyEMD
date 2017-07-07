@@ -113,7 +113,10 @@ Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing 
 EMD 2D (Image)
 ==============
 
+Example of image/2D decomposition based on generated input.
+
 .. code:: python
+
     from __future__ import division, print_function
 
     import numpy  as np
@@ -165,4 +168,4 @@ EMD 2D (Image)
 
 .. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/simple_example.png?raw=true
 .. |eemdExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/eemd_example.png?raw=true
-.. |emd2dExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/eemd_example.png?raw=true
+.. |emd2dExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/image_decomp.png?raw=true
