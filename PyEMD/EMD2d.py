@@ -4,7 +4,7 @@
 # Author:   Dawid Laszuk
 # Contact:  laszukdawid@gmail.com
 #
-# Edited:   20/06/2017
+# Edited:   07/07/2017
 #
 # Feel free to contact for any information.
 
@@ -13,6 +13,7 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 import os
+import pylab as plt
 
 #from scipy.ndimage import maximum_filter
 from scipy.ndimage.filters import maximum_filter
@@ -36,7 +37,7 @@ class EMD2D:
         # ProtoIMF related
         self.inst_thr = 0.05
         self.mse_thr = 0.01
-        self.mean_thr = 0.1
+        self.mean_thr = 0.01
 
         self.FIXE = 0
         self.FIXE_H = 0
@@ -49,6 +50,19 @@ class EMD2D:
                 self.__dict__[key] = kwargs[key]
 
     def extract_max_min_spline(self, image):
+        """Calculates top and bottom envelopes for image.
+
+        Parameters
+        ----------
+        image : numpy 2D array
+
+        Returns
+        -------
+        min_env : numpy 2D array
+            Bottom envelope in form of an image.
+        max_env : numpy 2D array
+            Top envelope in form of an image.
+        """
 
 
         big_image = self.prepare_image(image)
@@ -199,17 +213,40 @@ class EMD2D:
 
         return False
 
-    def check_proto_imf(self, proto_imf, proto_imf_prev):
+    def check_proto_imf(self, proto_imf, proto_imf_prev, mean_env):
         """Check whether passed (proto) IMF is actual IMF.
         Current condition is solely based on checking whether the mean is below threshold.
+
+        Parameters
+        ----------
+        proto_imf : numpy 2D array
+            Current iteration of proto IMF.
+        proto_imf_prev : numpy 2D array
+            Previous iteration of proto IMF.
+        mean_env : numpy 2D array
+            Local mean computed from top and bottom envelopes.
+
+        Returns
+        -------
+        boolean
+            Whether current proto IMF is actual IMF.
         """
+
+
+        #TODO: Sifiting is very sensitive and subtracting const val can often flip
+        #      maxima with minima in decompoisition and thus repeating above/below
+        #      behaviour. For now, mean_env is checked whether close to zero excluding
+        #      its offset.
+        if np.all(np.abs(mean_env-mean_env.mean())<self.mean_thr):
+        #if np.all(np.abs(mean_env)<self.mean_thr):
+            return True
 
         # If very little change with sifting
         if np.allclose(proto_imf, proto_imf_prev):
             return True
 
         # If IMF mean close to zero (below threshold)
-        if np.mean(proto_imf)<self.mean_thr:
+        if np.mean(np.abs(proto_imf))<self.mean_thr:
             return True
 
 #       # No speck above inst_thr
@@ -240,22 +277,26 @@ class EMD2D:
             Set of IMFs in form of numpy array where the first dimension
             relates to IMF's ordinary number.
         """
+        image_min, image_max = np.min(image), np.max(image)
+        offset = image_min
+        scale = image_max-image_min
 
-        res = image.copy()
+        image_s = (image-offset)/scale
+
         imf = np.zeros(image.shape)
         imf_olf = imf.copy()
 
         imfNo = 0
-        IMF = np.empty((imfNo,)+imf.shape)
+        IMF = np.empty((imfNo,)+image.shape)
         notFinished = True
 
 
         while(notFinished):
             self.logger.debug('IMF -- '+str(imfNo))
 
-            res = image - np.sum(IMF[:imfNo], axis=0)
+            res = image_s - np.sum(IMF[:imfNo], axis=0)
             imf = res.copy()
-            mean = np.zeros(image.shape)
+            mean_env = np.zeros(image.shape)
             stop_sifting = False
 
             # Counters
@@ -272,14 +313,14 @@ class EMD2D:
                 if len(min_peaks[0])>4 and len(max_peaks[0])>4:
 
                     imf_old = imf.copy()
-                    imf = imf - mean
+                    imf = imf - mean_env
 
                     min_env, max_env = self.extract_max_min_spline(imf)
 
-                    mean = 0.5*(min_env+max_env)
+                    mean_env = 0.5*(min_env+max_env)
 
                     imf_old = imf.copy()
-                    imf = imf - mean
+                    imf = imf - mean_env
 
                     # Fix number of iterations
                     if self.FIXE:
@@ -291,10 +332,17 @@ class EMD2D:
                     elif self.FIXE_H:
 
                         if n == 1: continue
-                        if self.check_proto_imf(imf, imf_old):
+                        if self.check_proto_imf(imf, imf_old, mean_env):
                             n_h += 1
                         else:
                             n_h = 0
+                        plt.figure()
+                        plt.subplot(2,1,1)
+                        plt.imshow(imf); plt.colorbar()
+                        plt.subplot(2,1,2)
+                        plt.imshow(mean_env); plt.colorbar()
+                        plt.savefig("protimf%i-%i"%(imfNo, n))
+                        plt.close()
 
                         # STOP if enough n_h
                         if n_h >= self.FIXE_H:
@@ -303,7 +351,7 @@ class EMD2D:
                     # Stops after default stopping criteria are met
                     else:
 
-                        if self.check_proto_imf(imf, imf_old):
+                        if self.check_proto_imf(imf, imf_old, mean_env):
                             stop_sifting = True
 
                 else:
@@ -317,44 +365,56 @@ class EMD2D:
                 notFinished = False
                 break
 
+        IMF = IMF*scale
+        IMF[-1] += offset
         return IMF
 
 ########################################
 if __name__ == "__main__":
-
+    print("Running example on EMD2D")
     PLOT = True
+
+    logging.basicConfig(level=logging.DEBUG)
+
     # Generate image
-    rows, cols = 512, 512
-    x = np.arange(rows)/float(rows)
-    y = np.arange(cols).reshape((-1,1))/float(cols)
+    print("Generating image... ", end="")
+    rows, cols = 1024, 1024
+    row_scale, col_scale = 256, 256
+    x = np.arange(rows)/float(row_scale)
+    y = np.arange(cols).reshape((-1,1))/float(col_scale)
 
     pi2 = 2*np.pi
-    img = np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
-    img = img + 3*np.sin(7*pi2*x)+2
-    img = img + 2*np.sin(10*pi2*y*x)*(2*x+0.1)
+    img = np.zeros((rows,cols))
+    img = img + np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
+    img = img + 3*np.sin(2*pi2*x)+2
     img = img + 5*x*y + 2*(y-0.2)*y
-    img[img<-4.2] = np.sin(2*img[img<-4.2])
+    print("Done")
 
     # Perform decomposition
+    print("Performing decomposition... ", end="")
     emd2d = EMD2D()
+    #emd2d.FIXE_H = 5
     IMFs = emd2d.emd(img, max_imf=4)
+    imfNo = IMFs.shape[0]
+    print("Done")
 
     if PLOT:
+        print("Plotting results... ", end="")
         import pylab as plt
 
         # Save image for preview
-        plt.figure()
+        plt.figure(figsize=(4,4*(imfNo+1)))
+        plt.subplot(imfNo+1, 1, 1)
         plt.imshow(img)
         plt.colorbar()
         plt.title("Input image")
-        plt.savefig("input_image")
 
         # Save reconstruction
-        plt.figure()
         for n, imf in enumerate(IMFs):
-            plt.subplot(IMFs.shape[0], 1, n+1)
+            plt.subplot(imfNo+1, 1, n+2)
             plt.imshow(imf)
             plt.colorbar()
             plt.title("IMF %i"%(n+1))
 
-        plt.savefig("output_imfs")
+        plt.savefig("image_decomp")
+        print("Done")

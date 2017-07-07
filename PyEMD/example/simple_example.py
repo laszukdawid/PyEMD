@@ -1,6 +1,10 @@
+# Author: Dawid Laszuk
+# Last update: 7/07/2017
+from __future__ import division, print_function
+
 import numpy  as np
 import pylab as plt
-from PyEMD.EMD import EMD
+from PyEMD import EMD
 
 # Define signal
 t = np.linspace(0, 1, 200)

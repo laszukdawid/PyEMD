@@ -1,5 +1,7 @@
-import sys
-sys.path.append("../..")
+# Author: Dawid Laszuk
+# Last update: 7/07/2017
+from __future__ import division, print_function
+
 from PyEMD import EEMD
 import numpy as np
 import pylab as plt

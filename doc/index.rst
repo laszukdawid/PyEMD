@@ -12,6 +12,7 @@ Writing documentation is hard. If more clarifications are needed, or you think o
    examples
    emd
    eemd
+   emd2d
    contact
 
 Indices and tables
