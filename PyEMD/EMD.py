@@ -74,10 +74,6 @@ class EMD:
         self.reduce_scale = 1.
         self.scale_factor = 1.
 
-        self.PLOT = 0
-        self.INTERACTIVE = 0
-        self.plotPath = 'splineTest'
-
         self.spline_kind = spline_kind
         self.extrema_detection = 'simple' # simple, parabol
 
@@ -91,9 +87,6 @@ class EMD:
         for key in kwargs.keys():
             if key in self.__dict__.keys():
                 self.__dict__[key] = kwargs[key]
-
-        if self.PLOT:
-            import pylab as plt
 
     def extract_max_min_spline(self, T, S):
         """
@@ -118,14 +111,6 @@ class EMD:
         # Get indexes of extrema
         max_pos, max_val, min_pos, min_val, indzer = self.find_extrema(T, S)
 
-        if max_pos.dtype!=self.DTYPE:
-            self.logger.error('max_pos.dtype: '+str(max_pos.dtype))
-        if max_val.dtype!=self.DTYPE:
-            self.logger.error('max_val.dtype: '+str(max_val.dtype))
-        if min_pos.dtype!=self.DTYPE:
-            self.logger.error('min_pos.dtype: '+str(min_pos.dtype))
-        if min_val.dtype!=self.DTYPE:
-            self.logger.error('min_val.dtype: '+str(min_val.dtype))
         if len(max_pos) + len(min_pos) < 3: return [-1]*4
 
         #########################################
@@ -135,13 +120,6 @@ class EMD:
 
         max_t_spline, max_spline = self.spline_points(T, max_extrema)
         min_t_spline, min_spline = self.spline_points(T, min_extrema)
-
-        if max_extrema.dtype!=self.DTYPE:
-            self.logger.error('max_extrema.dtype: '+str(max_extrema.dtype))
-        if max_spline.dtype!=self.DTYPE:
-            self.logger.error('max_spline.dtype: '+str(max_spline.dtype))
-        if max_t_spline.dtype!=self.DTYPE:
-            self.logger.error('maxTSline.dtype: '+str(max_t_spline.dtype))
 
         return max_spline, min_spline, max_extrema, min_extrema
 
@@ -313,11 +291,6 @@ class EMD:
         indmin = np.array([np.nonzero(T==t)[0] for t in min_pos]).flatten()
         indmax = np.array([np.nonzero(T==t)[0] for t in max_pos]).flatten()
 
-        if S.dtype != self.DTYPE:
-            self.logger.error('S.dtype: '+str(S.dtype))
-        if T.dtype != self.DTYPE:
-            self.logger.error('T.dtype: '+str(T.dtype))
-
         # Local variables
         nbsym = self.nbsym
         end_min, end_max = len(min_pos), len(max_pos)
@@ -415,8 +388,6 @@ class EMD:
 
         max_extrema = np.array([tmax, zmax])
         min_extrema = np.array([tmin, zmin])
-        if max_extrema.dtype != self.DTYPE:
-            self.logger.error('max_extrema.dtype: '+str(max_extrema.dtype))
 
         # Make double sure, that each extremum is significant
         max_dup_idx = np.where(max_extrema[0,1:]==max_extrema[0,:-1])
@@ -447,10 +418,6 @@ class EMD:
 
         kind = self.spline_kind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
-        if t.dtype != self.DTYPE:
-            self.logger.error('t.dtype: '+str(t.dtype))
-        if extrema.dtype != self.DTYPE:
-            self.logger.error('extrema.dtype: '+str(extrema.dtype))
 
         if kind == "akima":
             return t, akima(extrema[0], extrema[1], t)
@@ -775,17 +742,6 @@ class EMD:
 
         N = len(S)
 
-        if Res.dtype!=self.DTYPE:
-            self.logger.error('Res.dtype: '+str(Res.dtype))
-        if scaledS.dtype!=self.DTYPE:
-            self.logger.error('scaledS.dtype: '+str(scaledS.dtype))
-        if imf.dtype!=self.DTYPE:
-            self.logger.error('imf.dtype: '+str(imf.dtype))
-        if imf_old.dtype!=self.DTYPE:
-            self.logger.error('imf_old.dtype: '+str(imf_old.dtype))
-        if T.dtype!=self.DTYPE:
-            self.logger.error('T.dtype: '+str(T.dtype))
-
         if S.shape != T.shape:
             info = "Position or time array should be the same size as signal."
             raise ValueError(info)
@@ -806,10 +762,6 @@ class EMD:
             n = 0   # All iterations for current imf.
             n_h = 0 # counts when |#zero - #ext| <=1
 
-            # Start on-screen displaying
-            if self.PLOT and self.INTERACTIVE:
-                plt.ion()
-
             while(n<self.MAX_ITERATION):
                 n += 1
                 self.logger.debug("Iteration: "+str(n))
@@ -819,22 +771,6 @@ class EMD:
                 nzm = len(indzer)
 
                 if extNo > 2:
-
-                    # Plotting. Either into file, or on-screen display.
-                    if n>1 and self.PLOT:
-                        plt.clf()
-                        plt.plot(T, imf*scale, 'g')
-                        plt.plot(T, max_env*scale, 'b')
-                        plt.plot(T, min_env*scale, 'r')
-                        plt.plot(T, mean*scale, 'k--')
-                        plt.title("imf{}_{:02}".format(imfNo, n-1))
-
-                        if self.INTERACTIVE:
-                            plt.draw()
-                        else:
-                            fName = "imf{}_{:02}".format(imfNo, n-1)
-                            plt.savefig(os.path.join(self.plotPath,fName))
-
                     imf_old = imf.copy()
                     imf = imf - self.reduce_scale*mean
 
@@ -845,15 +781,6 @@ class EMD:
                         break
 
                     mean = 0.5*(max_env+min_env)
-
-                    if max_env.dtype!=self.DTYPE:
-                        self.logger.error('max_envimf.dtype: '+str(max_env.dtype))
-                    if min_env.dtype!=self.DTYPE:
-                        self.logger.error('min_envimf.dtype: '+str(min_envimf.dtype))
-                    if imf.dtype!=self.DTYPE:
-                        self.logger.error('imf.dtype: '+str(imf.dtype))
-                    if mean.dtype!=self.DTYPE:
-                        self.logger.error('mean.dtype: '+str(mean.dtype))
 
                     # Fix number of iterations
                     if self.FIXE:
@@ -940,7 +867,6 @@ if __name__ == "__main__":
 
     # Prepare and run EMD
     emd = EMD()
-    emd.PLOT = 0
     emd.FIXE_H = 5
     emd.nbsym = 2
     emd.spline_kind = 'cubic'
