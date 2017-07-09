@@ -54,7 +54,6 @@ class EEMD:
         if ext_EMD is None:
             from PyEMD import EMD
             self.EMD = EMD()
-            self.EMD.FIXE_H = 5
         else:
             self.EMD = ext_EMD
 
