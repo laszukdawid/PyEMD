@@ -7,9 +7,9 @@ EMD
 ===
 
 Quick start
-```````````
+-----------
 In most cases default settings are enough. Simply
-import ``EMD`` and pass your signal to ``emd()`` method.
+import :py:class:`EMD` and pass your signal to `emd` method.
 
 .. code:: python
 
@@ -25,9 +25,9 @@ Here is a complete script on how to create and plot results.
 
 .. code:: python
 
+    from PyEMD import EMD
     import numpy  as np
     import pylab as plt
-    from PyEMD.EMD import EMD
 
     # Define signal
     t = np.linspace(0, 1, 200)
@@ -63,7 +63,7 @@ The Figure below was produced with input:
 EEMD
 ====
 
-Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing your signal to ``eemd()`` method.
+Simplest case of using Esnembld EMD (EEMD) is by importing `EEMD` and passing your signal to `eemd` method.
 
 .. code:: python
 
@@ -167,5 +167,9 @@ Example of image/2D decomposition based on generated input.
 |emd2dExample|
 
 .. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/simple_example.png?raw=true
+    :width: 640px
+    :height: 480px
 .. |eemdExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/eemd_example.png?raw=true
+    :width: 720px
+    :height: 540px
 .. |emd2dExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/image_decomp.png?raw=true

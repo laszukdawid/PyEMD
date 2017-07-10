@@ -32,6 +32,8 @@ import sys
 extensions = [
     'sphinx.ext.autodoc',
     'numpydoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
@@ -39,7 +41,10 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages']
 
-sys.path.insert(0, '..')
+sys.path.insert(0, "../")
+from PyEMD import *
+
+numpydoc_show_class_members = False
 
 # -- General configuration ------------------------------------------------
 

@@ -36,8 +36,8 @@ class EMD:
     extrema_detection : string, (default: 'simple')
         How extrema are defined.
 
-        * *simple* - Ext point is one above/below neighbours.
-        * *parabol* - Ext point is a peak of a parabola.
+        * *simple* - Extremum is above/below neighbours.
+        * *parabol* - Extremum is a peak of a parabola.
 
     References
     ----------
@@ -129,8 +129,8 @@ class EMD:
         as mirroring signal. The number of added points depends on *nbsym*
         variable.
 
-        Input
-        -----
+        Parameters
+        ----------
         S : numpy array
             Input signal.
         T : numpy array
@@ -165,7 +165,7 @@ class EMD:
         Performs mirroring on signal which extrema do not necessarily
         belong on the position array.
 
-        See self.prepare_points().
+        See :meth:`EMD.prepare_points`.
         """
 
         # Need at least two extrema to perform mirroring
@@ -284,7 +284,7 @@ class EMD:
         Performs mirroring on signal which extrema can be indexed on
         the position array.
 
-        See self.prepare_points().
+        See :meth:`EMD.prepare_points`.
         """
 
         # Find indexes of pass
@@ -457,7 +457,7 @@ class EMD:
         """
         Returns extrema (minima and maxima) for given signal S.
         Detection and definition of the extrema depends on
-        **extrema_detection** variable, set on initiation of EMD.
+        ``extrema_detection`` variable, set on initiation of EMD.
 
         Parameters
         ----------
@@ -492,7 +492,7 @@ class EMD:
         of parabol spanned on 3 consecutive points, where the mid point is
         the closest.
 
-        See `self.find_extrema()`.
+        See :meth:`EMD.find_extrema()`.
         """
         # Finds indexes of zero-crossings
         S1, S2 = S[:-1], S[1:]
@@ -557,7 +557,7 @@ class EMD:
         Performs extrema detection, where extremum is defined as a point,
         that is above/below its neighbours.
 
-        See `self.find_extrema()`.
+        See :meth:`EMD.find_extrema`.
         """
 
         # Finds indexes of zero-crossings
