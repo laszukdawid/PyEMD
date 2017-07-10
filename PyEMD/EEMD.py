@@ -5,6 +5,9 @@
 # Contact:  laszukdawid@gmail.com
 #
 # Feel free to contact for any information.
+"""
+.. currentmodule:: EEMD
+"""
 
 from __future__ import print_function
 
@@ -28,9 +31,10 @@ class EEMD:
     trials : int (default: 100)
         Number of trails or EMD performance with added noise.
     noise_width : float (default: 0.05)
-        Standard deviation of Gaussian noise. It's relative to
-        absolute amplitude of the signal, i.e.
-        std = noise_width*abs(max(S)-min(S))
+        Standard deviation of Gaussian noise (:math:`\hat\sigma`).
+        It's relative to absolute amplitude of the signal, i.e.
+        :math:`\hat\sigma = \sigma\cdot|\max(S)-\min(S)|`, where
+        :math:`\sigma` is noise_width.
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
@@ -45,11 +49,15 @@ class EEMD:
 
     logger = logging.getLogger(__name__)
 
+    noise_kinds_all = ["normal", "uniform"]
+
     def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, **kwargs):
 
         # Ensemble constants
         self.trials = trials
         self.noise_width = noise_width
+
+        self.noise_kind = "normal"
 
         if ext_EMD is None:
             from PyEMD import EMD
@@ -65,12 +73,44 @@ class EEMD:
             elif key in self.EMD.__dict__.keys():
                 self.EMD.__dict__[key] = kwargs[key]
 
+    def generate_noise(self, scale, size):
+        """
+        Generate noise with specified parameters.
+
+        All distributions are zero centred. For types of distributions
+        see :`self.noise_kinds_all`.
+
+        .. py:attribute:: EEMD.noise_kinds_all
+
+        Parameters
+        ----------
+        scale : float
+            Width for the distribution.
+        size : int
+            Number of generated samples.
+
+        Returns
+        -------
+        noise : numpy array
+            Noise sampled from selected distribution.
+        """
+
+        if self.noise_kind=="normal":
+            noise = np.random.normal(loc=0, scale=scale, size=size)
+        elif self.noise_kind=="uniform":
+            noise = np.random.uniform(low=-scale/2, high=scale/2, size=size)
+        else:
+            raise ValueError("Unsupported noise kind. Please assigned `noise_kind`"
+                + " to be one of these: " + str(self.noise_kinds_all))
+
+        return noise
+
     def eemd(self, S, T=None, max_imf=-1):
         """
         Performs EEMD on provided signal.
 
-        For a large number of iterations defined by *trails* attr
-        the method performs :py:func: `EMD.emd` on a signal with added white noise.
+        For a large number of iterations defined by `trails` attr
+        the method performs :py:meth:`emd` on a signal with added white noise.
 
         Parameters
         ----------
@@ -79,14 +119,14 @@ class EEMD:
         T : numpy array, (default: None)
             If none passed samples are numerated.
         max_imf : int, (default: -1)
-            Defines up to how many IMFs each decompoisition should
+            Defines up to how many IMFs each decomposition should
             be performed. By default (negative value) it decomposes
             all IMFs.
 
         Returns
         -------
         eIMF : numpy array
-            Set of ensembled IMFs producesed from input signal. In general,
+            Set of ensemble IMFs produced from input signal. In general,
             these do not have to be, and most likely will not be, same as IMFs
             produced using EMD.
         """
@@ -103,12 +143,12 @@ class EEMD:
             self.logger.debug("trial: "+str(trial))
 
             # Generate noise
-            noise = np.random.normal(loc=0, scale=scale, size=N)
+            noise = self.generate_noise(scale, N)
 
             IMFs = self.emd(S+noise, T, max_imf)
             imfNo = IMFs.shape[0]
 
-            # If new decompoisiton has more IMFs than any previous
+            # If new decomposition has more IMFs than any previous
             # then add empty rows (holders)
             while(E_IMF.shape[0] < imfNo):
                 E_IMF = np.vstack((E_IMF, np.zeros(N)))
