@@ -13,6 +13,7 @@ coverage:
     changes: yes
 
   ignore:
+    - __init__.py
     - test_*.py
     - doc/*
     - PyEMD/example/*
