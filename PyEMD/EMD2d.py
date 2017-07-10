@@ -336,13 +336,6 @@ class EMD2D:
                             n_h += 1
                         else:
                             n_h = 0
-                        plt.figure()
-                        plt.subplot(2,1,1)
-                        plt.imshow(imf); plt.colorbar()
-                        plt.subplot(2,1,2)
-                        plt.imshow(mean_env); plt.colorbar()
-                        plt.savefig("protimf%i-%i"%(imfNo, n))
-                        plt.close()
 
                         # STOP if enough n_h
                         if n_h >= self.FIXE_H:
@@ -364,6 +357,11 @@ class EMD2D:
             if self.end_condition(image, IMF) or imfNo>=max_imf:
                 notFinished = False
                 break
+
+        res = image_s - np.sum(IMF[:imfNo], axis=0)
+        if not np.allclose(res, 0):
+            IMF = np.vstack((IMF, res[None,:]))
+            imfNo += 1
 
         IMF = IMF*scale
         IMF[-1] += offset
