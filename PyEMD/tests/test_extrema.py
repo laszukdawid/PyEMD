@@ -9,6 +9,26 @@ import unittest
 
 class ExtremaTest(unittest.TestCase):
 
+    def test_incorrectExtremaDetectionSetup(self):
+        extrema_detection = "bubble_gum"
+
+        # Sanity check
+        emd = EMD()
+        self.assertFalse(emd.extrema_detection==extrema_detection)
+
+        # Assign incorrect extrema_detection
+        emd.extrema_detection = extrema_detection
+        self.assertTrue(emd.extrema_detection==extrema_detection)
+
+        T = np.arange(10)
+        S = np.sin(T)
+        max_pos, max_val = np.random.random((2,3))
+        min_pos, min_val = np.random.random((2,3))
+
+        # Check for Exception
+        with self.assertRaises(ValueError):
+            emd.prepare_points(T, S, max_pos, max_val, min_pos, min_val)
+
     def test_wrong_extrema_detection_type(self):
         emd = EMD()
         emd.extrema_detection = "very_complicated"
