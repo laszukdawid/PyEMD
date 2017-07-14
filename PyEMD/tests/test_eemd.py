@@ -7,7 +7,7 @@ import numpy as np
 from PyEMD import EEMD
 import unittest
 
-class ExtremaTest(unittest.TestCase):
+class EEMDTest(unittest.TestCase):
 
     cmp_msg = lambda _,a,b: "Expected {}, Returned {}".format(a,b)
 

@@ -834,11 +834,11 @@ class EMD:
                 notFinish = False
                 break
 
-        #~ # Saving residuum
-        #~ Res = Res - imf
-        #~ #Res = scaledS - np.sum([IMF[i] for i in range(imfNo)],axis=0)
-        #~ IMF[imfNo] = Res
-        #~ imfNo += 1
+        # Saving residuum
+        #Res = Res - imf
+        Res = scaledS - np.sum(IMF,axis=0)
+        if not np.allclose(Res,0):
+            IMF = np.vstack((IMF, Res))
 
         return IMF
 
