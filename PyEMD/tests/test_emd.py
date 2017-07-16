@@ -67,7 +67,7 @@ class EMDTest(unittest.TestCase):
 
     def test_emd_passArgsViaDict(self):
         FIXE = 10
-        params = {"FIXE": FIXE}
+        params = {"FIXE": FIXE, "nothing": 0}
 
         # First test without initiation
         emd = EMD()
@@ -132,17 +132,16 @@ class EMDTest(unittest.TestCase):
         # Check that IMFs are correct
         self.assertTrue(IMFs.shape[0]==3)
 
-        closeIMF1 = np.allclose(c1[1:-1], IMFs[0,1:-1], atol=0.5)
+        closeIMF1 = np.allclose(c1[2:-2], IMFs[0,2:-2], atol=0.2)
         self.assertTrue(closeIMF1)
         self.assertTrue(np.allclose(c1, IMFs[0], atol=1.))
 
-        closeIMF2 = np.allclose(c2[1:-1], IMFs[1,1:-1], atol=0.5)
+        closeIMF2 = np.allclose(c2[2:-2], IMFs[1,2:-2], atol=0.21)
         self.assertTrue(closeIMF2)
         self.assertTrue(np.allclose(c2, IMFs[1], atol=1.))
 
-        closeOffset = np.allclose(offset, IMFs[2,1:-1], atol=0.5)
+        closeOffset = np.allclose(offset, IMFs[2,2:-2], atol=0.1)
         self.assertTrue(closeOffset)
-        self.assertTrue(np.allclose(IMFs[1,1:-1], c2[1:-1], atol=0.5))
 
         closeOffset = np.allclose(offset, IMFs[2,1:-1], atol=0.5)
         self.assertTrue(closeOffset)
@@ -154,15 +153,15 @@ class EMDTest(unittest.TestCase):
         offset = 9
         S = c1 + c2 + offset
 
-        emd = EMD()
+        emd = EMD(spline_kind='akima')
         IMFs = emd.emd(S, T)
 
         self.assertTrue(IMFs.shape[0]==3)
 
-        closeIMF1 = np.allclose(c1[1:-1], IMFs[0,1:-1], atol=0.5)
+        closeIMF1 = np.allclose(c1[2:-2], IMFs[0,2:-2], atol=0.2)
         self.assertTrue(closeIMF1)
 
-        closeIMF2 = np.allclose(c2[1:-1], IMFs[1,1:-1], atol=0.5)
+        closeIMF2 = np.allclose(c2[2:-2], IMFs[1,2:-2], atol=0.21)
         self.assertTrue(closeIMF2)
 
         closeOffset = np.allclose(offset, IMFs[2,1:-1], atol=0.5)

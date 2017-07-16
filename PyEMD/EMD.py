@@ -4,7 +4,7 @@
 # Author:   Dawid Laszuk
 # Contact:  laszukdawid@gmail.com
 #
-# Edited:   07/06/2017
+# Edited:   14/07/2017
 #
 # Feel free to contact for any information.
 
@@ -734,13 +734,12 @@ class EMD:
         S, T = self._common_dtype(S, T)
         self.DTYPE = S.dtype
         scale = 1.
+        N = len(S)
 
         Res = S.astype(self.DTYPE)
         Res, scaledS = Res/scale, S/scale
         imf = np.zeros(len(S), dtype=self.DTYPE)
-        imf_old = Res.copy()
-
-        N = len(S)
+        imf_old = np.nan
 
         if S.shape != T.shape:
             info = "Position or time array should be the same size as signal."
@@ -762,8 +761,14 @@ class EMD:
             n = 0   # All iterations for current imf.
             n_h = 0 # counts when |#zero - #ext| <=1
 
-            while(n<self.MAX_ITERATION):
+            while(True):
                 n += 1
+                if n >= self.MAX_ITERATION:
+                    msg = "Max iterations reached for IMF. "
+                    msg+= "Continueing with another IMF."
+                    self.logger.info(msg)
+                    break
+
                 self.logger.debug("Iteration: "+str(n))
 
                 max_pos, max_val, min_pos, min_val, indzer = self.find_extrema(T, imf)
@@ -771,20 +776,16 @@ class EMD:
                 nzm = len(indzer)
 
                 if extNo > 2:
+
+                    max_env, min_env, eMax, eMin = self.extract_max_min_spline(T, imf)
+                    mean = 0.5*(max_env+min_env)
+
                     imf_old = imf.copy()
                     imf = imf - self.reduce_scale*mean
 
-                    max_env, min_env, eMax, eMin = self.extract_max_min_spline(T, imf)
-
-                    if type(max_env) == type(-1):
-                        notFinish = True
-                        break
-
-                    mean = 0.5*(max_env+min_env)
-
                     # Fix number of iterations
                     if self.FIXE:
-                        if n>=self.FIXE+1: break
+                        if n >= self.FIXE: break
 
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
@@ -794,7 +795,6 @@ class EMD:
                         max_pos, max_val, min_pos, min_val, ind_zer = res
                         extNo = len(max_pos)+len(min_pos)
                         nzm = len(ind_zer)
-
 
                         if n == 1: continue
                         if abs(extNo-nzm)>1: n_h = 0
@@ -815,19 +815,22 @@ class EMD:
                         extNo = len(max_pos) + len(min_pos)
                         nzm = len(ind_zer)
 
-                        f1 = self.check_imf(imf, max_env, min_env, mean, extNo)
+                        if imf_old is np.nan: continue
+
+                        f1 = self.check_imf(imf, imf_old, max_env, min_env, mean)
                         #f2 = np.all(max_val>0) and np.all(min_val<0)
                         f2 = abs(extNo - nzm)<2
 
                         # STOP
                         if f1 and f2: break
 
-                else:
+                else: # Less than 2 ext, i.e. trend
                     notFinish = False
                     break
 
+            # END OF IMF SIFITING
+
             IMF = np.vstack((IMF, imf.copy()))
-            IMF = IMF*scale
             imfNo += 1
 
             if self.end_condition(scaledS, IMF) or imfNo==max_imf:
@@ -835,10 +838,11 @@ class EMD:
                 break
 
         # Saving residuum
-        #Res = Res - imf
         Res = scaledS - np.sum(IMF,axis=0)
         if not np.allclose(Res,0):
             IMF = np.vstack((IMF, Res))
+
+        IMF = IMF*scale
 
         return IMF
 
