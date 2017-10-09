@@ -143,6 +143,7 @@ Citation
 
 If you found this package useful and would like to cite it in your work
 please use following structure:
+
 Dawid Laszuk (2017-), **Python implementation of Empirical Mode Decomposition algorithm**. http://www.laszukdawid.com/codes.
 
 
