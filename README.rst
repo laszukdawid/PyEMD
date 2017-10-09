@@ -80,7 +80,7 @@ EMD
 ===
 
 In most cases default settings are enough. Simply
-import ``EMD`` and pass your signal to ``emd()`` method.
+import ``EMD`` and pass your signal to instance or to ``emd()`` method.
 
 .. code:: python
 
@@ -89,7 +89,7 @@ import ``EMD`` and pass your signal to ``emd()`` method.
 
     s = np.random.random(100)
     emd = EMD()
-    IMFs = emd.emd(s)
+    IMFs = emd(s)
 
 The Figure below was produced with input:
 :math:`S(t) = cos(22 \pi t^2) + 6t^2` 
@@ -99,7 +99,8 @@ The Figure below was produced with input:
 EEMD
 ====
 
-Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing your signal to ``eemd()`` method.
+Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing
+your signal to the instance or ``eemd()`` method.
 
 .. code:: python
 
@@ -108,12 +109,14 @@ Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing 
 
     s = np.random.random(100)
     eemd = EEMD()
-    eIMFs = eemd.eemd(s)
+    eIMFs = eemd(s)
 
 EMD2D
 =====
 
 Simplest case is to pass image as monochromatic numpy 2D array.
+As with other modules one can use default setting of instance or
+more expliclity use ``emd2d()`` method.
 
 .. code:: python
 
@@ -123,7 +126,7 @@ Simplest case is to pass image as monochromatic numpy 2D array.
     x, y = np.arange(128), np.arange(128).reshape((-1,1))
     img = np.sin(0.1*x)*np.cos(0.2*y)
     emd2d = EMD2D()
-    IMFs_2D = emd2d.emd(img)
+    IMFs_2D = emd2d(img)
 
 Contact
 *******
@@ -134,6 +137,13 @@ someone's time or that I might improve my skills/projects.
 
 Contact me either through gmail ({my\_username}@gmail) or search me
 favourite web search.
+
+Citation
+========
+
+If you found this package useful and would like to cite it in your work
+please use following structure:
+Dawid Laszuk (2017-), **Python implementation of Empirical Mode Decomposition algorithm**. http://www.laszukdawid.com/codes.
 
 
 .. |codecov| image:: https://codecov.io/gh/laszukdawid/PyEMD/branch/master/graph/badge.svg

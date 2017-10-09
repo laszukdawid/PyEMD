@@ -11,6 +11,14 @@ class EEMDTest(unittest.TestCase):
 
     cmp_msg = lambda _,a,b: "Expected {}, Returned {}".format(a,b)
 
+    def test_default_call_EEMD(self):
+        T = np.arange(50)
+        S = np.cos(T*0.1)
+        max_imf = 2
+
+        eemd = EEMD()
+        results = eemd(S, T, max_imf)
+
     def test_eemd_simpleRun(self):
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)

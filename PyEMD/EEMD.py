@@ -73,6 +73,9 @@ class EEMD:
             elif key in self.EMD.__dict__.keys():
                 self.EMD.__dict__[key] = kwargs[key]
 
+    def __call__(self, S, T=None, max_imf=-1):
+        return self.eemd(S, T=T, max_imf=max_imf)
+
     def generate_noise(self, scale, size):
         """
         Generate noise with specified parameters.

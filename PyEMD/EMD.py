@@ -88,6 +88,9 @@ class EMD:
             if key in self.__dict__.keys():
                 self.__dict__[key] = kwargs[key]
 
+    def __call__(self, S, T=None, max_imf=None):
+        return self.emd(S, T=T, max_imf=max_imf)
+
     def extract_max_min_spline(self, T, S):
         """
         Extracts top and bottom envelopes based on the signal,
@@ -660,11 +663,11 @@ class EMD:
 #           return True
 
         if np.max(tmp) - np.min(tmp) < self.range_thr:
-            self.logger.info("FINISHED -- RANGE")
+            self.logger.debug("FINISHED -- RANGE")
             return True
 
         if np.sum(np.abs(tmp)) < self.total_power_thr:
-            self.logger.info("FINISHED -- SUM POWER")
+            self.logger.debug("FINISHED -- SUM POWER")
             return True
 
         return False
@@ -685,13 +688,13 @@ class EMD:
         # Scaled variance test
         svar = np.sum((imf_new-imf_old)**2)/(max(imf_old)-min(imf_old))
         if  svar < self.svar_thr:
-            self.logger.info("Scaled variance -- PASSED")
+            self.logger.debug("Scaled variance -- PASSED")
             return True
 
         # Standard deviation test
         std = np.sum(((imf_new-imf_old)/imf_new)**2)
         if std < self.std_thr:
-            self.logger.info("Standard deviation -- PASSED")
+            self.logger.debug("Standard deviation -- PASSED")
             return True
 
         return False

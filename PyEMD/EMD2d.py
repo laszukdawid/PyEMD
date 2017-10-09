@@ -49,6 +49,9 @@ class EMD2D:
             if key in self.__dict__.keys():
                 self.__dict__[key] = kwargs[key]
 
+    def __call__(self, image, max_imf=-1):
+        return self.emd(image, max_imf=max_imf)
+
     def extract_max_min_spline(self, image):
         """Calculates top and bottom envelopes for image.
 

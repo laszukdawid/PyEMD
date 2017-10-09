@@ -11,6 +11,14 @@ class EMDTest(unittest.TestCase):
 
     cmp_msg = lambda _,a,b: "Expected {}, Returned {}".format(a,b)
 
+    def test_default_call_EMD(self):
+        T = np.arange(50)
+        S = np.cos(T*0.1)
+        max_imf = 2
+
+        emd = EMD()
+        results = emd(S, T, max_imf)
+
     def test_different_length_input(self):
         T = np.arange(20)
         S = np.random.random(len(T)+7)

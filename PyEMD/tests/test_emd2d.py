@@ -30,6 +30,19 @@ class ImageEMDTest(unittest.TestCase):
 
         return scale*exp
 
+    def test_default_call_EMD2d(self):
+        x = np.arange(50)
+        y = np.arange(50)
+        xv, yv = np.meshgrid(x,y)
+        pos = (10, 20)
+        std = 5
+        img = self._generate_Gauss(xv, yv, pos, std)
+
+        max_imf = 2
+
+        emd2d = EMD2D()
+        results = emd2d(img, max_imf)
+
     def test_endCondition_perfectReconstruction(self):
         c1 = self._generate_image()
         c2 = self._generate_image()
