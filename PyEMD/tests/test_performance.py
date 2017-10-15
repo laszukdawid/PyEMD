@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import logging
 import numpy as np
+import os
 import time
 import unittest
 
@@ -31,7 +32,7 @@ class PerformanceTest(unittest.TestCase):
 
         # These are local values. I'd be veeerrry surprised if everyone had such performance.
         # In case your test is failing: ignore and carry on.
-        expected_times = [0.012, 0.039, 0.038, 0.050, 0.038, 0.049, 0.048, 0.050, 0.027, 0.050]
+        expected_times = np.array([0.015, 0.04, 0.04, 0.05, 0.04, 0.05, 0.05, 0.05, 0.03, 0.05])
         received_times = [0]*len(expected_times)
 
         all_w = np.arange(10,20)
@@ -44,7 +45,7 @@ class PerformanceTest(unittest.TestCase):
         emd.FIXE = 10
 
         for idx, signal in enumerate(all_test_signals):
-            avg_t = self._timeit(emd.emd, signal, T, N=10)
+            avg_t = self._timeit(emd.emd, signal, T, N=15)
 
             self.logger.info("{}. t = {:.4} (exp. {})".format(idx, avg_t, expected_times[idx]))
             received_times[idx] = avg_t
@@ -52,7 +53,11 @@ class PerformanceTest(unittest.TestCase):
        # allclose = np.allclose(received_times, expected_times, atol=1e-2)
        # self.assertTrue(allclose)
 
-        less_than = received_times <= expected_times
+        # Detect whether run on Travis CI
+        if "TRAVIS" in os.environ:
+            less_than = received_times <= expected_times*2
+        else:
+            less_than = received_times <= expected_times
         self.assertTrue(np.all(less_than))
 
 if __name__ == "__main__":
