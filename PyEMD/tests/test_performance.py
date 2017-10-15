@@ -35,6 +35,10 @@ class PerformanceTest(unittest.TestCase):
         expected_times = np.array([0.015, 0.04, 0.04, 0.05, 0.04, 0.05, 0.05, 0.05, 0.03, 0.05])
         received_times = [0]*len(expected_times)
 
+        # Detect whether run on Travis CI
+        if "TRAVIS" in os.environ:
+            expected_times *= 4 # Conservative.
+
         all_w = np.arange(10,20)
         for w in all_w:
             signal = np.sin(w*2*np.pi*T)
@@ -53,11 +57,7 @@ class PerformanceTest(unittest.TestCase):
        # allclose = np.allclose(received_times, expected_times, atol=1e-2)
        # self.assertTrue(allclose)
 
-        # Detect whether run on Travis CI
-        if "TRAVIS" in os.environ:
-            less_than = received_times <= expected_times*2
-        else:
-            less_than = received_times <= expected_times
+        less_than = received_times <= expected_times
         self.assertTrue(np.all(less_than))
 
 if __name__ == "__main__":
