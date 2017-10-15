@@ -71,7 +71,6 @@ class EMD:
         self.range_thr = 0.001
 
         self.nbsym = nbsym
-        self.reduce_scale = 1.
         self.scale_factor = 1.
 
         self.spline_kind = spline_kind
@@ -655,7 +654,7 @@ class EMD:
             Is this the end?
         """
         # When to stop EMD
-        tmp = S.copy() - np.sum(IMF, axis=0)
+        tmp = S - np.sum(IMF, axis=0)
 
 #       # Power is enough
 #       if np.log10(np.abs(tmp).sum()/np.abs(Res).sum()) < self.power_thr:
@@ -736,11 +735,9 @@ class EMD:
         # Make sure same types are dealt
         S, T = self._common_dtype(S, T)
         self.DTYPE = S.dtype
-        scale = 1.
         N = len(S)
 
         Res = S.astype(self.DTYPE)
-        Res, scaledS = Res/scale, S/scale
         imf = np.zeros(len(S), dtype=self.DTYPE)
         imf_old = np.nan
 
@@ -756,7 +753,7 @@ class EMD:
         while(notFinish):
             self.logger.debug('IMF -- '+str(imfNo))
 
-            Res = scaledS - np.sum(IMF[:imfNo], axis=0)
+            Res[:] = S - np.sum(IMF[:imfNo], axis=0)
             imf = Res.copy()
             mean = np.zeros(len(S), dtype=self.DTYPE)
 
@@ -781,10 +778,10 @@ class EMD:
                 if extNo > 2:
 
                     max_env, min_env, eMax, eMin = self.extract_max_min_spline(T, imf)
-                    mean = 0.5*(max_env+min_env)
+                    mean[:] = 0.5*(max_env+min_env)
 
                     imf_old = imf.copy()
-                    imf = imf - self.reduce_scale*mean
+                    imf[:] = imf - mean
 
                     # Fix number of iterations
                     if self.FIXE:
@@ -836,16 +833,14 @@ class EMD:
             IMF = np.vstack((IMF, imf.copy()))
             imfNo += 1
 
-            if self.end_condition(scaledS, IMF) or imfNo==max_imf:
+            if self.end_condition(S, IMF) or imfNo==max_imf:
                 notFinish = False
                 break
 
         # Saving residuum
-        Res = scaledS - np.sum(IMF,axis=0)
+        Res = S - np.sum(IMF,axis=0)
         if not np.allclose(Res,0):
             IMF = np.vstack((IMF, Res))
-
-        IMF = IMF*scale
 
         return IMF
 
