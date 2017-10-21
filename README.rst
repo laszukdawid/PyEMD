@@ -5,14 +5,6 @@
 PyEMD
 *****
 
-*The project is ongoing. This is very limited part of my private
-collection, but before I upload everything I want to make sure it works
-as it should. If there is something you wish to have, do email me as
-there is high chance that I have already done it, but it just sits
-around and waits until I'll have more time. Don't hesitate to contact me
-for anything.*
-
-
 Links
 *****
 - HTML documentation: https://pyemd.readthedocs.org
@@ -135,7 +127,7 @@ Feel free to contact me with any questions, requests or simply saying
 *hi*. It's always nice to know that I might have contributed to saving
 someone's time or that I might improve my skills/projects.
 
-Contact me either through gmail ({my\_username}@gmail) or search me
+Contact me either through gmail (laszukdawid @ gmail) or search me
 favourite web search.
 
 Citation
