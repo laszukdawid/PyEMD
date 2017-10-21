@@ -36,8 +36,10 @@ class PerformanceTest(unittest.TestCase):
         received_times = [0]*len(expected_times)
 
         # Detect whether run on Travis CI
+        # Performance test should be run on same machine with
+        # same setting. Travis cannot guarantee that.
         if "TRAVIS" in os.environ:
-            expected_times *= 4 # Conservative.
+            expected_times *= 10 # Conservative.
 
         all_w = np.arange(10,20)
         for w in all_w:

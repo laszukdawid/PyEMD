@@ -13,7 +13,6 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 import os
-import pylab as plt
 
 #from scipy.ndimage import maximum_filter
 from scipy.ndimage.filters import maximum_filter
