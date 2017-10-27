@@ -4,7 +4,7 @@ from __future__ import division, print_function
 
 import numpy  as np
 import pylab as plt
-from PyEMD import EMD2D
+from ../PyEMD import EMD2D
 
 # Generate image
 print("Generating image... ", end="")

@@ -417,6 +417,8 @@ class EMD:
         spline : numpy array
             Spline array over given positions T.
         """
+	#print ("extema:")
+	#print (extrema.shape)
 
         kind = self.spline_kind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
@@ -426,8 +428,10 @@ class EMD:
 
         elif kind == 'cubic':
             if extrema.shape[1]>3:
+	#	print ("interp1d")
                 return t, interp1d(extrema[0], extrema[1], kind=kind)(t)
             else:
+	#	print ("cubic")
                 return cubic_spline_3pts(extrema[0], extrema[1], t)
 
         elif kind in ['slinear', 'quadratic', 'linear']:
