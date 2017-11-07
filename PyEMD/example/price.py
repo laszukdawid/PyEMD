@@ -8,9 +8,10 @@ import numpy  as np
 import pylab as plt
 from PyEMD import EMD
 import pandas as pd
+import os
 
 # Read price data from file
-price_table = pd.read_csv("~/Documents/Data/AAPL.csv")
+price_table = pd.read_csv("C:/Users/Chang/Documents/Data/AAPL.csv")
 time_column = price_table.Time
 close_column = price_table.Close
 #time_column = time_column.values
