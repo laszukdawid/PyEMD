@@ -175,5 +175,19 @@ class EMDTest(unittest.TestCase):
         closeOffset = np.allclose(offset, IMFs[2,1:-1], atol=0.5)
         self.assertTrue(closeOffset)
 
+    def test_max_iteration_flag(self):
+
+        S = np.random.random(200)
+        emd = EMD()
+        emd.MAX_ITERATION = 10
+        emd.FIXE = 20
+
+        IMFs = emd.emd(S)
+
+        # There's not much to test, except that it doesn't fail.
+        # With low MAX_ITERATION value for random signal it's
+        # guaranteed to have at least 2 imfs.
+        self.assertTrue(IMFs.shape[0]>1)
+
 if __name__ == "__main__":
     unittest.main()

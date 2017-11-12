@@ -184,9 +184,9 @@ class EMD:
         ####################################
         # Left bound
         dPos = max_pos[0] - min_pos[0]
-        leftExtType = ["min", "max"][dPos<0]
+        leftExtMaxType = dPos<0 # True -> max, else min
 
-        if (leftExtType == "max"):
+        if leftExtMaxType:
             if (S[0]>min_val[0]) and (np.abs(dPos)>(max_pos[0]-T[0])):
                 # mirror signal to first extrema
                 expand_left_max_pos = 2*max_pos[0] - max_pos[1:nbsym+1]
@@ -202,7 +202,8 @@ class EMD:
                 expand_left_min_val = np.append(S[0], min_val[0:nbsym-1])
 
 
-        elif (leftExtType == "min"):
+        # Min
+        else:
             if (S[0] < max_val[0]) and (np.abs(dPos)>(min_pos[0]-T[0])):
                 # mirror signal to first extrema
                 expand_left_max_pos = 2*min_pos[0] - max_pos[0:nbsym]
@@ -228,9 +229,9 @@ class EMD:
         ####################################
         # Right bound
         dPos = max_pos[-1] - min_pos[-1]
-        rightExtType = ["min","max"][dPos>0]
+        rightExtMaxType = dPos>0
 
-        if (rightExtType == "min"):
+        if not rightExtMaxType:
             if (S[-1] < max_val[-1]) and (np.abs(dPos)>(T[-1]-min_pos[-1])):
                 # mirror signal to last extrema
                 idx_max = max(0, end_max-nbsym)
@@ -248,7 +249,7 @@ class EMD:
                 expand_right_max_val = np.append(max_val[idx_max:],S[-1])
                 expand_right_min_val = min_val[idxMin:]
 
-        elif (rightExtType == "max"):
+        else:
             if (S[-1] > min_val[-1]) and len(max_pos)>1 and (np.abs(dPos)>(T[-1]-max_pos[-1])):
                 # mirror signal to last extremum
                 idx_max = max(0, end_max-nbsym-1)
@@ -446,13 +447,14 @@ class EMD:
         >>> idx = self._not_duplicate(S)
         [0, 1, 3, 4, 5]
         """
-        idx = [0]
-        for i in range(1,len(S)-1):
-            if (S[i] == S[i+1] and S[i] == S[i-1]):
-               pass
+        dup = np.r_[S[1:-1]==S[0:-2]] & np.r_[S[1:-1]==S[2:]]
+        not_dup_idx = np.arange(1, len(S)-1)[~dup]
 
-            else: idx.append(i)
-        idx.append(len(S)-1)
+        idx = np.empty(len(not_dup_idx)+2, dtype=np.int)
+        idx[0] = 0
+        idx[-1] = len(S)-1
+        idx[1:-1] = not_dup_idx
+
         return idx
 
     def find_extrema(self, T, S):

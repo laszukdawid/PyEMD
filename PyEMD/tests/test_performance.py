@@ -24,6 +24,7 @@ class PerformanceTest(unittest.TestCase):
             avg_t += t1-t0
         return avg_t/N
 
+    @unittest.skip("Performance test should be run on server. Skipping until getting one.")
     def test_EMD_max_execution_time(self):
         t_min, t_max = 0, 1
         N = 100
