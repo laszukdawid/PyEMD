@@ -119,7 +119,7 @@ class CEEMDAN:
         self.all_noises = self.generate_noise(1, (self.trials,S.size))
 
         # Decompose all noise and remember 1st's std
-        self.logger.info("Decomposing all noises")
+        self.logger.debug("Decomposing all noises")
         for trial, noise in enumerate(self.all_noises):
             _imfs = self.emd(noise, T, max_imf=-1)
 
@@ -135,7 +135,7 @@ class CEEMDAN:
         all_cimfs = last_imf.reshape((-1, last_imf.size))
         prev_res = S - last_imf
 
-        self.logger.info("Starting CEEMDAN")
+        self.logger.debug("Starting CEEMDAN")
         while(True):
             # Check end condition in the beginning because we've already have 1 IMF
             if self.end_condition(S, all_cimfs, max_imf):
