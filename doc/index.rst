@@ -13,6 +13,7 @@ Writing documentation is hard. If more clarifications are needed, or you think o
    emd
    eemd
    emd2d
+   ceemdan
    contact
 
 Indices and tables

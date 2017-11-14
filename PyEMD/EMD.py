@@ -66,8 +66,8 @@ class EMD:
         # Declare constants
         self.std_thr = 0.2
         self.svar_thr = 0.001
-        self.power_thr = -5
-        self.total_power_thr = 0.01
+        #self.power_thr = -5
+        self.total_power_thr = 0.005
         self.range_thr = 0.001
 
         self.nbsym = nbsym
@@ -770,8 +770,6 @@ class EMD:
                     msg+= "Continueing with another IMF."
                     self.logger.info(msg)
                     break
-
-                self.logger.debug("Iteration: "+str(n))
 
                 max_pos, max_val, min_pos, min_val, indzer = self.find_extrema(T, imf)
                 extNo = len(min_pos)+len(max_pos)

@@ -143,8 +143,6 @@ class EEMD:
         # For trail number of iterations perform EMD on a signal
         # with added white noise
         for trial in range(self.trials):
-            self.logger.debug("trial: "+str(trial))
-
             # Generate noise
             noise = self.generate_noise(scale, N)
 

@@ -21,6 +21,7 @@ deliver more in time.
 EMD variations:
     - Ensemble EMD (EEMD),
     - Image decomposotion (EMD2D),
+    - "Complete Ensembl EMD" (CEEMDAN)
     - different settings and configurations of vanilla EMD.
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
@@ -102,6 +103,20 @@ your signal to the instance or ``eemd()`` method.
     s = np.random.random(100)
     eemd = EEMD()
     eIMFs = eemd(s)
+
+CEEMDAN
+=======
+
+As with previous methods, there is also simple way to use ``CEEMDAN``.
+
+.. code:: python
+
+    from PyEMD import CEEMDAN
+    import numpy as np
+
+    s = np.random.random(100)
+    ceemdan = CEEMDAN()
+    cIMFs = ceemdan(s)
 
 EMD2D
 =====
