@@ -18,7 +18,7 @@ class EEMD:
     """
     **Ensemble Empirical Mode Decomposition**
 
-    Ensemble empirical mode decomposition (EEMD) [Wu2009]_
+    Ensemble empirical mode decomposition (EEMD) [Wu2009_]
     is noise-assisted technique, which is meant to be more robust
     than simple Empirical Mode Decomposition (EMD). The robustness is
     checked by performing many decompositions on signals slightly
@@ -79,11 +79,10 @@ class EEMD:
     def generate_noise(self, scale, size):
         """
         Generate noise with specified parameters.
+        Currently supported distributions are:
 
-        All distributions are zero centred. For types of distributions
-        see :`self.noise_kinds_all`.
-
-        .. py:attribute:: EEMD.noise_kinds_all
+        * *normal* with std equal scale.
+        * *uniform* with range [-scale/2, scale/2].
 
         Parameters
         ----------
@@ -161,7 +160,11 @@ class EEMD:
         return E_IMF
 
     def emd(self, S, T, max_imf=-1):
-        """Reference to emd method of passed EMD class."""
+        """Vanilla EMD method.
+
+        Provides emd evaluation from provided EMD class.
+        For reference please see :class:`PyEMD.EMD`.
+        """
         return self.EMD.emd(S, T, max_imf)
 
 ###################################################

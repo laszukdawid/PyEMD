@@ -19,12 +19,14 @@ from PyEMD.splines import *
 
 class EMD:
     """
+    .. _EMD:
+
     **Empirical Mode Decomposition**
 
     Method of decomposing signal into Intrinsic Mode Functions (IMFs)
-    based on algorithm presented in Huang et al. [Huang1998]_.
+    based on algorithm presented in Huang et al. [Huang1998_].
 
-    Algorithm was validated with Rilling et al. [Rilling2003]_ Matlab's version from 3.2007.
+    Algorithm was validated with Rilling et al. [Rilling2003_] Matlab's version from 3.2007.
 
     Parameters
     ----------
