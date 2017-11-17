@@ -16,24 +16,26 @@ import numpy as np
 
 class CEEMDAN:
     """
-    **"Complete Ensemble Empirical Mode Decomposition
-        with Adaptive Noise"**
+    **"Complete Ensemble Empirical Mode Decomposition with Adaptive Noise"**
 
     "Complete ensemble empirical mode decomposition with adaptive
-    noise" (CEEMDAN) [Torres2011]_ is noise-assisted EMD technique,
+    noise" (CEEMDAN) [Torres2011_]  is noise-assisted EMD technique.
     Word "complete" presumably refers to decomposing completly
     everything, even added perturbation (noise).
 
     Provided implementation contains proposed "improvmenets" from
-    paper [Colominas2014]_.
+    paper [Colominas2014_].
 
     Parameters
     ----------
+
     trials : int (default: 100)
         Number of trials or EMD performance with added noise.
+
     epsilon : float (default: 0.005)
-        Scale for added noise (:math:`\epsilon`) which multiply std
-        :math:`\beta=\epislon \std(nois)`.
+        Scale for added noise (:math:`\epsilon`) which multiply std :math:`\sigma`:
+        :math:`\\beta = \epsilon \cdot \sigma (noise)`
+
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
@@ -41,9 +43,11 @@ class CEEMDAN:
 
     References
     ----------
+
     .. [Torres2011] M.E. Torres, M.A. Colominas, G. Schlotthauer, P. Flandrin
         A complete ensemble empirical mode decomposition with adaptive noise.
         Acoustics, Speech and Signal Processing (ICASSP), 2011, pp. 4144--4147
+
     .. [Colominas2014] M.A. Colominas, G. Schlotthauer, M.E. Torres,
         Improved complete ensemble EMD: A suitable tool for biomedical signal
         processing, In Biomed. Sig. Proc. and Control, V. 14, 2014, pp. 19--29
@@ -81,14 +85,15 @@ class CEEMDAN:
     def generate_noise(self, scale, size):
         """
         Generate noise with specified parameters.
+        Currently supported distributions are:
 
-        All distributions are zero centred. For types of distributions
-        see :`self.noise_kinds_all`.
+        * *normal* with std equal scale.
+        * *uniform* with range [-scale/2, scale/2].
 
-        .. py:attribute:: EEMD.noise_kinds_all
 
         Parameters
         ----------
+
         scale : float
             Width for the distribution.
         size : int
@@ -96,6 +101,7 @@ class CEEMDAN:
 
         Returns
         -------
+
         noise : numpy array
             Noise sampled from selected distribution.
         """
@@ -173,6 +179,7 @@ class CEEMDAN:
         """Test for end condition of CEEMDAN.
 
         Procedure stops if:
+
         * number of components reach provided `max_imf`, or
         * last component is close to being pure noise (range or power), or
         * set of provided components reconstructs sufficiently input.
@@ -244,7 +251,11 @@ class CEEMDAN:
         return E_IMF
 
     def emd(self, S, T, max_imf=-1):
-        """Reference to emd method of passed EMD class."""
+        """Vanilla EMD method.
+
+        Provides emd evaluation from provided EMD class.
+        For reference please see :class:`PyEMD.EMD`.
+        """
         return self.EMD.emd(S, T, max_imf)
 
 ###################################################
