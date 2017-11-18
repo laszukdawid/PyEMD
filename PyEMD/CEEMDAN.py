@@ -65,6 +65,7 @@ class CEEMDAN:
         self.all_noise_std = np.empty(self.trials)
 
         self.beta_progress = True # Scale noise by std
+        self.random = np.random.RandomState()
         self.noise_kind = "normal"
 
         self.all_noise_EMD = []
@@ -112,9 +113,9 @@ class CEEMDAN:
         """
 
         if self.noise_kind=="normal":
-            noise = np.random.normal(loc=0, scale=scale, size=size)
+            noise = self.random.normal(loc=0, scale=scale, size=size)
         elif self.noise_kind=="uniform":
-            noise = np.random.uniform(low=-scale/2, high=scale/2, size=size)
+            noise = self.random.uniform(low=-scale/2, high=scale/2, size=size)
         else:
             raise ValueError("Unsupported noise kind. Please assigned `noise_kind`"
                 + " to be one of these: " + str(self.noise_kinds_all))
@@ -123,7 +124,7 @@ class CEEMDAN:
 
     def noise_seed(self, seed):
         """Set seed for noise generation."""
-        np.random.seed(seed)
+        self.random.seed(seed)
 
     def ceemdan(self, S, T=None, max_imf=-1):
 

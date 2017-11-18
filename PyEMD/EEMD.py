@@ -57,6 +57,7 @@ class EEMD:
         self.trials = trials
         self.noise_width = noise_width
 
+        self.random = np.random.RandomState()
         self.noise_kind = "normal"
 
         if ext_EMD is None:
@@ -97,9 +98,9 @@ class EEMD:
         """
 
         if self.noise_kind=="normal":
-            noise = np.random.normal(loc=0, scale=scale, size=size)
+            noise = self.random.normal(loc=0, scale=scale, size=size)
         elif self.noise_kind=="uniform":
-            noise = np.random.uniform(low=-scale/2, high=scale/2, size=size)
+            noise = self.random.uniform(low=-scale/2, high=scale/2, size=size)
         else:
             raise ValueError("Unsupported noise kind. Please assigned `noise_kind`"
                 + " to be one of these: " + str(self.noise_kinds_all))
@@ -108,7 +109,7 @@ class EEMD:
 
     def noise_seed(self, seed):
         """Set seed for noise generation."""
-        np.random.seed(seed)
+        self.random.seed(seed)
 
     def eemd(self, S, T=None, max_imf=-1):
         """
