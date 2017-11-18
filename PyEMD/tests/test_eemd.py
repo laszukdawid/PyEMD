@@ -85,5 +85,34 @@ class EEMDTest(unittest.TestCase):
         self.assertTrue(eemd.EMD.spline_kind==spline_kind,
                 self.cmp_msg(eemd.EMD.spline_kind, spline_kind))
 
+    def test_eemd_noiseSeed(self):
+        T = np.linspace(0, 1, 100)
+        S = np.sin(2*np.pi*T+ 4**T) + np.cos( (T-0.4)**2)
+
+        # Compare up to machine epsilon
+        cmpMachEps = lambda x, y: np.abs(x-y)<=2*np.finfo(x.dtype).eps
+
+        eemd = EEMD(trials=10)
+
+        # First run random seed
+        eIMF1 = eemd(S)
+
+        # Second run with defined seed, diff than first
+        eemd.noise_seed(12345)
+        eIMF2 = eemd(S)
+
+        # Extremly unlikely to have same seed, thus different results
+        msg_false = "Different seeds, expected different outcomes"
+        if eIMF1.shape == eIMF2.shape:
+            self.assertFalse(np.all(cmpMachEps(eIMF1,eIMF2)), msg_false)
+
+        # Third run with same seed as with 2nd
+        eemd.noise_seed(12345)
+        eIMF3 = eemd(S)
+
+        # Using same seeds, thus expecting same results
+        msg_true = "Used same seed, expected same results"
+        self.assertTrue(np.all(cmpMachEps(eIMF2,eIMF3)), msg_true)
+
 if __name__ == "__main__":
     unittest.main()

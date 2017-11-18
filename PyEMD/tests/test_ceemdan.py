@@ -84,5 +84,34 @@ class CEEMDANTest(unittest.TestCase):
         self.assertTrue(ceemdan.EMD.spline_kind==spline_kind,
                 self.cmp_msg(ceemdan.EMD.spline_kind, spline_kind))
 
+    def test_ceemdan_noiseSeed(self):
+        T = np.linspace(0, 1, 100)
+        S = np.sin(2*np.pi*T+ 4**T) + np.cos( (T-0.4)**2)
+
+        # Compare up to machine epsilon
+        cmpMachEps = lambda x, y: np.abs(x-y)<=2*np.finfo(x.dtype).eps
+
+        ceemdan = CEEMDAN(trials=10)
+
+        # First run random seed
+        cIMF1 = ceemdan(S)
+
+        # Second run with defined seed, diff than first
+        ceemdan.noise_seed(12345)
+        cIMF2 = ceemdan(S)
+
+        # Extremly unlikely to have same seed, thus different results
+        msg_false = "Different seeds, expected different outcomes"
+        if cIMF1.shape == cIMF2.shape:
+            self.assertFalse(np.all(cmpMachEps(cIMF1,cIMF2)), msg_false)
+
+        # Third run with same seed as with 2nd
+        ceemdan.noise_seed(12345)
+        cIMF3 = ceemdan(S)
+
+        # Using same seeds, thus expecting same results
+        msg_true = "Used same seed, expected same results"
+        self.assertTrue(np.all(cmpMachEps(cIMF2,cIMF3)), msg_true)
+
 if __name__ == "__main__":
     unittest.main()

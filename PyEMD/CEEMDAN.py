@@ -78,6 +78,12 @@ class CEEMDAN:
         self.range_thr = 0.01
         self.total_power_thr = 0.05
 
+        # Update based on options
+        for key in kwargs.keys():
+            if key in self.__dict__.keys():
+                self.__dict__[key] = kwargs[key]
+            elif key in self.EMD.__dict__.keys():
+                self.EMD.__dict__[key] = kwargs[key]
 
     def __call__(self, S, T=None, max_imf=-1):
         return self.ceemdan(S, T=T, max_imf=max_imf)
@@ -114,6 +120,10 @@ class CEEMDAN:
                 + " to be one of these: " + str(self.noise_kinds_all))
 
         return noise
+
+    def noise_seed(self, seed):
+        """Set seed for noise generation."""
+        np.random.seed(seed)
 
     def ceemdan(self, S, T=None, max_imf=-1):
 

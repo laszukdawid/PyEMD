@@ -65,7 +65,6 @@ class EEMD:
         else:
             self.EMD = ext_EMD
 
-        #TODO: Test this!
         # Update based on options
         for key in kwargs.keys():
             if key in self.__dict__.keys():
@@ -106,6 +105,10 @@ class EEMD:
                 + " to be one of these: " + str(self.noise_kinds_all))
 
         return noise
+
+    def noise_seed(self, seed):
+        """Set seed for noise generation."""
+        np.random.seed(seed)
 
     def eemd(self, S, T=None, max_imf=-1):
         """
@@ -194,6 +197,7 @@ if __name__ == "__main__":
     # Prepare and run EEMD 
     eemd = EEMD()
     eemd.trials = 50
+    eemd.noise_seed(12345)
 
     E_IMFs = eemd.eemd(S, T, max_imf)
     imfNo  = E_IMFs.shape[0]
