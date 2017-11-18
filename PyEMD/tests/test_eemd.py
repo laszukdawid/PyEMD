@@ -28,9 +28,6 @@ class EEMDTest(unittest.TestCase):
         eemd.eemd(S)
 
     def test_eemd_passingArgumentsViaDict(self):
-        T = np.linspace(0, 1, 100)
-        S = np.sin(2*np.pi*T)
-
         trials = 10
         noise_kind = 'uniform'
         spline_kind = 'linear'

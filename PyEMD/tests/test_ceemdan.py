@@ -36,6 +36,37 @@ class CEEMDANTest(unittest.TestCase):
         self.assertTrue(cIMFs.shape[0]>1)
         self.assertTrue(cIMFs.shape[1]==S.size)
 
+    def test_ceemdan_passingArgumentsViaDict(self):
+        trials = 10
+        noise_kind = 'uniform'
+        spline_kind = 'linear'
+
+        # Making sure that we are not testing default options
+        ceemdan = CEEMDAN()
+
+        self.assertFalse(ceemdan.trials==trials,
+                self.cmp_msg(ceemdan.trials, trials))
+
+        self.assertFalse(ceemdan.noise_kind==noise_kind,
+                self.cmp_msg(ceemdan.noise_kind, noise_kind))
+
+        self.assertFalse(ceemdan.EMD.spline_kind==spline_kind,
+                self.cmp_msg(ceemdan.EMD.spline_kind, spline_kind))
+
+        # Testing for passing attributes via params
+        params = {"trials": trials, "noise_kind": noise_kind,
+                  "spline_kind": spline_kind}
+        ceemdan = CEEMDAN(**params)
+
+        self.assertTrue(ceemdan.trials==trials,
+                self.cmp_msg(ceemdan.trials, trials))
+
+        self.assertTrue(ceemdan.noise_kind==noise_kind,
+                self.cmp_msg(ceemdan.noise_kind, noise_kind))
+
+        self.assertTrue(ceemdan.EMD.spline_kind==spline_kind,
+                self.cmp_msg(ceemdan.EMD.spline_kind, spline_kind))
+
     def test_ceemdan_testMaxImf(self):
         S = np.random.random(100)
 
