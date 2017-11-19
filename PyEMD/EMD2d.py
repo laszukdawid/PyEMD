@@ -80,7 +80,8 @@ class EMD2D:
 
         return min_env, max_env
 
-    def prepare_image(self, image):
+    @classmethod
+    def prepare_image(cls, image):
         """Prepares image for edge extrapolation.
         Method bloats image by mirroring it along all axes. This turns
         extrapolation on edges into interpolation within bigger image.
@@ -136,7 +137,8 @@ class EMD2D:
 
         return big_image
 
-    def spline_points(self, X, Y, Z, xi, yi):
+    @classmethod
+    def spline_points(cls, X, Y, Z, xi, yi):
         """Interpolates for given set of points"""
 
         # SBS requires at least m=(kx+1)*(ky+1) points,
@@ -146,7 +148,8 @@ class EMD2D:
 
         return spline(xi, yi)
 
-    def find_extrema(self, image):
+    @classmethod
+    def find_extrema(cls, image):
         """
         Finds extrema, both mininma and maxima, based on local maximum filter.
         Returns extrema in form of two rows, where the first and second are
@@ -195,7 +198,8 @@ class EMD2D:
 
         return min_peaks, max_peaks
 
-    def end_condition(self, image, IMFs):
+    @classmethod
+    def end_condition(cls, image, IMFs):
         """Determins whether decomposition should be stopped.
 
         Parameters

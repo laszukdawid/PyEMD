@@ -9,10 +9,12 @@ import unittest
 
 class EEMDTest(unittest.TestCase):
 
-    def cmp_msg(self, a, b):
+    @staticmethod
+    def cmp_msg(a, b):
         return "Expected {}, Returned {}".format(a,b)
 
-    def test_default_call_EEMD(self):
+    @staticmethod
+    def test_default_call_EEMD():
         T = np.arange(50)
         S = np.cos(T*0.1)
         max_imf = 2
@@ -20,7 +22,8 @@ class EEMDTest(unittest.TestCase):
         eemd = EEMD()
         eemd(S, T, max_imf)
 
-    def test_eemd_simpleRun(self):
+    @staticmethod
+    def test_eemd_simpleRun():
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)
 

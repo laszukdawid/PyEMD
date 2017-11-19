@@ -9,9 +9,8 @@ import unittest
 
 class EMDTest(unittest.TestCase):
 
-    cmp_msg = lambda _,a,b: "Expected {}, Returned {}".format(a,b)
-
-    def test_default_call_EMD(self):
+    @staticmethod
+    def test_default_call_EMD():
         T = np.arange(50)
         S = np.cos(T*0.1)
         max_imf = 2
@@ -122,7 +121,7 @@ class EMDTest(unittest.TestCase):
 
         emd = EMD()
 
-        # Default state: converge 
+        # Default state: converge
         self.assertTrue(emd.FIXE==0)
         self.assertTrue(emd.FIXE_H==0)
 

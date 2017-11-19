@@ -9,10 +9,12 @@ import unittest
 
 class CEEMDANTest(unittest.TestCase):
 
-    def cmp_msg(self, a, b):
+    @staticmethod
+    def cmp_msg(a, b):
         return "Expected {}, Returned {}".format(a,b)
 
-    def test_default_call_CEEMDAN(self):
+    @staticmethod
+    def test_default_call_CEEMDAN():
         T = np.arange(50)
         S = np.cos(T*0.1)
         max_imf = 2
@@ -20,7 +22,8 @@ class CEEMDANTest(unittest.TestCase):
         ceemdan = CEEMDAN(trials=5)
         ceemdan(S, T, max_imf)
 
-    def test_ceemdan_simpleRun(self):
+    @staticmethod
+    def test_ceemdan_simpleRun():
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)
 
@@ -81,14 +84,16 @@ class CEEMDANTest(unittest.TestCase):
         cIMFs = ceemdan(S, max_imf=max_imf)
         self.assertTrue(cIMFs.shape[0]==max_imf+1)
 
-    def test_ceemdan_constantEpsilon(self):
+    @staticmethod
+    def test_ceemdan_constantEpsilon():
         S = np.random.random(100)
 
         ceemdan = CEEMDAN(trials=10, max_imf=2)
         ceemdan.beta_progress = False
         ceemdan(S)
 
-    def test_ceemdan_noiseKind_uniform(self):
+    @staticmethod
+    def test_ceemdan_noiseKind_uniform():
         ceemdan = CEEMDAN()
         ceemdan.noise_kind = "uniform"
         ceemdan.generate_noise(1., 100)

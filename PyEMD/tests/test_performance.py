@@ -15,11 +15,12 @@ class PerformanceTest(unittest.TestCase):
 
     logger = logging.getLogger(__name__)
 
-    def _timeit(self, fn, signal, T, N=10):
+    @staticmethod
+    def _timeit(fn, args, N=10):
         avg_t = 0
         for _ in range(N):
             t0 = time.time()
-            IMF = fn(signal, T)
+            fn(*args)
             t1 = time.time()
             avg_t += t1-t0
         return avg_t/N
@@ -52,7 +53,7 @@ class PerformanceTest(unittest.TestCase):
         emd.FIXE = 10
 
         for idx, signal in enumerate(all_test_signals):
-            avg_t = self._timeit(emd.emd, signal, T, N=15)
+            avg_t = self._timeit(emd.emd, (signal, T), N=15)
 
             self.logger.info("{}. t = {:.4} (exp. {})".format(idx, avg_t, expected_times[idx]))
             received_times[idx] = avg_t

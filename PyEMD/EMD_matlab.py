@@ -504,7 +504,10 @@ class EMD:
                 if self.TIME:
                     self.logger.info("Execution time: "+str(time.time() - singleTime))
                     singleTime = time.time()
-                MP, MV, mP, mV, indzer = self.findExtrema(T, imf)
+                ext_res = self.findExtrema(T, imf)
+                MP, mP = ext_res[0], ext_res[2]
+                indzer = ext_res[4]
+
                 extNo = len(mP)+len(MP)
                 nzm = len(indzer)
 
@@ -514,7 +517,8 @@ class EMD:
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale*mean
 
-                    maxEnv, minEnv, eMax, eMin = self.extractMaxMinSpline(T, imf)
+                    env_ext = self.extractMaxMinSpline(T, imf)
+                    maxEnv, minEnv = env_ext[0], env_ext[1]
 
                     if isinstance(maxEnv, int):
                         notFinish = True
@@ -610,17 +614,8 @@ if __name__ == "__main__":
     tMin, tMax = 0, 1
     T = np.linspace(tMin, tMax, N, dtype=DTYPE)
 
-    sin = np.sin
-    cos = np.cos
-    pi = np.pi
-    #~ tS = 'sin(4*pi*t**(2) + cos(4*pi*t))'
-    #~ tS = 'sin(3*t**1.4 + cos(4*t))*cos(8*t + sin(6*t))/t'
-    #~ tS = 't**(sin(2.76*t)-cos(t**2))'
-    #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**1.7)'
-    #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**(t/8))'
-    S = 6*T + cos(8*pi**T)+0.5*cos(40*pi*T)
+    S = 6*T +np.cos(8*np.pi**T)+0.5*np.cos(40*np.pi*T)
     S = S.astype(DTYPE)
-    print("Input S.dtype: "+str(S.dtype))
 
     # Prepare and run EMD
     emd = EMD()

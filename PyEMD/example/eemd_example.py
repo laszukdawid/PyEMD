@@ -16,7 +16,7 @@ S += 3*sin(14,1.6)
 S += 1*np.sin(4*2*np.pi*(t-0.8)**2)
 S += t**2.1 -t
 
-# Assign EEMD to `eemd` variable 
+# Assign EEMD to `eemd` variable
 eemd = EEMD()
 
 # Say we want detect extrema using parabolic method

@@ -37,7 +37,7 @@ class ExtremaTest(unittest.TestCase):
         s = np.array([-1, 0, 1, 0, -1, 0, 3, 0, -9, 0])
 
         with self.assertRaises(ValueError):
-            maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+            emd.find_extrema(t, s)
 
     def test_find_extrema_simple(self):
         """

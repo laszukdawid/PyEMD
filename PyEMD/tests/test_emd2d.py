@@ -11,14 +11,17 @@ class ImageEMDTest(unittest.TestCase):
 
     emd2d = EMD2D()
 
-    def _generate_image(self, r=64, c=64):
+    @staticmethod
+    def _generate_image(r=64, c=64):
         return np.random.random((r,c))
 
-    def _generate_linear_image(self, r=16, c=16):
+    @staticmethod
+    def _generate_linear_image(r=16, c=16):
         rows = np.arange(r)
         return np.repeat(rows, c).reshape(r,c)
 
-    def _generate_Gauss(self, x, y, pos, std, amp=1):
+    @staticmethod
+    def _generate_Gauss(x, y, pos, std, amp=1):
         x_s = x-pos[0]
         y_s = y-pos[1]
         x2 = x_s*x_s

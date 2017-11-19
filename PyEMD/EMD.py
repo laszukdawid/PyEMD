@@ -4,8 +4,6 @@
 # Author:   Dawid Laszuk
 # Contact:  laszukdawid@gmail.com
 #
-# Edited:   14/07/2017
-#
 # Feel free to contact for any information.
 
 from __future__ import division, print_function
@@ -112,7 +110,9 @@ class EMD:
         """
 
         # Get indexes of extrema
-        max_pos, max_val, min_pos, min_val, indzer = self.find_extrema(T, S)
+        ext_res = self.find_extrema(T, S)
+        max_pos, max_val = ext_res[0], ext_res[1]
+        min_pos, min_val = ext_res[2], ext_res[3]
 
         if len(max_pos) + len(min_pos) < 3: return [-1]*4
 
@@ -438,7 +438,8 @@ class EMD:
         else:
             raise ValueError("No such interpolation method!")
 
-    def _not_duplicate(self, S):
+    @staticmethod
+    def _not_duplicate(S):
         """
         Returns indices for not repeating values, where there is no extremum.
 
@@ -557,7 +558,8 @@ class EMD:
 
         return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer
 
-    def _find_extrema_simple(self, T, S):
+    @classmethod
+    def _find_extrema_simple(cls, T, S):
         """
         Performs extrema detection, where extremum is defined as a point,
         that is above/below its neighbours.
@@ -701,7 +703,8 @@ class EMD:
 
         return False
 
-    def _common_dtype(self, x, y):
+    @staticmethod
+    def _common_dtype(x, y):
         """Determines common numpy DTYPE for arrays."""
 
         dtype = np.find_common_type([x.dtype, y.dtype], [])
@@ -772,7 +775,8 @@ class EMD:
                     self.logger.info(msg)
                     break
 
-                max_pos, max_val, min_pos, min_val, indzer = self.find_extrema(T, imf)
+                ext_res = self.find_extrema(T, imf)
+                max_pos, min_pos, indzer = ext_res[0], ext_res[2], ext_res[4]
                 extNo = len(min_pos)+len(max_pos)
                 nzm = len(indzer)
 

@@ -30,17 +30,15 @@ class IMFTest(unittest.TestCase):
         emd.spline_kind = 'akima'
         emd.DTYPE = dtype
 
-        arr = lambda x: np.array(x)
-
         # Test error: len(X)!=len(Y)
         with self.assertRaises(ValueError):
-            akima(arr([0]), arr([1,2]), arr([0,1,2]))
+            akima(np.array([0]), np.array([1,2]), np.array([0,1,2]))
 
         # Test error: any(dt) <= 0
         with self.assertRaises(ValueError):
-            akima(arr([1,0,2]), arr([1,2]), arr([0,1,2]))
+            akima(np.array([1,0,2]), np.array([1,2]), np.array([0,1,2]))
         with self.assertRaises(ValueError):
-            akima(arr([0,0,2]), arr([1,2]), arr([0,1,1]))
+            akima(np.array([0,0,2]), np.array([1,2]), np.array([0,1,1]))
 
         # Test for correct responses
         T = np.array([0, 1, 2, 3, 4], dtype)
