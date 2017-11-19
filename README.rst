@@ -2,6 +2,10 @@
 
 
 *****
+
+.. image:: https://api.codacy.com/project/badge/Grade/5385d5ddc8e84908bd4e38f325443a21
+   :alt: Codacy Badge
+   :target: https://www.codacy.com/app/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=badger
 PyEMD
 *****
 
