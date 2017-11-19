@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
     S = 3*np.sin(4*T) + 4*np.cos(9*T) + np.sin(8.11*T+1.2)
 
-    # Prepare and run EEMD 
+    # Prepare and run EEMD
     trials = 20
     ceemdan = CEEMDAN(trials=trials)
 

@@ -9,7 +9,8 @@ import unittest
 
 class CEEMDANTest(unittest.TestCase):
 
-    cmp_msg = lambda _,a,b: "Expected {}, Returned {}".format(a,b)
+    def cmp_msg(self, a, b):
+        return "Expected {}, Returned {}".format(a,b)
 
     def test_default_call_CEEMDAN(self):
         T = np.arange(50)
@@ -17,7 +18,7 @@ class CEEMDANTest(unittest.TestCase):
         max_imf = 2
 
         ceemdan = CEEMDAN(trials=5)
-        results = ceemdan(S, T, max_imf)
+        ceemdan(S, T, max_imf)
 
     def test_ceemdan_simpleRun(self):
         T = np.linspace(0, 1, 100)

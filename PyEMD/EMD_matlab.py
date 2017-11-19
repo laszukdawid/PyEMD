@@ -12,7 +12,6 @@ from __future__ import division, print_function
 
 import logging
 import numpy as np
-import os
 import time
 
 from scipy.interpolate import interp1d
@@ -51,9 +50,6 @@ class EMD:
         self.maxIteration = 500
         self.scaleFactor = 100
 
-        self.PLOT = 0
-        self.INTERACTIVE = 0
-
         self.FIXE = 0
         self.FIXE_H = 0
 
@@ -82,15 +78,15 @@ class EMD:
         """
 
         # Get indexes of extrema
-        maxPos, maxVal, minPos, minVal, indzer = self.findExtrema(T, S)
+        maxPos, maxVal, minPos, minVal, _ = self.findExtrema(T, S)
 
         if len(maxPos) + len(minPos) < 3: return [-1]*4
 
         # Extrapolation of signal (ober boundaries)
         maxExtrema, minExtrema = self.preparePoints(S, T, maxPos, maxVal, minPos, minVal)
 
-        maxTSpline, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
-        minTSpline, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
+        _, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
+        _, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
 
         return maxSpline, minSpline, maxExtrema, minExtrema
 
@@ -241,7 +237,7 @@ class EMD:
         kind = splineKind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
         if t.dtype != self.DTYPE: self.logger.error('t.dtype: '+str(t.dtype))
-        if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: ',+str(xtrema.dtype))
+        if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: '+str(xtrema.dtype))
 
         if kind == "akima":
             return t, akima(extrema[0], extrema[1], t)
@@ -502,10 +498,6 @@ class EMD:
             if self.TIME:
                 singleTime = time.time()
 
-            # Start on-screen displaying
-            if self.PLOT and self.INTERACTIVE:
-                plt.ion()
-
             while(n<self.MAX_ITERATION):
                 n += 1
 
@@ -519,33 +511,12 @@ class EMD:
                 if extNo > 2:
 
                     # Plotting. Either into file, or on-screen display.
-                    if n>1 and self.PLOT:
-                        plt.clf()
-                        plt.plot(MP, MV*scale, 'bo')
-                        plt.plot(mP, mV*scale, 'ro')
-                        plt.plot(T, imf*scale, 'g')
-                        plt.plot(T, imf*scale, 'g')
-                        plt.plot(T, maxEnv*scale, 'b')
-                        plt.plot(T, minEnv*scale, 'r')
-                        plt.plot(T, mean*scale, 'k--')
-
-                        plt.xlabel('Time [s]')
-                        plt.ylabel('Amplitude')
-                        plt.title('imf{}_{:2}'.format(imfNo, n-1))
-
-                        if self.INTERACTIVE:
-                            plt.draw()
-                        else:
-                            fName = "imf{}_{:02}".format(imfNo, n-1)
-                            plt.savefig(os.path.join('fig',fName))
-                            #~ plt.show()
-
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale*mean
 
                     maxEnv, minEnv, eMax, eMin = self.extractMaxMinSpline(T, imf)
 
-                    if type(maxEnv) == type(-1):
+                    if isinstance(maxEnv, int):
                         notFinish = True
                         break
 
@@ -647,15 +618,12 @@ if __name__ == "__main__":
     #~ tS = 't**(sin(2.76*t)-cos(t**2))'
     #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**1.7)'
     #~ tS = 'sin(3*t**1.2)**2 + cos(2.2*t**(t/8))'
-    tS = '6*T + cos(8*pi**T)+0.5*cos(40*pi*T)'
-
-    S = eval(tS)
+    S = 6*T + cos(8*pi**T)+0.5*cos(40*pi*T)
     S = S.astype(DTYPE)
     print("Input S.dtype: "+str(S.dtype))
 
     # Prepare and run EMD
     emd = EMD()
-    emd.PLOT = 0
     emd.FIXE_H = 5
     #~ emd.FIXE = 10
     emd.nbsym = 2

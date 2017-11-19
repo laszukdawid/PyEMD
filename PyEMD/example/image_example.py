@@ -29,7 +29,6 @@ imfNo = IMFs.shape[0]
 print("Done")
 
 print("Plotting results... ", end="")
-import pylab as plt
 
 # Save image for preview
 plt.figure(figsize=(4,4*(imfNo+1)))

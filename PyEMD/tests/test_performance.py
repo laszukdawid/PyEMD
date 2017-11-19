@@ -17,7 +17,7 @@ class PerformanceTest(unittest.TestCase):
 
     def _timeit(self, fn, signal, T, N=10):
         avg_t = 0
-        for n in range(N):
+        for _ in range(N):
             t0 = time.time()
             IMF = fn(signal, T)
             t1 = time.time()

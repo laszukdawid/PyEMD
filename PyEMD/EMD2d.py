@@ -12,7 +12,6 @@ from __future__ import division, print_function
 
 import logging
 import numpy as np
-import os
 
 #from scipy.ndimage import maximum_filter
 from scipy.ndimage.filters import maximum_filter
@@ -169,7 +168,7 @@ class EMD2D:
         # define an 3x3 neighborhood
         neighborhood = generate_binary_structure(2,2)
 
-        # apply the local maximum filter; all pixel of maximal value 
+        # apply the local maximum filter; all pixel of maximal value
         # in their neighborhood are set to 1
         local_min = maximum_filter(-image, footprint=neighborhood)==-image
         local_max = maximum_filter(image, footprint=neighborhood)==image
@@ -181,7 +180,7 @@ class EMD2D:
         eroded_background = binary_erosion(background,
                                 structure=neighborhood, border_value=1)
 
-        # we obtain the final mask, containing only peaks, 
+        # we obtain the final mask, containing only peaks,
         # by removing the background from the local_max mask (xor operation)
         min_peaks = local_min ^ eroded_background
         max_peaks = local_max ^ eroded_background
@@ -191,8 +190,8 @@ class EMD2D:
         max_peaks[[0,-1],:] = False
         max_peaks[:,[0,-1]] = False
 
-        min_peaks = (X_min, Y_min) = np.nonzero(min_peaks)
-        max_peaks = (X_max, Y_max) = np.nonzero(max_peaks)
+        min_peaks = np.nonzero(min_peaks)
+        max_peaks = np.nonzero(max_peaks)
 
         return min_peaks, max_peaks
 
@@ -286,7 +285,7 @@ class EMD2D:
         image_s = (image-offset)/scale
 
         imf = np.zeros(image.shape)
-        imf_olf = imf.copy()
+        imf_old = imf.copy()
 
         imfNo = 0
         IMF = np.empty((imfNo,)+image.shape)

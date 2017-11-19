@@ -41,7 +41,7 @@ class ImageEMDTest(unittest.TestCase):
         max_imf = 2
 
         emd2d = EMD2D()
-        results = emd2d(img, max_imf)
+        emd2d(img, max_imf)
 
     def test_endCondition_perfectReconstruction(self):
         c1 = self._generate_image()

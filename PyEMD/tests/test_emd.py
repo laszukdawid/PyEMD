@@ -17,7 +17,7 @@ class EMDTest(unittest.TestCase):
         max_imf = 2
 
         emd = EMD()
-        results = emd(S, T, max_imf)
+        emd(S, T, max_imf)
 
     def test_different_length_input(self):
         T = np.arange(20)
@@ -93,7 +93,7 @@ class EMDTest(unittest.TestCase):
 
         emd = EMD()
 
-        # Default state: converge 
+        # Default state: converge
         self.assertTrue(emd.FIXE==0)
         self.assertTrue(emd.FIXE_H==0)
 

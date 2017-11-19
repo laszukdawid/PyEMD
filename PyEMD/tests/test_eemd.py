@@ -9,7 +9,8 @@ import unittest
 
 class EEMDTest(unittest.TestCase):
 
-    cmp_msg = lambda _,a,b: "Expected {}, Returned {}".format(a,b)
+    def cmp_msg(self, a, b):
+        return "Expected {}, Returned {}".format(a,b)
 
     def test_default_call_EEMD(self):
         T = np.arange(50)
@@ -17,7 +18,7 @@ class EEMDTest(unittest.TestCase):
         max_imf = 2
 
         eemd = EEMD()
-        results = eemd(S, T, max_imf)
+        eemd(S, T, max_imf)
 
     def test_eemd_simpleRun(self):
         T = np.linspace(0, 1, 100)

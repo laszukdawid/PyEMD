@@ -12,7 +12,6 @@ from __future__ import division, print_function
 
 import logging
 import numpy as np
-import os
 
 from scipy.interpolate import interp1d
 from PyEMD.splines import *
@@ -122,8 +121,8 @@ class EMD:
         pp_res = self.prepare_points(T, S, max_pos, max_val, min_pos, min_val)
         max_extrema, min_extrema = pp_res
 
-        max_t_spline, max_spline = self.spline_points(T, max_extrema)
-        min_t_spline, min_spline = self.spline_points(T, min_extrema)
+        _, max_spline = self.spline_points(T, max_extrema)
+        _, min_spline = self.spline_points(T, min_extrema)
 
         return max_spline, min_spline, max_extrema, min_extrema
 
@@ -819,7 +818,7 @@ class EMD:
 
                         if imf_old is np.nan: continue
 
-                        f1 = self.check_imf(imf, imf_old, max_env, min_env, mean)
+                        f1 = self.check_imf(imf, imf_old, eMax, eMin, mean)
                         #f2 = np.all(max_val>0) and np.all(min_val<0)
                         f2 = abs(extNo - nzm)<2
 

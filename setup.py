@@ -6,7 +6,6 @@ DESCRIPTION = "Implementation of Empirical Mode Decomposition (EMD) and its vari
 
 def main():
     import io
-    import os
     from setuptools import setup
 
     with io.open('README.rst', encoding="utf8") as fp:
