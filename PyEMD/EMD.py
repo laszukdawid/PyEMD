@@ -797,7 +797,7 @@ class EMD:
                     elif self.FIXE_H:
 
                         res = self.find_extrema(T, imf)
-                        max_pos, max_val, min_pos, min_val, ind_zer = res
+                        max_pos, min_pos, ind_zer = res[0], res[2], res[4]
                         extNo = len(max_pos)+len(min_pos)
                         nzm = len(ind_zer)
 

@@ -52,6 +52,7 @@ class ExtremaTest(unittest.TestCase):
         expMaxVal = [1, 3]
         expMinPos = [4, 8]
         expMinVal = [-1, -9]
+        expZeros = t[s==0]
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -59,6 +60,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual(maxVal.tolist(), expMaxVal)
         self.assertEqual(minPos.tolist(), expMinPos)
         self.assertEqual(minVal.tolist(), expMinVal)
+        self.assertEqual(nz.tolist(), expZeros.tolist())
 
     def test_find_extrema_simple_repeat(self):
         """

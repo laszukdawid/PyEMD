@@ -29,7 +29,7 @@ class EEMD:
     Parameters
     ----------
     trials : int (default: 100)
-        Number of trails or EMD performance with added noise.
+        Number of trials or EMD performance with added noise.
     noise_width : float (default: 0.05)
         Standard deviation of Gaussian noise (:math:`\hat\sigma`).
         It's relative to absolute amplitude of the signal, i.e.
@@ -182,10 +182,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     # EEMD options
-    PLOT = 0
-    INTERACTIVE = 1
-    REPEATS = 1
-
     max_imf = -1
 
     # Signal options

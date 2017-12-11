@@ -295,7 +295,8 @@ class EMD:
 
         return t, q.astype(self.DTYPE)
 
-    def findExtrema(self, t, s):
+    @classmethod
+    def findExtrema(cls, t, s):
         """
         Finds extrema and zero-crossings.
 
@@ -420,7 +421,8 @@ class EMD:
         else:
             return False
 
-    def _common_dtype(self, x, y):
+    @staticmethod
+    def _common_dtype(x, y):
 
         dtype = np.find_common_type([x.dtype, y.dtype], [])
         if x.dtype != dtype: x = x.astype(dtype)
@@ -544,7 +546,8 @@ class EMD:
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
 
-                        mP, mV, MP, MV, indzer = self.findExtrema(T, imf)
+                        ext_res = self.findExtrema(T, imf)
+                        mP, MP, indzer = ext_res[0], ext_res[2], ext_res[4]
                         extNo = len(mP)+len(MP)
                         nzm = len(indzer)
 
