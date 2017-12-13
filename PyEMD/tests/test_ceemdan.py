@@ -27,7 +27,8 @@ class CEEMDANTest(unittest.TestCase):
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)
 
-        ceemdan = CEEMDAN(trials=10, max_imf=1)
+        config = {"processes": 1}
+        ceemdan = CEEMDAN(trials=10, max_imf=1, **config)
         ceemdan.EMD.FIXE_H = 5
         ceemdan.ceemdan(S)
 

@@ -27,7 +27,8 @@ class EEMDTest(unittest.TestCase):
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)
 
-        eemd = EEMD(trials=10, max_imf=1)
+        config = {"processes": 1}
+        eemd = EEMD(trials=10, max_imf=1, **config)
         eemd.EMD.FIXE_H = 5
         eemd.eemd(S)
 
@@ -93,7 +94,8 @@ class EEMDTest(unittest.TestCase):
         # Compare up to machine epsilon
         cmpMachEps = lambda x, y: np.abs(x-y)<=2*np.finfo(x.dtype).eps
 
-        eemd = EEMD(trials=10)
+        config = {"processes": 1}
+        eemd = EEMD(trials=10, **config)
 
         # First run random seed
         eIMF1 = eemd(S)
