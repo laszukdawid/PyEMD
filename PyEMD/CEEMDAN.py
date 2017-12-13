@@ -14,6 +14,8 @@ from __future__ import print_function
 import logging
 import numpy as np
 
+from multiprocessing import Pool
+
 class CEEMDAN:
     """
     **"Complete Ensemble Empirical Mode Decomposition with Adaptive Noise"**
@@ -62,7 +64,7 @@ class CEEMDAN:
         # Ensemble constants
         self.trials = trials
         self.epsilon = epsilon
-        self.all_noise_std = np.empty(self.trials)
+        self.all_noise_std = np.zeros(self.trials)
 
         self.beta_progress = True # Scale noise by std
         self.random = np.random.RandomState()
@@ -79,6 +81,10 @@ class CEEMDAN:
         self.range_thr = 0.01
         self.total_power_thr = 0.05
 
+        # By default (None) Pool spawns #processes = #CPU
+        processes = None if "processes" not in kwargs else kwargs["processes"]
+        self.pool = Pool(processes=processes)
+
         # Update based on options
         for key in kwargs.keys():
             if key in self.__dict__.keys():
@@ -88,6 +94,11 @@ class CEEMDAN:
 
     def __call__(self, S, T=None, max_imf=-1):
         return self.ceemdan(S, T=T, max_imf=max_imf)
+
+    def __getstate__(self):
+        self_dict = self.__dict__.copy()
+        del self_dict['pool']
+        return self_dict
 
     def generate_noise(self, scale, size):
         """
@@ -236,29 +247,27 @@ class CEEMDAN:
     def _eemd(self, S, T=None, max_imf=-1):
         if T is None: T = np.arange(len(S), dtype=S.dtype)
 
-        N = len(S)
-        E_IMF = np.zeros((1,N))
+        self._S = S
+        self._T = T
+        self._N = N = len(S)
+        self.max_imf = max_imf
 
         # For trial number of iterations perform EMD on a signal
         # with added white noise
-        for trial in range(self.trials):
-            # Use 1st IMF from noise
-            noise_imf_1 = self.all_noise_EMD[trial][0]
-            noise = self.epsilon*noise_imf_1
+        all_IMFs = self.pool.map(self._trial_update, range(self.trials))
 
-            IMFs = self.emd(S+noise, T, max_imf)
-            imfNo = IMFs.shape[0]
+        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
 
-            # If new decomposition has more IMFs than any previous
-            # then add empty rows (holders)
-            while(E_IMF.shape[0] < imfNo):
-                E_IMF = np.vstack((E_IMF, np.zeros(N)))
+        self.E_IMF = np.zeros((max_imfNo, N))
+        for IMFs in all_IMFs:
+            self.E_IMF[:IMFs.shape[0]] += IMFs
 
-            E_IMF[:imfNo] += IMFs
+        return self.E_IMF/self.trials
 
-        E_IMF /= self.trials
-
-        return E_IMF
+    def _trial_update(self, trial):
+        # Generate noise
+        noise = self.epsilon*self.all_noise_EMD[trial][0]
+        return self.emd(self._S+noise, self._T, self.max_imf)
 
     def emd(self, S, T, max_imf=-1):
         """Vanilla EMD method.

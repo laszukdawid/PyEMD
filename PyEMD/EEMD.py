@@ -14,6 +14,8 @@ from __future__ import print_function
 import logging
 import numpy as np
 
+from multiprocessing import Pool
+
 class EEMD:
     """
     **Ensemble Empirical Mode Decomposition**
@@ -66,6 +68,10 @@ class EEMD:
         else:
             self.EMD = ext_EMD
 
+        # By default (None) Pool spawns #processes = #CPU
+        processes = None if "processes" not in kwargs else kwargs["processes"]
+        self.pool = Pool(processes=processes)
+
         # Update based on options
         for key in kwargs.keys():
             if key in self.__dict__.keys():
@@ -75,6 +81,11 @@ class EEMD:
 
     def __call__(self, S, T=None, max_imf=-1):
         return self.eemd(S, T=T, max_imf=max_imf)
+
+    def __getstate__(self):
+        self_dict = self.__dict__.copy()
+        del self_dict['pool']
+        return self_dict
 
     def generate_noise(self, scale, size):
         """
@@ -115,7 +126,7 @@ class EEMD:
         """
         Performs EEMD on provided signal.
 
-        For a large number of iterations defined by `trails` attr
+        For a large number of iterations defined by `trials` attr
         the method performs :py:meth:`emd` on a signal with added white noise.
 
         Parameters
@@ -138,30 +149,29 @@ class EEMD:
         """
         if T is None: T = np.arange(len(S), dtype=S.dtype)
 
-        N = len(S)
-        E_IMF = np.zeros((1,N))
-
         scale = self.noise_width*np.abs(np.max(S)-np.min(S))
+        self._S = S
+        self._T = T
+        self._N = N = len(S)
+        self._scale = scale
+        self.max_imf = max_imf
 
-        # For trail number of iterations perform EMD on a signal
+        # For trial number of iterations perform EMD on a signal
         # with added white noise
-        for trial in range(self.trials):
-            # Generate noise
-            noise = self.generate_noise(scale, N)
+        all_IMFs = self.pool.map(self._trial_update, range(self.trials))
 
-            IMFs = self.emd(S+noise, T, max_imf)
-            imfNo = IMFs.shape[0]
+        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
 
-            # If new decomposition has more IMFs than any previous
-            # then add empty rows (holders)
-            while(E_IMF.shape[0] < imfNo):
-                E_IMF = np.vstack((E_IMF, np.zeros(N)))
+        self.E_IMF = np.zeros((max_imfNo, N))
+        for IMFs in all_IMFs:
+            self.E_IMF[:IMFs.shape[0]] += IMFs
 
-            E_IMF[:imfNo] += IMFs
+        return self.E_IMF/self.trials
 
-        E_IMF /= self.trials
-
-        return E_IMF
+    def _trial_update(self, trial):
+        # Generate noise
+        noise = self.generate_noise(self._scale, self._N)
+        return self.emd(self._S+noise, self._T, self.max_imf)
 
     def emd(self, S, T, max_imf=-1):
         """Vanilla EMD method.
@@ -177,6 +187,8 @@ class EEMD:
 if __name__ == "__main__":
 
     import pylab as plt
+    global E_imfNo
+    E_imfNo = np.zeros(50, dtype=np.int)
 
     # Logging options
     logging.basicConfig(level=logging.INFO)
