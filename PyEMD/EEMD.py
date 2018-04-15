@@ -34,7 +34,7 @@ class EEMD:
     """
     **Ensemble Empirical Mode Decomposition**
 
-    Ensemble empirical mode decomposition (EEMD) [Wu2009_]
+    Ensemble empirical mode decomposition (EEMD) [Wu2009]_
     is noise-assisted technique, which is meant to be more robust
     than simple Empirical Mode Decomposition (EMD). The robustness is
     checked by performing many decompositions on signals slightly
@@ -67,7 +67,7 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, **kwargs):
+    def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, **config):
 
         # Ensemble constants
         self.trials = trials
@@ -83,15 +83,15 @@ class EEMD:
             self.EMD = ext_EMD
 
         # By default (None) Pool spawns #processes = #CPU
-        processes = None if "processes" not in kwargs else kwargs["processes"]
+        processes = None if "processes" not in config else config["processes"]
         self.pool = Pool(processes=processes)
 
         # Update based on options
-        for key in kwargs.keys():
+        for key in config.keys():
             if key in self.__dict__.keys():
-                self.__dict__[key] = kwargs[key]
+                self.__dict__[key] = config[key]
             elif key in self.EMD.__dict__.keys():
-                self.EMD.__dict__[key] = kwargs[key]
+                self.EMD.__dict__[key] = config[key]
 
     def __call__(self, S, T=None, max_imf=-1):
         return self.eemd(S, T=T, max_imf=max_imf)

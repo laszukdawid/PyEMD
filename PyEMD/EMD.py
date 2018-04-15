@@ -21,9 +21,15 @@ class EMD:
     **Empirical Mode Decomposition**
 
     Method of decomposing signal into Intrinsic Mode Functions (IMFs)
-    based on algorithm presented in Huang et al. [Huang1998_].
+    based on algorithm presented in Huang et al. [Huang1998]_.
 
-    Algorithm was validated with Rilling et al. [Rilling2003_] Matlab's version from 3.2007.
+    Algorithm was validated with Rilling et al. [Rilling2003]_ Matlab's version from 3.2007.
+
+    Threshold which control the goodness of the decomposition:
+        * `std_thr` --- Test for the proto-IMF how variance changes between siftings.
+        * `svar_thr` -- Test for the proto-IMF how energy changes between siftings.
+        * `total_power_thr` --- Test for the whole decomp how much of energy is solved.
+        * `range_thr` --- Test for the whole decomp whether the difference is tiny.
 
     Parameters
     ----------
@@ -61,11 +67,17 @@ class EMD:
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self, spline_kind='cubic', nbsym=2, **kwargs):
+    def __init__(self, spline_kind='cubic', nbsym=2, **config):
+        """Initiate *EMD* instance.
+
+        Configuration, such as threshold values can be passed as config.
+
+        >>> config = {"std_thr": 0.01, "range_thr": 0.05}
+        >>> emd = EMD(**config)
+        """
         # Declare constants
         self.std_thr = 0.2
         self.svar_thr = 0.001
-        #self.power_thr = -5
         self.total_power_thr = 0.005
         self.range_thr = 0.001
 
@@ -82,9 +94,9 @@ class EMD:
         self.MAX_ITERATION = 1000
 
         # Update based on options
-        for key in kwargs.keys():
+        for key in config.keys():
             if key in self.__dict__.keys():
-                self.__dict__[key] = kwargs[key]
+                self.__dict__[key] = config[key]
 
     def __call__(self, S, T=None, max_imf=None):
         return self.emd(S, T=T, max_imf=max_imf)
@@ -656,15 +668,10 @@ class EMD:
         Returns
         -------
         end : bool
-            Is this the end?
+            Whether sifting is finished.
         """
         # When to stop EMD
         tmp = S - np.sum(IMF, axis=0)
-
-#       # Power is enough
-#       if np.log10(np.abs(tmp).sum()/np.abs(Res).sum()) < self.power_thr:
-#           self.logger.info("FINISHED -- POWER RATIO")
-#           return True
 
         if np.max(tmp) - np.min(tmp) < self.range_thr:
             self.logger.debug("FINISHED -- RANGE")

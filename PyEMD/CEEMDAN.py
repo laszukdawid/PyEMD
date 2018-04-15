@@ -36,12 +36,19 @@ class CEEMDAN:
     **"Complete Ensemble Empirical Mode Decomposition with Adaptive Noise"**
 
     "Complete ensemble empirical mode decomposition with adaptive
-    noise" (CEEMDAN) [Torres2011_]  is noise-assisted EMD technique.
+    noise" (CEEMDAN) [Torres2011]_  is noise-assisted EMD technique.
     Word "complete" presumably refers to decomposing completly
     everything, even added perturbation (noise).
 
     Provided implementation contains proposed "improvmenets" from
-    paper [Colominas2014_].
+    paper [Colominas2014]_.
+
+    Any parameters can be updated directly on the instance or passed
+    through a `configuration` dictionary.
+
+    Goodness of the decomposition can be configured by modifying threshold
+    values. Two are `range_thr` and `total_power_thr` which relate to
+    the value range (max - min) and check for total power below, respectively.
 
     Parameters
     ----------
@@ -51,7 +58,7 @@ class CEEMDAN:
 
     epsilon : float (default: 0.005)
         Scale for added noise (:math:`\epsilon`) which multiply std :math:`\sigma`:
-        :math:`\\beta = \epsilon \cdot \sigma (noise)`
+        :math:`\\beta = \epsilon \cdot \sigma`
 
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
@@ -74,7 +81,14 @@ class CEEMDAN:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials=100, epsilon=0.005, ext_EMD=None, **kwargs):
+    def __init__(self, trials=100, epsilon=0.005, ext_EMD=None, **config):
+        """
+        Configuration can be passed through config dictionary.
+        For example, updating threshold would be through:
+
+        >>> config = {"range_thr": 0.001, "total_power_thr": 0.01}
+        >>> emd = EMD(**config)
+        """
 
         # Ensemble constants
         self.trials = trials
@@ -97,15 +111,15 @@ class CEEMDAN:
         self.total_power_thr = 0.05
 
         # By default (None) Pool spawns #processes = #CPU
-        processes = None if "processes" not in kwargs else kwargs["processes"]
+        processes = None if "processes" not in config else config["processes"]
         self.pool = Pool(processes=processes)
 
         # Update based on options
-        for key in kwargs.keys():
+        for key in config.keys():
             if key in self.__dict__.keys():
-                self.__dict__[key] = kwargs[key]
+                self.__dict__[key] = config[key]
             elif key in self.EMD.__dict__.keys():
-                self.EMD.__dict__[key] = kwargs[key]
+                self.EMD.__dict__[key] = config[key]
 
     def __call__(self, S, T=None, max_imf=-1):
         return self.ceemdan(S, T=T, max_imf=max_imf)

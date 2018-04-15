@@ -27,13 +27,16 @@ class EMD2D:
     Current version of the algorithm detects local extrema, separately minima and maxima,
     and then connects them to create envelops. These are then used to create mean trend and
     subtracted from input.
+
+    Threshold values that control goodness of the decomposition:
+        * `mse_thr` --- proto-IMF check whether small mean square error.
+        * `mean_thr` --- proto-IMF chekc whether small mean value.
     """
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **config):
         # ProtoIMF related
-        self.inst_thr = 0.05
         self.mse_thr = 0.01
         self.mean_thr = 0.01
 
@@ -43,9 +46,9 @@ class EMD2D:
         self.MAX_ITERATION = 1000
 
         # Update based on options
-        for key in kwargs.keys():
+        for key in config.keys():
             if key in self.__dict__.keys():
-                self.__dict__[key] = kwargs[key]
+                self.__dict__[key] = config[key]
 
     def __call__(self, image, max_imf=-1):
         return self.emd(image, max_imf=max_imf)
@@ -254,14 +257,10 @@ class EMD2D:
         if np.mean(np.abs(proto_imf))<self.mean_thr:
             return True
 
-#       # No speck above inst_thr
-#       if np.any(proto_imf > self.inst_thr):
-#           return False
-
         # Everything relatively close to 0
         mse_proto_imf = np.mean(proto_imf*proto_imf)
-        if mse_proto_imf > self.mse_thr:
-            return False
+        if mse_proto_imf < self.mse_thr:
+            return True
 
         return False
 

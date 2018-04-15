@@ -5,5 +5,4 @@ EMD2D
 
 .. autoclass:: PyEMD.EMD2D
     :members:
-    :inherited-members:
     :special-members:
