@@ -67,7 +67,7 @@ Packaged obtained from PyPi is/will be slightly behind this project, so some fea
 Example
 *******
 
-More detailed examples are included in documentation. 
+More detailed examples are included in the documentation_ or in the `PyEMD/examples`_.
 
 EMD
 ===
@@ -165,3 +165,5 @@ Dawid Laszuk (2017-), **Python implementation of Empirical Mode Decomposition al
     :alt: Codacy Badge
     :target: https://www.codacy.com/app/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=badger
 .. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/simple_example.png?raw=true
+.. _documentation: https://pyemd.readthedocs.io/en/latest/examples.html
+.. _`PyEMD/examples`: https://github.com/laszukdawid/PyEMD/tree/master/example
