@@ -16,7 +16,7 @@ coverage:
     - __init__.py
     - test_*.py
     - doc/*
-    - PyEMD/example/*
+    - example/*
 
 comment:
   layout: "header, diff, changes"

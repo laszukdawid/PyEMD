@@ -166,10 +166,10 @@ Example of image/2D decomposition based on generated input.
 
 |emd2dExample|
 
-.. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/simple_example.png?raw=true
+.. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/simple_example.png?raw=true
     :width: 640px
     :height: 480px
-.. |eemdExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/eemd_example.png?raw=true
+.. |eemdExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/eemd_example.png?raw=true
     :width: 720px
     :height: 540px
-.. |emd2dExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/PyEMD/example/image_decomp.png?raw=true
+.. |emd2dExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/image_decomp.png?raw=true
