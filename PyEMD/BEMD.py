@@ -12,21 +12,26 @@ import logging
 import numpy as np
 
 from scipy.interpolate import Rbf
-from skimage.measure import find_contours
 from skimage.morphology import reconstruction
-from skimage.morphology import binary_dilation
-from skimage.morphology import binary_erosion
 
 class BEMD:
     """
     **Bidimensional Empirical Mode Decomposition**
 
+    **Important**: This class intends to be undocumented until it's actually properly tested
+    and proven to work. An attempt to replicate findings in the paper cited below has failed.
+    This method is only included in the package because someone asked for it, and I'm hoping
+    that one day someone else will come and *fix it*. Until then, USE AT YOUR OWN RISK.
+
+    The guess why the decomosition doesn't work is that it's difficult to extrapolate image
+    far away from extrema. Not even mirroring helps in this case.
+
     Method decomposes 2D arrays like gray-scale images into 2D representations of
     Intrinsic Mode Functions (IMFs).
 
-    The algorithm is based on Nunes et. al. [1] work.
+    The algorithm is based on Nunes et. al. [Nunes2003]_ work.
 
-    [1] J.-C. Nunes, Y. Bouaoune, E. Delechelle, O. Niang, P. Bunel.,
+    .. [Nunes2003] J.-C. Nunes, Y. Bouaoune, E. Delechelle, O. Niang, P. Bunel.,
     "Image analysis by bidimensional empirical mode decomposition. Image and Vision Computing",
     Elsevier, 2003, 21 (12), pp.1019-1026.
     """
@@ -38,16 +43,14 @@ class BEMD:
         self.mse_thr = 0.01
         self.mean_thr = 0.01
 
-        self.std_dev = 0.05 # 0.05--0.75 [1]
-        self.FIXE = 0
+        self.FIXE = 1  # Single iteration by default, otherwise results are terrible
         self.FIXE_H = 0
-
-        self.MAX_ITERATION = 1000
+        self.MAX_ITERATION = 500
 
     def __call__(self, image, max_imf=-1):
         return self.bemd(image, max_imf=max_imf)
 
-    def extract_max_min_spline(self, image):
+    def extract_max_min_spline(self, image, min_peaks_pos, max_peaks_pos):
         """Calculates top and bottom envelopes for image.
 
         Parameters
@@ -61,21 +64,25 @@ class BEMD:
         max_env : numpy 2D array
             Top envelope in form of an image.
         """
-        # Prepare grid for interpolation
-        xi = np.arange(image.shape[0],image.shape[0]*2)
-        yi = np.arange(image.shape[1],image.shape[1]*2)
-        min_env = self.spline_points(min_peaks[0], min_peaks[1], min_val, xi, yi)
-        max_env = self.spline_points(max_peaks[0], max_peaks[1], max_val, xi, yi)
+        xi, yi = np.meshgrid(np.arange(image.shape[0]), np.arange(image.shape[1]))
+        min_val = np.array([image[x,y] for x, y in zip(*min_peaks_pos)])
+        max_val = np.array([image[x,y] for x, y in zip(*max_peaks_pos)])
+        min_env = self.spline_points(min_peaks_pos[0], min_peaks_pos[1], min_val, xi, yi)
+        max_env = self.spline_points(max_peaks_pos[0], max_peaks_pos[1], max_val, xi, yi)
         return min_env, max_env
 
     @classmethod
     def spline_points(cls, X, Y, Z, xi, yi):
-        """Interpolates for given set of points"""
-        spline = Rbf(X, Y, Z, function='linear')
+        """Creates a spline for given set of points.
+
+        Uses Radial-basis function to extrapolate surfaces. It's not the best but gives something.
+        Griddata algorithm didn't work.
+        """
+        spline = Rbf(X, Y, Z, function='cubic')
         return spline(xi, yi)
 
     @classmethod
-    def find_extrema(cls, image):
+    def find_extrema_positions(cls, image):
         """
         Finds extrema, both mininma and maxima, based on morphological reconstruction.
         Returns extrema where the first and second elements are x and y positions, respectively.
@@ -87,32 +94,25 @@ class BEMD:
 
         Returns
         -------
-        min_peaks : numpy array
+        min_peaks_pos : numpy array
             Minima positions.
-        max_peaks : numpy array
+        max_peaks_pos : numpy array
             Maxima positions.
         """
-
-        # Extract local extrema
-        min_peaks = BEMD.extract_minima(image)
-        max_peaks = BEMD.extract_maxima(image)
-
-        return min_peaks, max_peaks
+        min_peaks_pos = BEMD.extract_minima_positions(image)
+        max_peaks_pos = BEMD.extract_maxima_positions(image)
+        return min_peaks_pos, max_peaks_pos
 
     @classmethod
-    def extract_minima(cls, image):
-        n = 4
-        x_cm = np.random.randint(0, image.shape[1], 4)
-        y_cm = np.random.randint(0, image.shape[0], 4)
-        min_peaks_pos = np.array([x_cm, y_cm])
-        return min_peaks_pos
+    def extract_minima_positions(cls, image):
+        return BEMD.extract_maxima_positions(-image)
 
     @classmethod
-    def extract_maxima(cls, image):
+    def extract_maxima_positions(cls, image):
         seed_min = image - 1
         dilated = reconstruction(seed_min, image, method='dilation')
         cleaned_image = image - dilated
-        return np.where(cleaned_image!=0)
+        return np.where(cleaned_image>0)[::-1]
 
     @classmethod
     def end_condition(cls, image, IMFs):
@@ -152,8 +152,6 @@ class BEMD:
         boolean
             Whether current proto IMF is actual IMF.
         """
-
-
         #TODO: Sifiting is very sensitive and subtracting const val can often flip
         #      maxima with minima in decompoisition and thus repeating above/below
         #      behaviour. For now, mean_env is checked whether close to zero excluding
@@ -163,7 +161,7 @@ class BEMD:
             return True
 
         # If very little change with sifting
-        if np.allclose(proto_imf, proto_imf_prev):
+        if np.allclose(proto_imf, proto_imf_prev, rtol=0.01):
             return True
 
         # If IMF mean close to zero (below threshold)
@@ -194,11 +192,7 @@ class BEMD:
             Set of IMFs in form of numpy array where the first dimension
             relates to IMF's ordinary number.
         """
-        image_min, image_max = np.min(image), np.max(image)
-        offset = image_min
-        scale = image_max-image_min
-
-        image_s = (image-offset)/scale
+        image_s = image.copy()
 
         imf = np.zeros(image.shape)
         imf_old = imf.copy()
@@ -221,18 +215,12 @@ class BEMD:
 
             while(not stop_sifting and n<self.MAX_ITERATION):
                 n += 1
-                self.logger.debug("Iteration: "+str(n))
+                self.logger.debug("Iteration: %i", n)
 
-                min_peaks, max_peaks = self.find_extrema(imf)
-
-                self.logger.debug("min_peaks = %i  |  max_peaks = %i" %(len(min_peaks[0]), len(max_peaks[0])))
-                if len(min_peaks[0])>4 and len(max_peaks[0])>4:
-
-                    imf_old = imf.copy()
-                    imf = imf - mean_env
-
-                    min_env, max_env = self.extract_max_min_spline(imf)
-
+                min_peaks_pos, max_peaks_pos = self.find_extrema_positions(imf)
+                self.logger.debug("min_peaks_pos = %i  |  max_peaks_pos = %i", len(min_peaks_pos[0]), len(max_peaks_pos[0]))
+                if len(min_peaks_pos[0])>1 and len(max_peaks_pos[0])>1:
+                    min_env, max_env = self.extract_max_min_spline(imf, min_peaks_pos, max_peaks_pos)
                     mean_env = 0.5*(min_env+max_env)
 
                     imf_old = imf.copy()
@@ -246,7 +234,6 @@ class BEMD:
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
-
                         if n == 1: continue
                         if self.check_proto_imf(imf, imf_old, mean_env):
                             n_h += 1
@@ -259,18 +246,16 @@ class BEMD:
 
                     # Stops after default stopping criteria are met
                     else:
-
                         if self.check_proto_imf(imf, imf_old, mean_env):
                             stop_sifting = True
 
                 else:
-                    notFinished = False
                     stop_sifting = True
 
             IMF = np.vstack((IMF, imf.copy()[None,:]))
             imfNo += 1
 
-            if self.end_condition(image, IMF) or imfNo>=max_imf:
+            if self.end_condition(image, IMF) or (max_imf>0 and imfNo>=max_imf):
                 notFinished = False
                 break
 
@@ -279,8 +264,6 @@ class BEMD:
             IMF = np.vstack((IMF, res[None,:]))
             imfNo += 1
 
-        IMF = IMF*scale
-        IMF[-1] += offset
         return IMF
 
 ########################################
