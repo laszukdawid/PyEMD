@@ -3,3 +3,4 @@ numpydoc
 scipy>=0.19
 matplotlib
 pathos
+scikit-image>=0.13
