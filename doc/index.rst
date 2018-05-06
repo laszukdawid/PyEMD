@@ -9,6 +9,7 @@ Writing documentation is hard. If more clarifications are needed, or you think o
    :caption: Table of Content
 
    intro
+   usage
    examples
    emd
    eemd

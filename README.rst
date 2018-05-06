@@ -20,8 +20,8 @@ deliver more in time.
 
 EMD variations:
     - Ensemble EMD (EEMD),
-    - Image decomposotion (EMD2D),
-    - "Complete Ensembl EMD" (CEEMDAN)
+    - Image decomposition (EMD2D),
+    - "Complete Ensemble EMD" (CEEMDAN)
     - different settings and configurations of vanilla EMD.
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
@@ -92,7 +92,7 @@ The Figure below was produced with input:
 EEMD
 ====
 
-Simplest case of using Esnembld EMD (EEMD) is by importing ``EEMD`` and passing
+Simplest case of using Ensemble EMD (EEMD) is by importing ``EEMD`` and passing
 your signal to the instance or ``eemd()`` method.
 
 .. code:: python
@@ -123,7 +123,7 @@ EMD2D
 
 Simplest case is to pass image as monochromatic numpy 2D array.
 As with other modules one can use default setting of instance or
-more expliclity use ``emd2d()`` method.
+more explicitly use ``emd2d()`` method.
 
 .. code:: python
 
