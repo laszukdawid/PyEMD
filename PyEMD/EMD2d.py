@@ -358,7 +358,7 @@ class EMD2D:
             IMF = np.vstack((IMF, imf.copy()[None,:]))
             imfNo += 1
 
-            if self.end_condition(image, IMF) or imfNo>=max_imf:
+            if self.end_condition(image, IMF) or (max_imf>0 and imfNo>=max_imf):
                 notFinished = False
                 break
 
