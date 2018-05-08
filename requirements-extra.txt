@@ -1,4 +1,6 @@
 numpy>=1.12
+numpydoc
 scipy>=0.19
+matplotlib
 pathos>=0.2.1
 scikit-image>=0.13

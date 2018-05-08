@@ -1,7 +1,9 @@
-include .travis.yml
+include *.md
+include *.py
+include setup.cfg
 include MANIFEST.in
-include README.rst
+include README.md
+include LICENCE.txt
 include requirements.txt
-include PyEMD
-
-include PyEMD/tests/*.py
+recursive-include PyEMD *.py
+recursive-include example *.py

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-VERSION="0.2.4"
+VERSION="0.2.5"
 
 DESCRIPTION = "Implementation of Empirical Mode Decomposition (EMD) and its variations"
 
@@ -8,22 +8,15 @@ def main():
     import io
     from setuptools import setup
 
-    with io.open('README.rst', encoding="utf8") as fp:
+    with io.open('README.md', encoding="utf8") as fp:
         long_description = fp.read().strip()
 
     with open('requirements.txt') as f:
         required = f.read().splitlines()
 
     classifiers=[
-        "Development Status :: 4 - Beta",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
         "Topic :: Scientific/Engineering :: Mathematics"
@@ -37,11 +30,13 @@ def main():
         url="https://github.com/laszukdawid/PyEMD",
         author="Dawid Laszuk",
         author_email="laszukdawid@gmail.com",
+        license="Apache-2.0",
         classifiers=classifiers,
         keywords="signal decomposition data analysis",
         packages=["PyEMD"],
         install_requires=required,
-        test_suite="PyEMD.tests"
+        python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+        test_suite="PyEMD.tests",
     )
 
     dist = setup(**setup_params)
