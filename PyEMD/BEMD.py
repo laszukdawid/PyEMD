@@ -275,7 +275,7 @@ if __name__ == "__main__":
 
     # Generate image
     print("Generating image... ", end="")
-    rows, cols = 1024, 1024
+    rows, cols = 256, 256
     row_scale, col_scale = 256, 256
     x = np.arange(rows)/float(row_scale)
     y = np.arange(cols).reshape((-1,1))/float(col_scale)
@@ -289,9 +289,9 @@ if __name__ == "__main__":
 
     # Perform decomposition
     print("Performing decomposition... ", end="")
-    emd2d = EMD2D()
-    #emd2d.FIXE_H = 5
-    IMFs = emd2d.emd(img, max_imf=4)
+    bemd = BEMD()
+    #bemd.FIXE_H = 5
+    IMFs = bemd.bemd(img, max_imf=3)
     imfNo = IMFs.shape[0]
     print("Done")
 
