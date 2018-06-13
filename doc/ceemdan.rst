@@ -1,7 +1,14 @@
 CEEMDAN
 =======
 
-This is about "Complete ensemble EMD with adaptive noise".
+Info
+----
+
+Complete ensembe EMD with adaptive noise (CEEMDAN) performs an EEMD with
+the difference that the information about the noise is shared among all workers.
+
+Class
+-----
 
 .. autoclass:: PyEMD.CEEMDAN
     :members:
