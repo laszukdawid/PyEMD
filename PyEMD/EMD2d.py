@@ -22,11 +22,18 @@ class EMD2D:
     """
     **Empirical Mode Decomposition** on images.
 
-    Method decomposes images into 2D representations of loose Intrinsic Mode Functions (IMFs).
+    **Important** This is an experimental module.
+    Experiments performed using this module didn't provide acceptable results,
+    either in actual output nor in computation performance. The author is not
+    an expert in image processing so it's very likely that the code could
+    have been improved. Take your best shot.
 
-    Current version of the algorithm detects local extrema, separately minima and maxima,
-    and then connects them to create envelops. These are then used to create mean trend and
-    subtracted from input.
+    Method decomposes images into 2D representations of loose Intrinsic Mode
+    Functions (IMFs).
+
+    The current version of the algorithm detects local extrema, separately
+    minima and maxima, and then connects them to create envelopess. These
+    are then used to create a mean trend and subtracted from the input.
 
     Threshold values that control goodness of the decomposition:
         * `mse_thr` --- proto-IMF check whether small mean square error.
@@ -115,13 +122,13 @@ class EMD2D:
         big_image[shape[0]:2*shape[0], shape[1]:2*shape[1]] = image
 
         # Fill left center
-        big_image[shape[0]:2*shape[0],:shape[1]] = image_lr
+        big_image[shape[0]:2*shape[0], :shape[1]] = image_lr
 
         # Fill right center
-        big_image[shape[0]:2*shape[0],2*shape[1]:] = image_lr
+        big_image[shape[0]:2*shape[0], 2*shape[1]:] = image_lr
 
         # Fill center top
-        big_image[:shape[0],shape[1]:shape[1]*2] = image_ud
+        big_image[:shape[0], shape[1]:shape[1]*2] = image_ud
 
         # Fill center bottom
         big_image[2*shape[0]:, shape[1]:2*shape[1]] = image_ud
@@ -172,29 +179,32 @@ class EMD2D:
         """
 
         # define an 3x3 neighborhood
-        neighborhood = generate_binary_structure(2,2)
+        neighborhood = generate_binary_structure(2, 2)
 
         # apply the local maximum filter; all pixel of maximal value
         # in their neighborhood are set to 1
-        local_min = maximum_filter(-image, footprint=neighborhood)==-image
-        local_max = maximum_filter(image, footprint=neighborhood)==image
+        local_min = maximum_filter(-image, footprint=neighborhood) == -image
+        local_max = maximum_filter(image, footprint=neighborhood) == image
 
         # can't distinguish between background zero and filter zero
-        background = (image==0)
+        background = (image == 0)
 
         #appear along the bg border (artifact of the local max filter)
         eroded_background = binary_erosion(background,
-                                structure=neighborhood, border_value=1)
+                                           structure=neighborhood,
+                                           border_value=1)
 
         # we obtain the final mask, containing only peaks,
         # by removing the background from the local_max mask (xor operation)
         min_peaks = local_min ^ eroded_background
         max_peaks = local_max ^ eroded_background
 
-        min_peaks[[0,-1],:] = False
-        min_peaks[:,[0,-1]] = False
-        max_peaks[[0,-1],:] = False
-        max_peaks[:,[0,-1]] = False
+        min_peaks = local_min
+        max_peaks = local_max
+        min_peaks[[0, -1], :] = False
+        min_peaks[:, [0, -1]] = False
+        max_peaks[[0, -1], :] = False
+        max_peaks[:, [0, -1]] = False
 
         min_peaks = np.nonzero(min_peaks)
         max_peaks = np.nonzero(max_peaks)
@@ -245,7 +255,7 @@ class EMD2D:
         #      maxima with minima in decompoisition and thus repeating above/below
         #      behaviour. For now, mean_env is checked whether close to zero excluding
         #      its offset.
-        if np.all(np.abs(mean_env-mean_env.mean())<self.mean_thr):
+        if np.all(np.abs(mean_env-mean_env.mean()) < self.mean_thr):
         #if np.all(np.abs(mean_env)<self.mean_thr):
             return True
 
@@ -254,7 +264,7 @@ class EMD2D:
             return True
 
         # If IMF mean close to zero (below threshold)
-        if np.mean(np.abs(proto_imf))<self.mean_thr:
+        if np.mean(np.abs(proto_imf)) < self.mean_thr:
             return True
 
         # Everything relatively close to 0
@@ -294,7 +304,6 @@ class EMD2D:
         IMF = np.empty((imfNo,)+image.shape)
         notFinished = True
 
-
         while(notFinished):
             self.logger.debug('IMF -- '+str(imfNo))
 
@@ -307,14 +316,15 @@ class EMD2D:
             n = 0   # All iterations for current imf.
             n_h = 0 # counts when mean(proto_imf) < threshold
 
-            while(not stop_sifting and n<self.MAX_ITERATION):
+            while(not stop_sifting and n < self.MAX_ITERATION):
                 n += 1
                 self.logger.debug("Iteration: "+str(n))
 
                 min_peaks, max_peaks = self.find_extrema(imf)
 
-                self.logger.debug("min_peaks = %i  |  max_peaks = %i" %(len(min_peaks[0]), len(max_peaks[0])))
-                if len(min_peaks[0])>4 and len(max_peaks[0])>4:
+                self.logger.debug("min_peaks = %i  |  max_peaks = %i",
+                                  len(min_peaks[0]), len(max_peaks[0]))
+                if len(min_peaks[0]) > 4 and len(max_peaks[0]) > 4:
 
                     imf_old = imf.copy()
                     imf = imf - mean_env
@@ -328,7 +338,7 @@ class EMD2D:
 
                     # Fix number of iterations
                     if self.FIXE:
-                        if n>=self.FIXE+1:
+                        if n >= self.FIXE+1:
                             stop_sifting = True
 
                     # Fix number of iterations after number of zero-crossings

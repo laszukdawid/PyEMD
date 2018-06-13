@@ -19,9 +19,9 @@ intends to deliver more in time.
 
 ### EMD variations:
 * Ensemble EMD (EEMD),
-* Image decomposition (EMD2D),
 * "Complete Ensemble EMD" (CEEMDAN)
 * different settings and configurations of vanilla EMD.
+* Image decomposition (EMD2D & BEMD) (experimental)
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
 and extrema interpolation.
@@ -116,29 +116,30 @@ ceemdan = CEEMDAN()
 cIMFs = ceemdan(s)
 ```
 
-### EMD2D
+### EMD2D/BEMD
 
-Simplest case is to pass image as monochromatic numpy 2D array. As with
-other modules one can use default setting of instance or more explicitly
-use `emd2d()` method.
+*Unfortunately, this is Experimental and we can't guarantee that the output is meaningful.*
+The simplest use is to pass image as monochromatic numpy 2D array. Sample as
+with the other modules one can use the default setting of an instance or, more explicitly,
+use the `emd2d()` method.
 
 ```python
-from PyEMD import EMD2D
+from PyEMD import EMD2D  #, BEMD
 import numpy as np
 
 x, y = np.arange(128), np.arange(128).reshape((-1,1))
 img = np.sin(0.1*x)*np.cos(0.2*y)
-emd2d = EMD2D()
+emd2d = EMD2D()  # BEMD() also works
 IMFs_2D = emd2d(img)
 ```
 
 ## Contact
 
-Feel free to contact me with any questions, requests or simply saying
-*hi*. It's always nice to know that I might have contributed to saving
-someone's time or that I might improve my skills/projects.
+Feel free to contact me with any questions, requests or simply to say
+*hi*. It's always nice to know that I one's work have eased others and saved
+someone's time. Contributing to the project is also acceptable.
 
-Contact me either through gmail (laszukdawid @ gmail) or search me
+Contact me either through gmail (laszukdawid @ gmail) or search me through your
 favourite web search.
 
 ### Citation

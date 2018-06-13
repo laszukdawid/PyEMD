@@ -26,7 +26,7 @@ class BEMD:
     The guess why the decomosition doesn't work is that it's difficult to extrapolate image
     far away from extrema. Not even mirroring helps in this case.
 
-    Method decomposes 2D arrays like gray-scale images into 2D representations of
+    Method decomposition 2D arrays like gray-scale images into 2D representations of
     Intrinsic Mode Functions (IMFs).
 
     The algorithm is based on Nunes et. al. [Nunes2003]_ work.
@@ -45,7 +45,7 @@ class BEMD:
 
         self.FIXE = 1  # Single iteration by default, otherwise results are terrible
         self.FIXE_H = 0
-        self.MAX_ITERATION = 500
+        self.MAX_ITERATION = 5
 
     def __call__(self, image, max_imf=-1):
         return self.bemd(image, max_imf=max_imf)
@@ -165,7 +165,7 @@ class BEMD:
             return True
 
         # If IMF mean close to zero (below threshold)
-        if np.mean(np.abs(proto_imf))<self.mean_thr:
+        if np.mean(np.abs(proto_imf)) < self.mean_thr:
             return True
 
         # Everything relatively close to 0
@@ -266,7 +266,7 @@ class BEMD:
 
         return IMF
 
-########################################
+
 if __name__ == "__main__":
     print("Running example on BEMD")
     PLOT = True
@@ -282,9 +282,9 @@ if __name__ == "__main__":
 
     pi2 = 2*np.pi
     img = np.zeros((rows,cols))
-    img = img + np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
+    # img = img + np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
     img = img + 3*np.sin(2*pi2*x)+2
-    img = img + 5*x*y + 2*(y-0.2)*y
+    # img = img + 5*x*y + 2*(y-0.2)*y
     print("Done")
 
     # Perform decomposition
