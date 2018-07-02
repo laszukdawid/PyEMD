@@ -14,6 +14,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from PyEMD.splines import *
 
+
 class EMD:
     """
     .. _EMD:
@@ -92,6 +93,10 @@ class EMD:
         self.FIXE_H = 0
 
         self.MAX_ITERATION = 1000
+
+        # Instance global declaration
+        self.imfs = None
+        self.residue = None
 
         # Update based on options
         for key in config.keys():
@@ -196,17 +201,17 @@ class EMD:
 
         ####################################
         # Left bound
-        dPos = max_pos[0] - min_pos[0]
-        leftExtMaxType = dPos<0 # True -> max, else min
+        d_pos = max_pos[0] - min_pos[0]
+        left_ext_max_type = d_pos<0 # True -> max, else min
 
-        if leftExtMaxType:
-            if (S[0]>min_val[0]) and (np.abs(dPos)>(max_pos[0]-T[0])):
+        # Left extremum is maximum
+        if left_ext_max_type:
+            if (S[0]>min_val[0]) and (np.abs(d_pos)>(max_pos[0]-T[0])):
                 # mirror signal to first extrema
                 expand_left_max_pos = 2*max_pos[0] - max_pos[1:nbsym+1]
                 expand_left_min_pos = 2*max_pos[0] - min_pos[0:nbsym]
                 expand_left_max_val = max_val[1:nbsym+1]
                 expand_left_min_val = min_val[0:nbsym]
-
             else:
                 # mirror signal to beginning
                 expand_left_max_pos = 2*T[0] - max_pos[0:nbsym]
@@ -214,16 +219,14 @@ class EMD:
                 expand_left_max_val = max_val[0:nbsym]
                 expand_left_min_val = np.append(S[0], min_val[0:nbsym-1])
 
-
-        # Min
+        # Left extremum is minimum
         else:
-            if (S[0] < max_val[0]) and (np.abs(dPos)>(min_pos[0]-T[0])):
+            if (S[0] < max_val[0]) and (np.abs(d_pos)>(min_pos[0]-T[0])):
                 # mirror signal to first extrema
                 expand_left_max_pos = 2*min_pos[0] - max_pos[0:nbsym]
                 expand_left_min_pos = 2*min_pos[0] - min_pos[1:nbsym+1]
                 expand_left_max_val = max_val[0:nbsym]
                 expand_left_min_val = min_val[1:nbsym+1]
-
             else:
                 # mirror signal to beginning
                 expand_left_max_pos = 2*T[0] - np.append(T[0], max_pos[0:nbsym-1])
@@ -241,46 +244,46 @@ class EMD:
 
         ####################################
         # Right bound
-        dPos = max_pos[-1] - min_pos[-1]
-        rightExtMaxType = dPos>0
+        d_pos = max_pos[-1] - min_pos[-1]
+        right_ext_max_type = d_pos > 0
 
-        if not rightExtMaxType:
-            if (S[-1] < max_val[-1]) and (np.abs(dPos)>(T[-1]-min_pos[-1])):
+        # Right extremum is maximum
+        if not right_ext_max_type:
+            if (S[-1] < max_val[-1]) and (np.abs(d_pos)>(T[-1]-min_pos[-1])):
                 # mirror signal to last extrema
                 idx_max = max(0, end_max-nbsym)
-                idxMin = max(0, end_min-nbsym-1)
+                idx_min = max(0, end_min-nbsym-1)
                 expand_right_maxPos = 2*min_pos[-1] - max_pos[idx_max:]
-                expand_right_min_pos = 2*min_pos[-1] - min_pos[idxMin:-1]
+                expand_right_min_pos = 2*min_pos[-1] - min_pos[idx_min:-1]
                 expand_right_max_val = max_val[idx_max:]
-                expand_right_min_val = min_val[idxMin:-1]
+                expand_right_min_val = min_val[idx_min:-1]
             else:
                 # mirror signal to end
                 idx_max = max(0, end_max-nbsym+1)
-                idxMin = max(0, end_min-nbsym)
+                idx_min = max(0, end_min-nbsym)
                 expand_right_maxPos = 2*T[-1] - np.append(max_pos[idx_max:], T[-1])
-                expand_right_min_pos = 2*T[-1] - min_pos[idxMin:]
+                expand_right_min_pos = 2*T[-1] - min_pos[idx_min:]
                 expand_right_max_val = np.append(max_val[idx_max:],S[-1])
-                expand_right_min_val = min_val[idxMin:]
+                expand_right_min_val = min_val[idx_min:]
 
+        # Right extremum is minimum
         else:
-            if (S[-1] > min_val[-1]) and len(max_pos)>1 and (np.abs(dPos)>(T[-1]-max_pos[-1])):
+            if (S[-1] > min_val[-1]) and len(max_pos)>1 and (np.abs(d_pos)>(T[-1]-max_pos[-1])):
                 # mirror signal to last extremum
                 idx_max = max(0, end_max-nbsym-1)
-                idxMin = max(0, end_min-nbsym)
+                idx_min = max(0, end_min-nbsym)
                 expand_right_maxPos = 2*max_pos[-1] - max_pos[idx_max:-1]
-                expand_right_min_pos = 2*max_pos[-1] - min_pos[idxMin:]
+                expand_right_min_pos = 2*max_pos[-1] - min_pos[idx_min:]
                 expand_right_max_val = max_val[idx_max:-1]
-                expand_right_min_val = min_val[idxMin:]
+                expand_right_min_val = min_val[idx_min:]
             else:
                 # mirror signal to end
                 idx_max = max(0, end_max-nbsym)
-                idxMin = max(0, end_min-nbsym+1)
+                idx_min = max(0, end_min-nbsym+1)
                 expand_right_maxPos = 2*T[-1] - max_pos[idx_max:]
-                expand_right_min_pos = 2*T[-1] - np.append(min_pos[idxMin:], T[-1])
+                expand_right_min_pos = 2*T[-1] - np.append(min_pos[idx_min:], T[-1])
                 expand_right_max_val = max_val[idx_max:]
-                expand_right_min_val = np.append(min_val[idxMin:], S[-1])
-
-
+                expand_right_min_val = np.append(min_val[idx_min:], S[-1])
 
         if not expand_right_min_pos.shape:
             expand_right_min_pos, expand_right_min_val = min_pos, min_val
@@ -304,8 +307,8 @@ class EMD:
         """
 
         # Find indexes of pass
-        indmin = np.array([np.nonzero(T==t)[0] for t in min_pos]).flatten()
-        indmax = np.array([np.nonzero(T==t)[0] for t in max_pos]).flatten()
+        ind_min = np.array([np.nonzero(T==t)[0] for t in min_pos]).flatten()
+        ind_max = np.array([np.nonzero(T==t)[0] for t in max_pos]).flatten()
 
         # Local variables
         nbsym = self.nbsym
@@ -313,51 +316,51 @@ class EMD:
 
         ####################################
         # Left bound - mirror nbsym points to the left
-        if indmax[0] < indmin[0]:
-            if S[0] > S[indmin[0]]:
-                lmax = indmax[1:min(end_max,nbsym+1)][::-1]
-                lmin = indmin[0:min(end_min,nbsym+0)][::-1]
-                lsym = indmax[0]
+        if ind_max[0] < ind_min[0]:
+            if S[0] > S[ind_min[0]]:
+                lmax = ind_max[1:min(end_max,nbsym+1)][::-1]
+                lmin = ind_min[0:min(end_min,nbsym+0)][::-1]
+                lsym = ind_max[0]
             else:
-                lmax = indmax[0:min(end_max,nbsym)][::-1]
-                lmin = np.append(indmin[0:min(end_min,nbsym-1)][::-1],0)
+                lmax = ind_max[0:min(end_max,nbsym)][::-1]
+                lmin = np.append(ind_min[0:min(end_min,nbsym-1)][::-1],0)
                 lsym = 0
         else:
-            if S[0] < S[indmax[0]]:
-                lmax = indmax[0:min(end_max,nbsym+0)][::-1]
-                lmin = indmin[1:min(end_min,nbsym+1)][::-1]
-                lsym = indmin[0]
+            if S[0] < S[ind_max[0]]:
+                lmax = ind_max[0:min(end_max,nbsym+0)][::-1]
+                lmin = ind_min[1:min(end_min,nbsym+1)][::-1]
+                lsym = ind_min[0]
             else:
-                lmax = np.append(indmax[0:min(end_max,nbsym-1)][::-1],0)
-                lmin = indmin[0:min(end_min,nbsym)][::-1]
+                lmax = np.append(ind_max[0:min(end_max,nbsym-1)][::-1],0)
+                lmin = ind_min[0:min(end_min,nbsym)][::-1]
                 lsym = 0
 
         ####################################
         # Right bound - mirror nbsym points to the right
-        if indmax[-1] < indmin[-1]:
-            if S[-1] < S[indmax[-1]]:
-                rmax = indmax[max(end_max-nbsym,0):][::-1]
-                rmin = indmin[max(end_min-nbsym-1,0):-1][::-1]
-                rsym = indmin[-1]
+        if ind_max[-1] < ind_min[-1]:
+            if S[-1] < S[ind_max[-1]]:
+                rmax = ind_max[max(end_max-nbsym,0):][::-1]
+                rmin = ind_min[max(end_min-nbsym-1,0):-1][::-1]
+                rsym = ind_min[-1]
             else:
-                rmax = np.append(indmax[max(end_max-nbsym+1,0):], len(S)-1)[::-1]
-                rmin = indmin[max(end_min-nbsym,0):][::-1]
+                rmax = np.append(ind_max[max(end_max-nbsym+1,0):], len(S)-1)[::-1]
+                rmin = ind_min[max(end_min-nbsym,0):][::-1]
                 rsym = len(S)-1
         else:
-            if S[-1] > S[indmin[-1]]:
-                rmax = indmax[max(end_max-nbsym-1,0):-1][::-1]
-                rmin = indmin[max(end_min-nbsym,0):][::-1]
-                rsym = indmax[-1]
+            if S[-1] > S[ind_min[-1]]:
+                rmax = ind_max[max(end_max-nbsym-1,0):-1][::-1]
+                rmin = ind_min[max(end_min-nbsym,0):][::-1]
+                rsym = ind_max[-1]
             else:
-                rmax = indmax[max(end_max-nbsym,0):][::-1]
-                rmin = np.append(indmin[max(end_min-nbsym+1,0):], len(S)-1)[::-1]
+                rmax = ind_max[max(end_max-nbsym,0):][::-1]
+                rmin = np.append(ind_min[max(end_min-nbsym+1,0):], len(S)-1)[::-1]
                 rsym = len(S)-1
 
         # In case any array missing
-        if not lmin.size: lmin = indmin
-        if not rmin.size: rmin = indmin
-        if not lmax.size: lmax = indmax
-        if not rmax.size: rmax = indmax
+        if not lmin.size: lmin = ind_min
+        if not rmin.size: rmin = ind_min
+        if not lmax.size: lmax = ind_max
+        if not rmax.size: rmax = ind_max
 
         # Mirror points
         tlmin = 2*T[lsym]-T[lmin]
@@ -367,10 +370,10 @@ class EMD:
 
         # If mirrored points are not outside passed time range.
         if tlmin[0] > T[0] or tlmax[0] > T[0]:
-            if lsym == indmax[0]:
-                lmax = indmax[0:min(end_max,nbsym)][::-1]
+            if lsym == ind_max[0]:
+                lmax = ind_max[0:min(end_max,nbsym)][::-1]
             else:
-                lmin = indmin[0:min(end_min,nbsym)][::-1]
+                lmin = ind_min[0:min(end_min,nbsym)][::-1]
 
             if lsym == 0:
                 raise Exception('Left edge BUG')
@@ -380,10 +383,10 @@ class EMD:
             tlmax = 2*T[lsym]-T[lmax]
 
         if trmin[-1] < T[-1] or trmax[-1] < T[-1]:
-            if rsym == indmax[-1]:
-                rmax = indmax[max(end_max-nbsym,0):][::-1]
+            if rsym == ind_max[-1]:
+                rmax = ind_max[max(end_max-nbsym,0):][::-1]
             else:
-                rmin = indmin[max(end_min-nbsym,0):][::-1]
+                rmin = ind_min[max(end_min-nbsym,0):][::-1]
 
             if rsym == len(S)-1:
                 raise Exception('Right edge BUG')
@@ -397,10 +400,10 @@ class EMD:
         zrmax = S[rmax]
         zrmin = S[rmin]
 
-        tmin = np.append(tlmin, np.append(T[indmin], trmin))
-        tmax = np.append(tlmax, np.append(T[indmax], trmax))
-        zmin = np.append(zlmin, np.append(S[indmin], zrmin))
-        zmax = np.append(zlmax, np.append(S[indmax], zrmax))
+        tmin = np.append(tlmin, np.append(T[ind_min], trmin))
+        tmax = np.append(tlmax, np.append(T[ind_max], trmax))
+        zmin = np.append(zlmin, np.append(S[ind_min], zrmin))
+        zmax = np.append(zlmax, np.append(S[ind_max], zrmax))
 
         max_extrema = np.array([tmax, zmax])
         min_extrema = np.array([tmin, zmin])
@@ -517,7 +520,6 @@ class EMD:
         indzer = np.nonzero(S1*S2<0)[0]
         if np.any(S == 0):
             iz = np.nonzero(S==0)[0]
-            indz = []
             if np.any(np.diff(iz)==1):
                 zer = S == 0
                 dz = np.diff(np.append(np.append(0, zer), 0))
@@ -541,9 +543,9 @@ class EMD:
         # n - next
         Tp, T0, Tn = T[:-2], T[1:-1], T[2:]
         Sp, S0, Sn = S[:-2], S[1:-1], S[2:]
-        #~ a = Sn + Sp - 2*S0
-        #~ b = 2*(Tn+Tp)*S0 - ((Tn+T0)*Sp+(T0+Tp)*Sn)
-        #~ c = Sp*T0*Tn -2*Tp*S0*Tn + Tp*T0*Sn
+        # a = Sn + Sp - 2*S0
+        # b = 2*(Tn+Tp)*S0 - ((Tn+T0)*Sp+(T0+Tp)*Sn)
+        # c = Sp*T0*Tn -2*Tp*S0*Tn + Tp*T0*Sn
         TnTp, T0Tn, TpT0 = Tn-Tp, T0-Tn, Tp-T0
         scale = Tp*Tn*Tn + Tp*Tp*T0 + T0*T0*Tn - Tp*Tp*Tn - Tp*T0*T0 - T0*Tn*Tn
 
@@ -554,15 +556,12 @@ class EMD:
         a = a/scale
         b = b/scale
         c = c/scale
-        a[a==0] = 1e-14 #TODO: bad hack for zero div
+        a[a==0] = 1e-14
         tVertex = -0.5*b/a
         idx = np.r_[tVertex<T0+0.5*(Tn-T0)] & np.r_[tVertex>=T0-0.5*(T0-Tp)]
 
         a, b, c = a[idx], b[idx], c[idx]
-
         tVertex = tVertex[idx]
-        _T, _S = T0[idx], S0[idx]
-        #~ sVertex = a*(tVertex+_T)*(tVertex-_T) + b*(tVertex-_T) + _S
         sVertex = a*tVertex*tVertex + b*tVertex + c
 
         local_max_pos, local_max_val = tVertex[a<0], sVertex[a<0]
@@ -584,7 +583,6 @@ class EMD:
         indzer = np.nonzero(S1*S2<0)[0]
         if np.any(S==0):
             iz = np.nonzero(S==0)[0]
-            indz = []
             if np.any(np.diff(iz)==1):
                 zer = (S==0)
                 dz = np.diff(np.append(np.append(0, zer), 0))
@@ -595,7 +593,6 @@ class EMD:
                 indz = iz
 
             indzer = np.sort(np.append(indzer, indz))
-
 
         # Finds local extrema
         d = np.diff(S)
@@ -683,7 +680,7 @@ class EMD:
 
         return False
 
-    def check_imf(self, imf_new, imf_old, eMax, eMin, mean):
+    def check_imf(self, imf_new, imf_old, eMax, eMin):
         """
         Huang criteria for **IMF** (similar to Cauchy convergence test).
         Signal is an IMF if consecutive siftings do not affect signal
@@ -698,7 +695,7 @@ class EMD:
 
         # Scaled variance test
         svar = np.sum((imf_new-imf_old)**2)/(max(imf_old)-min(imf_old))
-        if  svar < self.svar_thr:
+        if svar < self.svar_thr:
             self.logger.debug("Scaled variance -- PASSED")
             return True
 
@@ -713,7 +710,6 @@ class EMD:
     @staticmethod
     def _common_dtype(x, y):
         """Determines common numpy DTYPE for arrays."""
-
         dtype = np.find_common_type([x.dtype, y.dtype], [])
         if x.dtype != dtype: x = x.astype(dtype)
         if y.dtype != dtype: y = y.astype(dtype)
@@ -739,7 +735,7 @@ class EMD:
         Returns
         -------
         IMF : numpy array
-            Set of IMFs producesed from input signal.
+            Set of IMFs produced from input signal.
         """
 
         if T is None: T = np.arange(len(S), dtype=S.dtype)
@@ -750,7 +746,7 @@ class EMD:
         self.DTYPE = S.dtype
         N = len(S)
 
-        Res = S.astype(self.DTYPE)
+        residue = S.astype(self.DTYPE)
         imf = np.zeros(len(S), dtype=self.DTYPE)
         imf_old = np.nan
 
@@ -760,14 +756,14 @@ class EMD:
 
         # Create arrays
         imfNo = 0
-        IMF = np.empty((imfNo, N)) # Numpy container for IMF
-        notFinish = True
+        IMF = np.empty((imfNo, N))  # Numpy container for IMF
+        finished = False
 
-        while(notFinish):
+        while not finished:
             self.logger.debug('IMF -- '+str(imfNo))
 
-            Res[:] = S - np.sum(IMF[:imfNo], axis=0)
-            imf = Res.copy()
+            residue[:] = S - np.sum(IMF[:imfNo], axis=0)
+            imf = residue.copy()
             mean = np.zeros(len(S), dtype=self.DTYPE)
 
             # Counters
@@ -802,9 +798,8 @@ class EMD:
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
-
-                        res = self.find_extrema(T, imf)
-                        max_pos, min_pos, ind_zer = res[0], res[2], res[4]
+                        tmp_residue = self.find_extrema(T, imf)
+                        max_pos, min_pos, ind_zer = tmp_residue[0], tmp_residue[2], tmp_residue[4]
                         extNo = len(max_pos)+len(min_pos)
                         nzm = len(ind_zer)
 
@@ -829,38 +824,43 @@ class EMD:
 
                         if imf_old is np.nan: continue
 
-                        f1 = self.check_imf(imf, imf_old, eMax, eMin, mean)
-                        #f2 = np.all(max_val>0) and np.all(min_val<0)
+                        f1 = self.check_imf(imf, imf_old, eMax, eMin)
                         f2 = abs(extNo - nzm)<2
 
                         # STOP
                         if f1 and f2: break
 
-                else: # Less than 2 ext, i.e. trend
-                    notFinish = False
+                else:  # Less than 2 ext, i.e. trend
+                    finished = True
                     break
-
-            # END OF IMF SIFITING
+            # END OF IMF SIFTING
 
             IMF = np.vstack((IMF, imf.copy()))
             imfNo += 1
 
             if self.end_condition(S, IMF) or imfNo==max_imf:
-                notFinish = False
+                finished = True
                 break
 
         # Saving residuum
-        Res = S - np.sum(IMF,axis=0)
-        if not np.allclose(Res,0):
-            IMF = np.vstack((IMF, Res))
+        self.residue = residue = S - np.sum(IMF,axis=0)
+        self.imfs = IMF.copy()
+        if not np.allclose(residue, 0):
+            IMF = np.vstack((IMF, residue))
 
         return IMF
 
+    def get_imfs_and_residue(self):
+        """
+        Provides access to separated imfs and residue from recently analysed signal.
+        :return: (imfs, residue)
+        """
+        return self.imfs, self.residue
+
 ###################################################
-## Beginning of program
+
 
 if __name__ == "__main__":
-
     import pylab as plt
 
     # Logging options
@@ -877,7 +877,7 @@ if __name__ == "__main__":
 
     S = np.sin(20*T*(1+0.2*T)) + T**2 + np.sin(13*T)
     S = S.astype(DTYPE)
-    print("Input S.dtype: "+str(S.dtype))
+    print("Input S.dtype: " + str(S.dtype))
 
     # Prepare and run EMD
     emd = EMD()
@@ -886,22 +886,22 @@ if __name__ == "__main__":
     emd.spline_kind = 'cubic'
     emd.DTYPE = DTYPE
 
-    nIMF = emd.emd(S, T, max_imf)
-    imfNo = nIMF.shape[0]
+    imfs = emd.emd(S, T, max_imf)
+    imfNo = imfs.shape[0]
 
     # Plot results
     c = 1
     r = np.ceil((imfNo+1)/c)
 
     plt.ioff()
-    plt.subplot(r,c,1)
+    plt.subplot(r, c, 1)
     plt.plot(T, S, 'r')
     plt.xlim((tMin, tMax))
     plt.title("Original signal")
 
     for num in range(imfNo):
         plt.subplot(r,c,num+2)
-        plt.plot(T, nIMF[num],'g')
+        plt.plot(T, imfs[num], 'g')
         plt.xlim((tMin, tMax))
         plt.ylabel("Imf "+str(num+1))
 

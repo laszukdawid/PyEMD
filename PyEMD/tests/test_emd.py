@@ -7,6 +7,7 @@ import numpy as np
 from PyEMD import EMD
 import unittest
 
+
 class EMDTest(unittest.TestCase):
 
     @staticmethod
@@ -36,16 +37,16 @@ class EMDTest(unittest.TestCase):
         S = 2*t
 
         # Input - linear function f(t) = 2*t
-        IMF = emd.emd(S, t)
-        self.assertEqual(IMF.shape[0], 1, "Expecting single IMF")
-        self.assertTrue(np.allclose(S, IMF[0]))
+        imfs = emd.emd(S, t)
+        self.assertEqual(imfs.shape[0], 1, "Expecting single IMF")
+        self.assertTrue(np.allclose(S, imfs[0]))
 
     def test_single_imf(self):
         """
         Input is IMF. Expecint single shifting.
         """
 
-        maxDiff = lambda a,b: np.max(np.abs(a-b))
+        max_diff = lambda a,b: np.max(np.abs(a-b))
 
         emd = EMD()
         emd.FIXE_H = 2
@@ -55,22 +56,23 @@ class EMDTest(unittest.TestCase):
         S = c1.copy()
 
         # Input - linear function f(t) = sin(2Hz t)
-        IMF = emd.emd(S, t)
-        self.assertEqual(IMF.shape[0], 1, "Expecting sin + trend")
+        # import pdb; pdb.set_trace()
+        imfs = emd.emd(S, t)
+        self.assertEqual(imfs.shape[0], 1, "Expecting sin + trend")
 
-        diff = np.allclose(IMF[0], c1)
-        self.assertTrue(diff, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
+        diff = np.allclose(imfs[0], c1)
+        self.assertTrue(diff, "Expecting 1st IMF to be sin\nMaxDiff = " + str(max_diff(imfs[0],c1)))
 
         # Input - linear function f(t) = siin(2Hz t) + 2*t
         c2 = 5*(t+2)
         S += c2.copy()
-        IMF = emd.emd(S, t)
+        imfs = emd.emd(S, t)
 
-        self.assertEqual(IMF.shape[0], 2, "Expecting sin + trend")
-        diff1 = np.allclose(IMF[0], c1, atol=0.2)
-        self.assertTrue(diff1, "Expecting 1st IMF to be sin\nMaxDiff = "+str(maxDiff(IMF[0],c1)))
-        diff2 = np.allclose(IMF[1], c2, atol=0.2)
-        self.assertTrue(diff2, "Expecting 2nd IMF to be trend\nMaxDiff = "+str(maxDiff(IMF[1],c2)))
+        self.assertEqual(imfs.shape[0], 2, "Expecting sin + trend")
+        diff1 = np.allclose(imfs[0], c1, atol=0.2)
+        self.assertTrue(diff1, "Expecting 1st IMF to be sin\nMaxDiff = " + str(max_diff(imfs[0],c1)))
+        diff2 = np.allclose(imfs[1], c2, atol=0.2)
+        self.assertTrue(diff2, "Expecting 2nd IMF to be trend\nMaxDiff = " + str(max_diff(imfs[1],c2)))
 
     def test_emd_passArgsViaDict(self):
         FIXE = 10
@@ -134,24 +136,24 @@ class EMDTest(unittest.TestCase):
         self.assertTrue(emd.FIXE_H==FIXE_H)
 
         # Extract IMFs
-        IMFs = emd.emd(S)
+        imfs = emd.emd(S)
 
         # Check that IMFs are correct
-        self.assertTrue(IMFs.shape[0]==3)
+        self.assertTrue(imfs.shape[0]==3)
 
-        closeIMF1 = np.allclose(c1[2:-2], IMFs[0,2:-2], atol=0.2)
-        self.assertTrue(closeIMF1)
-        self.assertTrue(np.allclose(c1, IMFs[0], atol=1.))
+        close_imf1 = np.allclose(c1[2:-2], imfs[0,2:-2], atol=0.2)
+        self.assertTrue(close_imf1)
+        self.assertTrue(np.allclose(c1, imfs[0], atol=1.))
 
-        closeIMF2 = np.allclose(c2[2:-2], IMFs[1,2:-2], atol=0.21)
-        self.assertTrue(closeIMF2)
-        self.assertTrue(np.allclose(c2, IMFs[1], atol=1.))
+        close_imf2 = np.allclose(c2[2:-2], imfs[1,2:-2], atol=0.21)
+        self.assertTrue(close_imf2)
+        self.assertTrue(np.allclose(c2, imfs[1], atol=1.))
 
-        closeOffset = np.allclose(offset, IMFs[2,2:-2], atol=0.1)
-        self.assertTrue(closeOffset)
+        close_offset = np.allclose(offset, imfs[2,2:-2], atol=0.1)
+        self.assertTrue(close_offset)
 
-        closeOffset = np.allclose(offset, IMFs[2,1:-1], atol=0.5)
-        self.assertTrue(closeOffset)
+        close_offset = np.allclose(offset, imfs[2,1:-1], atol=0.5)
+        self.assertTrue(close_offset)
 
     def test_emd_default(self):
         T = np.linspace(0, 2, 200)
@@ -161,32 +163,41 @@ class EMDTest(unittest.TestCase):
         S = c1 + c2 + offset
 
         emd = EMD(spline_kind='akima')
-        IMFs = emd.emd(S, T)
+        imfs = emd.emd(S, T)
+        self.assertTrue(imfs.shape[0]==3)
 
-        self.assertTrue(IMFs.shape[0]==3)
+        close_imfs1 = np.allclose(c1[2:-2], imfs[0,2:-2], atol=0.2)
+        self.assertTrue(close_imfs1)
 
-        closeIMF1 = np.allclose(c1[2:-2], IMFs[0,2:-2], atol=0.2)
-        self.assertTrue(closeIMF1)
+        close_imfs2 = np.allclose(c2[2:-2], imfs[1,2:-2], atol=0.21)
+        self.assertTrue(close_imfs2)
 
-        closeIMF2 = np.allclose(c2[2:-2], IMFs[1,2:-2], atol=0.21)
-        self.assertTrue(closeIMF2)
-
-        closeOffset = np.allclose(offset, IMFs[2,1:-1], atol=0.5)
-        self.assertTrue(closeOffset)
+        close_offset = np.allclose(offset, imfs[2,1:-1], atol=0.5)
+        self.assertTrue(close_offset)
 
     def test_max_iteration_flag(self):
-
         S = np.random.random(200)
         emd = EMD()
         emd.MAX_ITERATION = 10
         emd.FIXE = 20
 
-        IMFs = emd.emd(S)
+        imfs = emd.emd(S)
 
         # There's not much to test, except that it doesn't fail.
         # With low MAX_ITERATION value for random signal it's
         # guaranteed to have at least 2 imfs.
-        self.assertTrue(IMFs.shape[0]>1)
+        self.assertTrue(imfs.shape[0]>1)
+
+    def test_imfs_and_residue_accessor(self):
+        S = np.random.random(200)
+        emd = EMD(**{"MAX_ITERATION": 10, "FIXE": 20})
+        all_imfs = emd(S, max_imf=3)
+
+        imfs, residue = emd.get_imfs_and_residue()
+        self.assertEqual(all_imfs.shape[0], imfs.shape[0]+1, "Compare number of components")
+        self.assertTrue(np.array_equal(all_imfs[:-1], imfs), "Shouldn't matter where imfs are from")
+        self.assertTrue(np.array_equal(all_imfs[-1], residue), "Residue, if any, is the last row")
+
 
 if __name__ == "__main__":
     unittest.main()
