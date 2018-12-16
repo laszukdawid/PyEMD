@@ -5,6 +5,7 @@ import numpy as np
 
 from PyEMD import BEMD
 
+@unittest.skip
 class BEMDTest(unittest.TestCase):
 
     bemd = BEMD()
