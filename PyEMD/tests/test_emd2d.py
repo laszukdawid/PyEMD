@@ -7,6 +7,7 @@ import numpy as np
 from PyEMD import EMD2D
 import unittest
 
+@unittest.skip
 class ImageEMDTest(unittest.TestCase):
 
     emd2d = EMD2D()

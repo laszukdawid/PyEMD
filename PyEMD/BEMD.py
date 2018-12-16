@@ -12,7 +12,11 @@ import logging
 import numpy as np
 
 from scipy.interpolate import Rbf
-from skimage.morphology import reconstruction
+
+try:
+    from skimage.morphology import reconstruction
+except ImportError:
+    pass
 
 class BEMD:
     """
