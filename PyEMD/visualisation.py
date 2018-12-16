@@ -1,5 +1,8 @@
-import pylab as plt
-from scipy.signal import hilbert
+try:
+    import pylab as plt
+    from scipy.signal import hilbert
+except ImportError:
+    pass
 
 
 class Visualisation(object):
