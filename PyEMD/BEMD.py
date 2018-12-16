@@ -12,7 +12,13 @@ import logging
 import numpy as np
 
 from scipy.interpolate import Rbf
-from skimage.morphology import reconstruction
+
+try:
+    from skimage.morphology import reconstruction
+except ImportError:
+    logger = logging.getLogger("ROOT")
+    logger.error("BEMD depends on the `Skimage` which is not in the default `requirements.txt`. " \
+                    "Check `requirements-extra.txt`.")
 
 class BEMD:
     """
