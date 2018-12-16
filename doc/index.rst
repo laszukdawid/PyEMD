@@ -17,6 +17,7 @@ me through contact page.
    eemd
    bemd
    ceemdan
+   visualisation
    contact
 
 Indices and tables
