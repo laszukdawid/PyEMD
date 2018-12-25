@@ -1,3 +1,7 @@
+import numpy as np
+
+# Visualisation is an optional module. To minimise installation, `matplotlib` is not added
+# by default. Please install extras with `pip install -r requirement-extra.txt`.
 try:
     import pylab as plt
     from scipy.signal import hilbert

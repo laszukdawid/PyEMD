@@ -14,6 +14,10 @@ coverage:
 
   ignore:
     - __init__.py
+    - PyEMD/tests/*
+    - BEMD.py
+    - EMD2d.py
+    - visualisation.py
     - test_*.py
     - doc/*
     - example/*
