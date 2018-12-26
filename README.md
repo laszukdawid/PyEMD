@@ -131,7 +131,7 @@ emd = EMD()
 emd.emd(S)
 imfs, res = emd.get_imfs_and_residue()
 
-vis = Visulisation(emd)
+vis = Visualisation(emd)
 vis.plot_imfs()
 vis.plot_instant_freq(t)
 vis.show()
