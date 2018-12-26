@@ -123,10 +123,10 @@ if __name__ == "__main__":
     vis = Visualisation(emd)
 
     # Create a plot with all IMFs and residue
-    vis.plot_imfs()
+    vis.plot_imfs(imfs=imfs, residue=res, t=t, include_residue=True)
 
     # Create a plot with instantaneous frequency of all IMFs
-    vis.plot_instant_freq(t)
+    vis.plot_instant_freq(t, imfs=imfs)
 
     # Show both plots
     vis.show()
