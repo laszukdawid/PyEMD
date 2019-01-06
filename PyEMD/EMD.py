@@ -77,6 +77,7 @@ class EMD:
         >>> emd = EMD(**config)
         """
         # Declare constants
+        self.energy_ratio_thr = 0.2
         self.std_thr = 0.2
         self.svar_thr = 0.001
         self.total_power_thr = 0.005
@@ -693,16 +694,25 @@ class EMD:
         # Convergence
         if np.sum(imf_new**2) < 1e-10: return False
 
+        # Precompute values
+        imf_diff = imf_new - imf_old
+        imf_diff_sqrd_sum = np.sum(imf_diff*imf_diff)
+
         # Scaled variance test
-        svar = np.sum((imf_new-imf_old)**2)/(max(imf_old)-min(imf_old))
+        svar = imf_diff_sqrd_sum/(max(imf_old)-min(imf_old))
         if svar < self.svar_thr:
             self.logger.debug("Scaled variance -- PASSED")
             return True
 
         # Standard deviation test
-        std = np.sum(((imf_new-imf_old)/imf_new)**2)
+        std = np.sum((imf_diff/imf_new)**2)
         if std < self.std_thr:
             self.logger.debug("Standard deviation -- PASSED")
+            return True
+
+        energy_ratio = imf_diff_sqrd_sum/np.sum(imf_old*imf_old)
+        if energy_ratio < self.energy_ratio_thr:
+            self.logger.debug("Energy ratio -- PASSED")
             return True
 
         return False
