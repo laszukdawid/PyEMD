@@ -55,6 +55,10 @@ class Visualisation(object):
         t = t if t is not None else range(t_length)
 
         fig, axes = plt.subplots(num_rows, 1, figsize=(self.PLOT_WIDTH, num_rows*self.PLOT_HEIGHT_PER_IMF))
+
+        if num_rows == 1:
+            axes = list(axes)
+
         axes[0].set_title("Time series")
 
         for num, imf in enumerate(imfs):
@@ -82,6 +86,10 @@ class Visualisation(object):
         imfs_inst_freqs = self._calc_inst_freq(imfs, t)
 
         fig, axes = plt.subplots(num_rows, 1, figsize=(self.PLOT_WIDTH, num_rows*self.PLOT_HEIGHT_PER_IMF))
+
+        if num_rows == 1:
+            axes = list(axes)
+
         axes[0].set_title("Instantaneous frequency")
 
         for num, imf_inst_freq in enumerate(imfs_inst_freqs):
