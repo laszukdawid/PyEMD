@@ -312,6 +312,7 @@ class CEEMDAN:
 if __name__ == "__main__":
 
     import pylab as plt
+    import copy
 
     # Logging options
     logging.basicConfig(level=logging.INFO)
@@ -324,12 +325,13 @@ if __name__ == "__main__":
     T = np.linspace(tMin, tMax, N)
 
     S = 3*np.sin(4*T) + 4*np.cos(9*T) + np.sin(8.11*T+1.2)
+    Scopy = copy.copy(S)
 
     # Prepare and run EEMD
     trials = 20
     ceemdan = CEEMDAN(trials=trials)
 
-    C_IMFs = ceemdan(S, T, max_imf)
+    C_IMFs = ceemdan(Scopy, T, max_imf)
     imfNo  = C_IMFs.shape[0]
 
     # Plot results in a grid
