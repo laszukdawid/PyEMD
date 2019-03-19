@@ -169,7 +169,7 @@ class CEEMDAN:
     def ceemdan(self, S, T=None, max_imf=-1):
 
         scale_s = np.std(S)
-        S[:] = S/scale_s
+        S = S/scale_s
 
         # Define all noise
         self.all_noises = self.generate_noise(1, (self.trials,S.size))
@@ -222,6 +222,9 @@ class CEEMDAN:
         res = S - np.sum(all_cimfs, axis=0)
         all_cimfs = np.vstack((all_cimfs,res))
         all_cimfs = all_cimfs*scale_s
+
+        # Emptyfy all IMFs noise
+        del self.all_noise_EMD[:]
 
         return all_cimfs
 
