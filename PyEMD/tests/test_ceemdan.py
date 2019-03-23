@@ -151,5 +151,22 @@ class CEEMDANTest(unittest.TestCase):
         msg_true = "Used same seed, expected same results"
         self.assertTrue(np.all(cmpMachEps(cIMF2,cIMF3)), msg_true)
 
+    def test_ceemdan_origianlSignal(self):
+        T = np.linspace(0, 1, 100)
+        S = 2*np.cos(3*np.pi*T) + np.cos(2*np.pi*T+ 4**T)
+
+        # Make a copy of S for comparsion
+        Scopy = np.copy(S)
+
+        # Compare up to machine epsilon
+        cmpMachEps = lambda x, y: np.abs(x-y)<=2*np.finfo(x.dtype).eps
+
+        ceemdan = CEEMDAN(trials=10)
+        ceemdan(S)
+
+        # The original signal should not be changed after the 'ceemdan' function.
+        msg_true = "Expected no change of the original signal"
+        self.assertTrue(np.all(cmpMachEps(Scopy,S)), msg_true)
+
 if __name__ == "__main__":
     unittest.main()
