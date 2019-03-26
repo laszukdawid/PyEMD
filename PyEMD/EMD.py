@@ -308,8 +308,8 @@ class EMD:
         """
 
         # Find indexes of pass
-        ind_min = np.array([np.nonzero(T==t)[0] for t in min_pos]).flatten()
-        ind_max = np.array([np.nonzero(T==t)[0] for t in max_pos]).flatten()
+        ind_min = min_pos.astype(int)
+        ind_max = max_pos.astype(int)
 
         # Local variables
         nbsym = self.nbsym
@@ -748,7 +748,7 @@ class EMD:
             Set of IMFs produced from input signal.
         """
 
-        if T is None: T = np.arange(len(S), dtype=S.dtype)
+        T = np.arange(len(S), dtype=S.dtype)
         if max_imf is None: max_imf = -1
 
         # Make sure same types are dealt
