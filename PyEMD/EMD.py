@@ -308,8 +308,8 @@ class EMD:
         """
 
         # Find indexes of pass
-        ind_min = np.array([np.nonzero(T==t)[0] for t in min_pos]).flatten()
-        ind_max = np.array([np.nonzero(T==t)[0] for t in max_pos]).flatten()
+        ind_min = min_pos.astype(int)
+        ind_max = max_pos.astype(int)
 
         # Local variables
         nbsym = self.nbsym
@@ -737,7 +737,8 @@ class EMD:
         S : numpy array,
             Input signal.
         T : numpy array, (default: None)
-            Position or time array. If None passed numpy arange is created.
+            Position or time array. If None passed or if self.extrema_detection == "simple",
+            then numpy arange is created.
         max_imf : int, (default: -1)
             IMF number to which decomposition should be performed.
             Negative value means *all*.
@@ -747,8 +748,9 @@ class EMD:
         IMF : numpy array
             Set of IMFs produced from input signal.
         """
-
-        if T is None: T = np.arange(len(S), dtype=S.dtype)
+        if T is None or self.extrema_detection == "simple":
+            T = np.arange(len(S), dtype=S.dtype)
+        
         if max_imf is None: max_imf = -1
 
         # Make sure same types are dealt
