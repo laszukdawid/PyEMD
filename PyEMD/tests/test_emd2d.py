@@ -4,7 +4,7 @@
 from __future__ import division, print_function
 
 import numpy as np
-from PyEMD import EMD2D
+from PyEMD.EMD2d import EMD2D
 import unittest
 
 @unittest.skip
