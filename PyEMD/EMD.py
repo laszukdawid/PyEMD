@@ -726,7 +726,7 @@ class EMD:
 
         return x, y
 
-    def emd(self, S, T=None, max_imf=None):
+    def emd(self, S, T=None, max_imf=-1):
         """
         Performs Empirical Mode Decomposition on signal S.
         The decomposition is limited to *max_imf* imfs.
@@ -748,10 +748,11 @@ class EMD:
         IMF : numpy array
             Set of IMFs produced from input signal.
         """
+        if T is not None and len(S) != len(T):
+            raise ValueError("Time series have different sizes: len(S) -> {} != {} <- len(T)".format(len(S), len(T)))
+
         if T is None or self.extrema_detection == "simple":
             T = np.arange(len(S), dtype=S.dtype)
-        
-        if max_imf is None: max_imf = -1
 
         # Make sure same types are dealt
         S, T = self._common_dtype(S, T)

@@ -13,10 +13,13 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 
-#from scipy.ndimage import maximum_filter
-from scipy.ndimage.filters import maximum_filter
-from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
-from scipy.interpolate import SmoothBivariateSpline as SBS
+try:
+    from scipy.ndimage.filters import maximum_filter
+    from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
+    from scipy.interpolate import SmoothBivariateSpline as SBS
+except ImportError:
+    raise ImportError("EMD2D and BEMD are not supported. Feel free to play around and improve them. " + \
+            "Required depdenecies are in `requriements-extra`.")
 
 class EMD2D:
     """

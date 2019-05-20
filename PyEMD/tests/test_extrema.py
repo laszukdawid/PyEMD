@@ -121,7 +121,7 @@ class ExtremaTest(unittest.TestCase):
         ## CASE 2
         # L2, R2 -- edge MIN, edge MIN
         s = S[1:-1].copy()
-        t = T[1:-1].copy()
+        t = np.arange(s.size)
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -129,14 +129,15 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([-1,3,9,14,20], maxExtrema[0].tolist())
+        self.assertEqual([-2,2,8,13,19], maxExtrema[0].tolist())
         self.assertEqual([4,4,2,5,5], maxExtrema[1].tolist())
-        self.assertEqual([1,6,11,17], minExtrema[0].tolist())
+        self.assertEqual([0,5,10,16], minExtrema[0].tolist())
         self.assertEqual([-3,-2,0,-2], minExtrema[1].tolist())
 
         ## CASE 3
         # L3, R3 -- no edge MAX & no edge MAX
-        s, t = S[2:-3], T[2:-3]
+        s = S[2:-3].copy()
+        t = np.arange(s.size)
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -144,14 +145,15 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([-3,3,9,14,19], maxExtrema[0].tolist())
+        self.assertEqual([-5,1,7,12,17], maxExtrema[0].tolist())
         self.assertEqual([2,4,2,5,2], maxExtrema[1].tolist())
-        self.assertEqual([0,6,11,17], minExtrema[0].tolist())
+        self.assertEqual([-2,4,9,15], minExtrema[0].tolist())
         self.assertEqual([-2,-2,0,0], minExtrema[1].tolist())
 
         ## CASE 4
         # L4, R4 -- edge MAX & edge MAX
-        s, t = S[3:-4], T[3:-4]
+        s = S[3:-4].copy()
+        t = np.arange(s.size)
 
         maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
 
@@ -159,9 +161,9 @@ class ExtremaTest(unittest.TestCase):
         maxExtrema, minExtrema = pp(t, s, \
                         maxPos, maxVal, minPos, minVal)
 
-        self.assertEqual([3,9,14], maxExtrema[0].tolist())
+        self.assertEqual([0,6,11], maxExtrema[0].tolist())
         self.assertEqual([4,2,5], maxExtrema[1].tolist())
-        self.assertEqual([0,6,11,17], minExtrema[0].tolist())
+        self.assertEqual([-3,3,8,14], minExtrema[0].tolist())
         self.assertEqual([-2,-2,0,0], minExtrema[1].tolist())
 
     def test_find_extrema_parabol(self):

@@ -23,9 +23,9 @@ def cubic_spline_3pts(x, y, T):
     v3 = 3*y2y1*_x2x1*_x2x1
     v2 = v1+v3
 
-    M = np.matrix([[m11,m12,m13],[m21,m22,m23],[m31,m32,m33]])
-    v = np.matrix([v1,v2,v3]).T
-    k = np.array(np.linalg.inv(M)*v)
+    M = np.array([[m11,m12,m13],[m21,m22,m23],[m31,m32,m33]])
+    v = np.array([v1,v2,v3]).T
+    k = np.array(np.linalg.inv(M).dot(v))
 
     a1 = k[0]*x1x0 - y1y0
     b1 =-k[1]*x1x0 + y1y0

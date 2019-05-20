@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 
-from PyEMD import BEMD
+from PyEMD.BEMD import BEMD
 
 @unittest.skip
 class BEMDTest(unittest.TestCase):
