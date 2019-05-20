@@ -9,6 +9,7 @@ before_install:
 install:
   - pip install --only-binary=numpy,scipy numpy scipy
   - pip install -r requirements.txt
+  - pip install -r requirements-extra.txt
   - pip install codecov
 script: 
   - python -m PyEMD.tests.test_all
