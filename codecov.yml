@@ -15,13 +15,12 @@ coverage:
     changes: yes
 
   ignore:
-    - "__init__.py"
-    - "PyEMD/tests/*"
-    - "BEMD.py"
-    - "EMD2d.py"
-    - "visualisation.py"
-    - "doc/*"
-    - "example/*"
+    - "PyEMD/tests"
+    - "PyEMD/BEMD.py"
+    - "PyEMD/EMD2d.py"
+    - "PyEMD/visualisation.py"
+    - "doc"
+    - "example"
 
 comment:
   layout: "header, diff, changes"
