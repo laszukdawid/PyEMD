@@ -15,6 +15,7 @@ coverage:
     changes: yes
 
   ignore:
+    - "__init__.py"
     - "PyEMD/tests"
     - "PyEMD/BEMD.py"
     - "PyEMD/EMD2d.py"
