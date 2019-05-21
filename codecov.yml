@@ -1,9 +1,11 @@
+codecov:
+  notify:
+    require_ci_to_pass: yes
+
 coverage:
   precision: 2
   round: down
   range: "50...100"
-  notify:
-    require_ci_to_pass: yes
 
   status:
     project: yes
@@ -13,14 +15,13 @@ coverage:
     changes: yes
 
   ignore:
-    - __init__.py
-    - PyEMD/tests/*
-    - BEMD.py
-    - EMD2d.py
-    - visualisation.py
-    - test_*.py
-    - doc/*
-    - example/*
+    - "__init__.py"
+    - "PyEMD/tests"
+    - "PyEMD/BEMD.py"
+    - "PyEMD/EMD2d.py"
+    - "PyEMD/visualisation.py"
+    - "doc"
+    - "example"
 
 comment:
   layout: "header, diff, changes"
