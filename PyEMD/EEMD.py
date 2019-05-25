@@ -30,6 +30,7 @@ if sys.version_info[0] < 3:
 
     copy_reg.pickle(types.MethodType, _pickle_method)
 
+
 class EEMD:
     """
     **Ensemble Empirical Mode Decomposition**

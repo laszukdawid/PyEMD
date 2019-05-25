@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-VERSION="0.2.6"
+VERSION="0.2.7"
 
-DESCRIPTION = "Implementation of Empirical Mode Decomposition (EMD) and its variations"
+DESCRIPTION = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 
 def main():
     import io
@@ -27,9 +27,10 @@ def main():
         version=VERSION,
         description=DESCRIPTION,
         long_description=long_description,
+        long_description_content_type="text/markdown",
         url="https://github.com/laszukdawid/PyEMD",
         author="Dawid Laszuk",
-        author_email="laszukdawid@gmail.com",
+        author_email="dawid@lasz.uk",
         license="Apache-2.0",
         classifiers=classifiers,
         keywords="signal decomposition data analysis",

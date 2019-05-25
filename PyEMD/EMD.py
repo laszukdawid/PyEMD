@@ -443,7 +443,7 @@ class EMD:
             return t, akima(extrema[0], extrema[1], t)
 
         elif kind == 'cubic':
-            if extrema.shape[1]>3:
+            if extrema.shape[1] > 3:
                 return t, interp1d(extrema[0], extrema[1], kind=kind)(t)
             else:
                 return cubic_spline_3pts(extrema[0], extrema[1], t)
@@ -499,14 +499,12 @@ class EMD:
         local_min_val : numpy array
             Values of local minima.
         """
-        if self.extrema_detection=="parabol":
+        if self.extrema_detection == "parabol":
             return self._find_extrema_parabol(T, S)
-        elif self.extrema_detection=="simple":
+        elif self.extrema_detection == "simple":
             return self._find_extrema_simple(T, S)
         else:
-            msg = "Incorrect extrema detection type. Please try: "
-            msg+= "'simple' or 'parabol'."
-            raise ValueError(msg)
+            raise ValueError("Incorrect extrema detection type. Please try: 'simple' or 'parabol'.")
 
     def _find_extrema_parabol(self, T, S):
         """
@@ -764,8 +762,7 @@ class EMD:
         imf_old = np.nan
 
         if S.shape != T.shape:
-            info = "Position or time array should be the same size as signal."
-            raise ValueError(info)
+            raise ValueError("Position or time array should be the same size as signal.")
 
         # Create arrays
         imfNo = 0
@@ -786,9 +783,7 @@ class EMD:
             while(True):
                 n += 1
                 if n >= self.MAX_ITERATION:
-                    msg = "Max iterations reached for IMF. "
-                    msg+= "Continueing with another IMF."
-                    self.logger.info(msg)
+                    self.logger.info("Max iterations reached for IMF. Continuing with another IMF.")
                     break
 
                 ext_res = self.find_extrema(T, imf)
@@ -816,14 +811,11 @@ class EMD:
                         extNo = len(max_pos)+len(min_pos)
                         nzm = len(ind_zer)
 
-                        if n == 1: continue
-                        if abs(extNo-nzm)>1: n_h = 0
-                        else:                n_h += 1
-
-                        #if np.all(max_val>0) and np.all(min_val<0):
-                        #    n_h += 1
-                        #else:
-                        #    n_h = 0
+                        if n == 1:
+                            continue
+                        
+                        # If proto-IMF add one, or reset counter otherwise
+                        n_h = n_h + 1 if abs(extNo-nzm) < 2 else 0
 
                         # STOP
                         if n_h >= self.FIXE_H: break
