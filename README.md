@@ -94,26 +94,32 @@ $S(t) = cos(22 \pi t^2) + 6t^2$
 Simplest case of using Ensemble EMD (EEMD) is by importing `EEMD` and
 passing your signal to the instance or `eemd()` method.
 
+**Windows**: Please don't skip the `if __name__ == "__main__"` section. 
+
 ```python
 from PyEMD import EEMD
 import numpy as np
 
-s = np.random.random(100)
-eemd = EEMD()
-eIMFs = eemd(s)
+if __name__ == "__main__":
+    s = np.random.random(100)
+    eemd = EEMD()
+    eIMFs = eemd(s)
 ```
 
 ### CEEMDAN
 
 As with previous methods, there is also simple way to use `CEEMDAN`.
 
+**Windows**: Please don't skip the `if __name__ == "__main__"` section. 
+
 ```python
 from PyEMD import CEEMDAN
 import numpy as np
 
-s = np.random.random(100)
-ceemdan = CEEMDAN()
-cIMFs = ceemdan(s)
+if __name__ == "__main__":
+    s = np.random.random(100)
+    ceemdan = CEEMDAN()
+    cIMFs = ceemdan(s)
 ```
 
 ### Visualisation
