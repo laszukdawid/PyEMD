@@ -68,7 +68,7 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, **config):
+    def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, parallel=True, **config):
 
         # Ensemble constants
         self.trials = trials
@@ -76,6 +76,7 @@ class EEMD:
 
         self.random = np.random.RandomState()
         self.noise_kind = "normal"
+        self.parallel = parallel
 
         if ext_EMD is None:
             from PyEMD import EMD
@@ -84,8 +85,9 @@ class EEMD:
             self.EMD = ext_EMD
 
         # By default (None) Pool spawns #processes = #CPU
-        processes = None if "processes" not in config else config["processes"]
-        self.pool = Pool(processes=processes)
+        if parallel:
+            processes = None if "processes" not in config else config["processes"]
+            self.pool = Pool(processes=processes)
 
         # Update based on options
         for key in config.keys():
@@ -99,7 +101,8 @@ class EEMD:
 
     def __getstate__(self):
         self_dict = self.__dict__.copy()
-        del self_dict['pool']
+        if 'pool' in self_dict:
+            del self_dict['pool']
         return self_dict
 
     def generate_noise(self, scale, size):
@@ -173,7 +176,8 @@ class EEMD:
 
         # For trial number of iterations perform EMD on a signal
         # with added white noise
-        all_IMFs = self.pool.map(self._trial_update, range(self.trials))
+        _map = self.pool.map if self.parallel else map
+        all_IMFs = _map(self._trial_update, range(self.trials))
 
         max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
 

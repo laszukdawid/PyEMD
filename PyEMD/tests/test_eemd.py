@@ -22,8 +22,7 @@ class EEMDTest(unittest.TestCase):
         eemd = EEMD()
         eemd(S, T, max_imf)
 
-    @staticmethod
-    def test_eemd_simpleRun():
+    def test_eemd_simpleRun(self):
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)
 
@@ -31,6 +30,8 @@ class EEMDTest(unittest.TestCase):
         eemd = EEMD(trials=10, max_imf=1, **config)
         eemd.EMD.FIXE_H = 5
         eemd.eemd(S)
+
+        self.assertTrue('pool' in eemd.__dict__)
 
     def test_eemd_passingArgumentsViaDict(self):
         trials = 10
@@ -116,6 +117,17 @@ class EEMDTest(unittest.TestCase):
         # Using same seeds, thus expecting same results
         msg_true = "Used same seed, expected same results"
         self.assertTrue(np.all(cmpMachEps(eIMF2,eIMF3)), msg_true)
+
+    def test_eemd_notParallel(self):
+        S = np.random.random(100)
+
+        eemd = EEMD(trials=5, max_imf=2, parallel=False)
+        eemd.EMD.FIXE_H = 2
+        eIMFs = eemd.eemd(S)
+
+        self.assertTrue(eIMFs.shape[0] > 0)
+        self.assertTrue(eIMFs.shape[1], len(S))
+        self.assertFalse('pool' in eemd.__dict__)
 
 if __name__ == "__main__":
     unittest.main()

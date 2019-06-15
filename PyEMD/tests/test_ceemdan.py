@@ -40,6 +40,7 @@ class CEEMDANTest(unittest.TestCase):
 
         self.assertTrue(cIMFs.shape[0]>1)
         self.assertTrue(cIMFs.shape[1]==S.size)
+        self.assertTrue('pool' in ceemdan.__dict__)
 
     def test_ceemdan_passingArgumentsViaDict(self):
         trials = 10
@@ -167,6 +168,17 @@ class CEEMDANTest(unittest.TestCase):
         # The original signal should not be changed after the 'ceemdan' function.
         msg_true = "Expected no change of the original signal"
         self.assertTrue(np.all(cmpMachEps(Scopy,S)), msg_true)
+
+    def test_ceemdan_notParallel(self):
+        S = np.random.random(100)
+
+        ceemdan = CEEMDAN(parallel=False)
+        cIMFs = ceemdan(S)
+
+        self.assertTrue(cIMFs.shape[0]>1)
+        self.assertTrue(cIMFs.shape[1]==S.size)
+        self.assertFalse('pool' in ceemdan.__dict__)
+
 
 if __name__ == "__main__":
     unittest.main()
