@@ -44,7 +44,7 @@ class Visualisation(object):
         """Plots and shows all IMFs.
 
         All parameters are optional since the `emd` object could have been passed when instantiating this object.
-        
+
         The residual is an optional and can be excluded by setting `include_residue=False`.
         """
         imfs, residue = self._check_imfs(imfs, residue, include_residue)
@@ -65,18 +65,18 @@ class Visualisation(object):
             ax = axes[num]
             ax.plot(t, imf)
             ax.set_ylabel("IMF " + str(num+1))
-        
+
         if include_residue:
             ax = axes[-1]
             ax.plot(t, residue)
             ax.set_ylabel("Res")
-        
+
         # Making the layout a bit more pleasant to the eye
         plt.tight_layout()
-    
+
     def plot_instant_freq(self, t, imfs=None):
         """Plots and shows instantaneous frequencies for all provided imfs.
-        
+
         The necessary parameter is `t` which is the time array used to compute the EMD.
         One should pass `imfs` if no `emd` instances is passed when creating the Visualisation object.
         """
@@ -96,7 +96,7 @@ class Visualisation(object):
             ax = axes[num]
             ax.plot(t[:-1], imf_inst_freq)
             ax.set_ylabel("IMF {} [Hz]".format(num+1))
-        
+
         # Making the layout a bit more pleasant to the eye
         plt.tight_layout()
 
@@ -109,7 +109,7 @@ class Visualisation(object):
     def _calc_inst_freq(self, sig, t):
         """Extracts instantaneous frequency through the Hilbert Transform."""
         inst_phase = self._calc_inst_phase(sig)
-        return np.diff(inst_phase)/(t[1]-t[0])
+        return np.diff(inst_phase)/(2*np.pi*(t[1]-t[0]))
 
     def show(self):
         plt.show()
