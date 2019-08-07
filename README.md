@@ -2,6 +2,7 @@
 [![BuildStatus](https://travis-ci.org/laszukdawid/PyEMD.png?branch=master)](https://travis-ci.org/laszukdawid/PyEMD)
 [![DocStatus](https://readthedocs.org/projects/pyemd/badge/?version=latest)](https://pyemd.readthedocs.io/)
 [![Codacy](https://api.codacy.com/project/badge/Grade/5385d5ddc8e84908bd4e38f325443a21)](https://www.codacy.com/app/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=badger)
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A110NUD)
 
 # PyEMD
 
