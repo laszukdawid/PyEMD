@@ -37,8 +37,8 @@ class BEMD:
     The algorithm is based on Nunes et. al. [Nunes2003]_ work.
 
     .. [Nunes2003] J.-C. Nunes, Y. Bouaoune, E. Delechelle, O. Niang, P. Bunel.,
-    "Image analysis by bidimensional empirical mode decomposition. Image and Vision Computing",
-    Elsevier, 2003, 21 (12), pp.1019-1026.
+       "Image analysis by bidimensional empirical mode decomposition. Image and Vision Computing",
+       Elsevier, 2003, 21 (12), pp.1019-1026.
     """
 
     logger = logging.getLogger(__name__)

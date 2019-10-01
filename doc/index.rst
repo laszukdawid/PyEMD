@@ -16,6 +16,7 @@ me through contact page.
    emd
    eemd
    bemd
+   emd2d
    ceemdan
    visualisation
    contact

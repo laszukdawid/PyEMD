@@ -1,3 +1,7 @@
 build
 dist
 *.swp
+venv
+.mypy_cache
+.vscode
+*.egg-info

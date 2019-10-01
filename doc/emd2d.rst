@@ -17,6 +17,6 @@ which are span on extrema defined through maximum filter.
 Class
 -----
 
-.. autoclass:: PyEMD.EMD2D
+.. autoclass:: PyEMD.EMD2d.EMD2D
     :members:
     :special-members:

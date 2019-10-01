@@ -1,5 +1,5 @@
 BEMD
-=====
+====
 
 Warning
 -------
@@ -18,6 +18,6 @@ which are then used to span surface envelope with a radial basis function.
 Class
 -----
 
-.. autoclass:: PyEMD.BEMD
+.. autoclass:: PyEMD.BEMD.BEMD
     :members:
     :special-members:

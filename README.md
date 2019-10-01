@@ -158,7 +158,7 @@ with the other modules one can use the default setting of an instance or, more e
 use the `emd2d()` method.
 
 ```python
-from PyEMD import EMD2D  #, BEMD
+from PyEMD.EMD2d import EMD2D  #, BEMD
 import numpy as np
 
 x, y = np.arange(128), np.arange(128).reshape((-1,1))
