@@ -22,8 +22,7 @@ class CEEMDANTest(unittest.TestCase):
         ceemdan = CEEMDAN(trials=5)
         ceemdan(S, T, max_imf)
 
-    @staticmethod
-    def test_ceemdan_simpleRun():
+    def test_ceemdan_simpleRun(self):
         T = np.linspace(0, 1, 100)
         S = np.sin(2*np.pi*T)
 
@@ -31,6 +30,7 @@ class CEEMDANTest(unittest.TestCase):
         ceemdan = CEEMDAN(trials=10, max_imf=1, **config)
         ceemdan.EMD.FIXE_H = 5
         ceemdan.ceemdan(S)
+        self.assertTrue('processes' in ceemdan.__dict__)
 
     def test_ceemdan_completeRun(self):
         S = np.random.random(200)
@@ -40,7 +40,6 @@ class CEEMDANTest(unittest.TestCase):
 
         self.assertTrue(cIMFs.shape[0]>1)
         self.assertTrue(cIMFs.shape[1]==S.size)
-        self.assertTrue('pool' in ceemdan.__dict__)
 
     def test_ceemdan_passingArgumentsViaDict(self):
         trials = 10
@@ -177,7 +176,6 @@ class CEEMDANTest(unittest.TestCase):
 
         self.assertTrue(cIMFs.shape[0]>1)
         self.assertTrue(cIMFs.shape[1]==S.size)
-        self.assertFalse('pool' in ceemdan.__dict__)
 
 
 if __name__ == "__main__":

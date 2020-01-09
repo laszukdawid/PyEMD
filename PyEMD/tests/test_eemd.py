@@ -31,7 +31,7 @@ class EEMDTest(unittest.TestCase):
         eemd.EMD.FIXE_H = 5
         eemd.eemd(S)
 
-        self.assertTrue('pool' in eemd.__dict__)
+        self.assertTrue('processes' in eemd.__dict__)
 
     def test_eemd_passingArgumentsViaDict(self):
         trials = 10

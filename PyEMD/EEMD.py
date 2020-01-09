@@ -84,14 +84,9 @@ class EEMD:
         else:
             self.EMD = ext_EMD
 
-        # By default (None) Pool spawns #processes = #CPU
-        if parallel:
-            processes = None if "processes" not in config else config["processes"]
-            self.pool = Pool(processes=processes)
-
         # Update based on options
         for key in config.keys():
-            if key in self.__dict__.keys():
+            if key in self.__dict__.keys() or key == "processes":
                 self.__dict__[key] = config[key]
             elif key in self.EMD.__dict__.keys():
                 self.EMD.__dict__[key] = config[key]
@@ -176,8 +171,16 @@ class EEMD:
 
         # For trial number of iterations perform EMD on a signal
         # with added white noise
-        _map = self.pool.map if self.parallel else map
-        all_IMFs = _map(self._trial_update, range(self.trials))
+        if self.parallel:
+            processes = None if "processes" not in self.__dict__ else self.__dict__["processes"]
+            pool = Pool(processes=processes)
+
+            all_IMFs = pool.imap(self._trial_update, range(self.trials))
+
+            pool.close()
+
+        else:  # Not parallel
+            all_IMFs = map(self._trial_update, range(self.trials))
 
         max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
 
