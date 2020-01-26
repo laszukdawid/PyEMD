@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import logging
 import numpy as np
+import itertools
 
 from multiprocessing import Pool
 
@@ -133,7 +134,7 @@ class EEMD:
 
     def noise_seed(self, seed):
         """Set seed for noise generation."""
-        self.random.seed(seed)
+        return self.random.seed(seed)
 
     def eemd(self, S, T=None, max_imf=-1):
         """
@@ -180,12 +181,14 @@ class EEMD:
             pool.close()
 
         else:  # Not parallel
-            all_IMFs = list(map(self._trial_update, range(self.trials)))
+            all_IMFs = map(self._trial_update, range(self.trials))
 
-        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
+        # all_IMFs = list(all_IMFs)
+        all_IMFs_it1, all_IMFs_it2 = itertools.tee(all_IMFs, 2)
+        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs_it1])
 
         self.E_IMF = np.zeros((max_imfNo, N))
-        for IMFs in all_IMFs:
+        for IMFs in all_IMFs_it2:
             self.E_IMF[:IMFs.shape[0]] += IMFs
 
         return self.E_IMF/self.trials
