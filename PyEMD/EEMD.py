@@ -180,7 +180,7 @@ class EEMD:
             pool.close()
 
         else:  # Not parallel
-            all_IMFs = map(self._trial_update, range(self.trials))
+            all_IMFs = list(map(self._trial_update, range(self.trials)))
 
         max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
 
