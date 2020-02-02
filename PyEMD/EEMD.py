@@ -11,6 +11,7 @@
 
 from __future__ import print_function
 
+import itertools
 import logging
 import numpy as np
 
@@ -180,12 +181,14 @@ class EEMD:
             pool.close()
 
         else:  # Not parallel
-            all_IMFs = list(map(self._trial_update, range(self.trials)))
+            all_IMFs = map(self._trial_update, range(self.trials))
 
-        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs])
+        all_IMFs_1, all_IMFs_2 = itertools.tee(all_IMFs, 2)
+
+        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs_1])
 
         self.E_IMF = np.zeros((max_imfNo, N))
-        for IMFs in all_IMFs:
+        for IMFs in all_IMFs_2:
             self.E_IMF[:IMFs.shape[0]] += IMFs
 
         return self.E_IMF/self.trials

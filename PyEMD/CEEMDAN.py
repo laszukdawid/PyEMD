@@ -12,9 +12,9 @@
 from __future__ import print_function
 
 
+import itertools
 import logging
 import numpy as np
-import itertools
 
 from multiprocessing import Pool
 
@@ -297,7 +297,7 @@ class CEEMDAN:
             all_IMFs = map(self._trial_update, range(self.trials))
 
         all_IMFs_1, all_IMFs_2 = itertools.tee(all_IMFs, 2)
-        
+
         max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs_1])
 
         self.E_IMF = np.zeros((max_imfNo, N))
