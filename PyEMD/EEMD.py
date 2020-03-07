@@ -85,6 +85,9 @@ class EEMD:
         else:
             self.EMD = ext_EMD
 
+        self.E_IMF = None
+        self.residue = None
+
         # Update based on options
         for key in config.keys():
             if key in self.__dict__.keys() or key == "processes":
@@ -191,7 +194,10 @@ class EEMD:
         for IMFs in all_IMFs_2:
             self.E_IMF[:IMFs.shape[0]] += IMFs
 
-        return self.E_IMF/self.trials
+        self.E_IMF /= self.trials
+        self.residue = S - np.sum(self.E_IMF, axis=0)
+
+        return self.E_IMF
 
     def _trial_update(self, trial):
         # Generate noise
@@ -205,6 +211,16 @@ class EEMD:
         For reference please see :class:`PyEMD.EMD`.
         """
         return self.EMD.emd(S, T, max_imf)
+
+    def get_imfs_and_residue(self):
+        """
+        Provides access to separated imfs and residue from recently analysed signal.
+        :return: (imfs, residue)
+        """
+        if self.E_IMF is None or self.residue is None:
+            raise ValueError('No IMF found. Please, run EMD method or its variant first.')
+        else:
+            return self.E_IMF, self.residue
 
 ###################################################
 ## Beginning of program

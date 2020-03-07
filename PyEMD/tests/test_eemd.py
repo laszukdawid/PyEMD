@@ -129,5 +129,20 @@ class EEMDTest(unittest.TestCase):
         self.assertTrue(eIMFs.shape[1], len(S))
         self.assertFalse('pool' in eemd.__dict__)
 
+    def test_imfs_and_residue_accessor(self):
+        S = np.random.random(100)
+        eemd = EEMD(trials=5, max_imf=2, parallel=False)
+        eIMFs = eemd(S)
+
+        imfs, residue = eemd.get_imfs_and_residue()
+        self.assertEqual(eIMFs.shape[0], imfs.shape[0], "Compare number of components")
+        self.assertEqual(len(residue), 100, "Check if residue exists")
+
+    def test_imfs_and_residue_accessor2(self):
+        eemd = EEMD()
+        with self.assertRaises(ValueError):
+            imfs, residue = eemd.get_imfs_and_residue()
+
+
 if __name__ == "__main__":
     unittest.main()
