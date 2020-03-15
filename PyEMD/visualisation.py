@@ -99,7 +99,7 @@ class Visualisation(object):
         fig, axes = plt.subplots(num_rows, 1, figsize=(self.PLOT_WIDTH, num_rows*self.PLOT_HEIGHT_PER_IMF))
 
         if num_rows == 1:
-            axes = list(axes)
+            axes = fig.axes
 
         axes[0].set_title("Instantaneous frequency")
 
