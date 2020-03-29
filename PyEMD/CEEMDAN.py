@@ -112,6 +112,9 @@ class CEEMDAN:
         self.range_thr = 0.01
         self.total_power_thr = 0.05
 
+        self.C_IMF = None
+        self.residue = None
+
         # Update based on options
         for key in config.keys():
             if key in self.__dict__.keys() or key == "processes":
@@ -225,6 +228,9 @@ class CEEMDAN:
         # Emptyfy all IMFs noise
         del self.all_noise_EMD[:]
 
+        self.C_IMF = all_cimfs
+        self.residue = S*scale_s - np.sum(self.C_IMF, axis=0)
+
         return all_cimfs
 
     def end_condition(self, S, cIMFs, max_imf):
@@ -318,6 +324,16 @@ class CEEMDAN:
         For reference please see :class:`PyEMD.EMD`.
         """
         return self.EMD.emd(S, T, max_imf)
+
+    def get_imfs_and_residue(self):
+        """
+        Provides access to separated imfs and residue from recently analysed signal.
+        :return: (imfs, residue)
+        """
+        if self.C_IMF is None or self.residue is None:
+            raise ValueError('No IMF found. Please, run EMD method or its variant first.')
+        else:
+            return self.C_IMF, self.residue
 
 ###################################################
 ## Beginning of program

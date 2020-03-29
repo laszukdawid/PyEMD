@@ -860,7 +860,10 @@ class EMD:
         Provides access to separated imfs and residue from recently analysed signal.
         :return: (imfs, residue)
         """
-        return self.imfs, self.residue
+        if self.imfs is None or self.residue is None:
+            raise ValueError('No IMF found. Please, run EMD method or its variant first.')
+        else:
+            return self.imfs, self.residue
 
 ###################################################
 

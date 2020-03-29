@@ -5,6 +5,7 @@ import numpy as np
 try:
     import pylab as plt
     from scipy.signal import hilbert
+    from PyEMD.compact import filt6, pade6
 except ImportError:
     pass
 
@@ -74,42 +75,68 @@ class Visualisation(object):
         # Making the layout a bit more pleasant to the eye
         plt.tight_layout()
 
-    def plot_instant_freq(self, t, imfs=None):
+    def plot_instant_freq(self, t, imfs=None, order=False, alpha=None):
         """Plots and shows instantaneous frequencies for all provided imfs.
 
         The necessary parameter is `t` which is the time array used to compute the EMD.
         One should pass `imfs` if no `emd` instances is passed when creating the Visualisation object.
+        param bool `order`:: represents whether the finite difference scheme is
+            low-order (1st order forward scheme) or high-order (6th order
+            compact scheme). The default value is False (low-order)
+        param float `alpha`:: filter intensity. Default value is None, which
+            is equivalent to `alpha` = 0.5, meaning that no filter is applied.
+            The `alpha` values must be in between -0.5 (fully active) and 0.5
+            (no filter).
         """
+        if alpha is not None:
+            assert -0.5 < alpha < 0.5 , '`alpha` must be in between -0.5 and 0.5'
+
         imfs, _ = self._check_imfs(imfs, None, False)
         num_rows = imfs.shape[0]
 
-        imfs_inst_freqs = self._calc_inst_freq(imfs, t)
+        imfs_inst_freqs = self._calc_inst_freq(imfs, t, order=order, alpha=alpha)
 
         fig, axes = plt.subplots(num_rows, 1, figsize=(self.PLOT_WIDTH, num_rows*self.PLOT_HEIGHT_PER_IMF))
 
         if num_rows == 1:
-            axes = list(axes)
+            axes = fig.axes
 
         axes[0].set_title("Instantaneous frequency")
 
         for num, imf_inst_freq in enumerate(imfs_inst_freqs):
             ax = axes[num]
-            ax.plot(t[:-1], imf_inst_freq)
+            ax.plot(t, imf_inst_freq)
             ax.set_ylabel("IMF {} [Hz]".format(num+1))
 
         # Making the layout a bit more pleasant to the eye
         plt.tight_layout()
 
-    def _calc_inst_phase(self, sig):
+    def _calc_inst_phase(self, sig, alpha):
         """Extract analytical signal through the Hilbert Transform."""
         analytic_signal = hilbert(sig)  # Apply Hilbert transform to each row
+        if alpha is not None:
+            assert -0.5 < alpha < 0.5 , '`alpha` must be in between -0.5 and 0.5'
+            real_part = np.array([filt6(row.real, alpha) for row in analytic_signal])
+            imag_part = np.array([filt6(row.imag, alpha) for row in analytic_signal])
+            analytic_signal = real_part + 1j*imag_part
         phase = np.unwrap(np.angle(analytic_signal))  # Compute angle between img and real
+        if alpha is not None:
+            phase = np.array([filt6(row, alpha) for row in phase]) # Filter phase
         return phase
 
-    def _calc_inst_freq(self, sig, t):
+    def _calc_inst_freq(self, sig, t, order, alpha):
         """Extracts instantaneous frequency through the Hilbert Transform."""
-        inst_phase = self._calc_inst_phase(sig)
-        return np.diff(inst_phase)/(2*np.pi*(t[1]-t[0]))
+        inst_phase = self._calc_inst_phase(sig, alpha=alpha)
+        if order is False:
+            inst_freqs = np.diff(inst_phase)/(2*np.pi*(t[1]-t[0]))
+            inst_freqs = np.concatenate((inst_freqs,
+                inst_freqs[:,-1].reshape(inst_freqs[:,-1].shape[0],1)), axis=1)
+        else:
+            inst_freqs = [pade6(row, t[1]-t[0])/(2.0*np.pi) for row in inst_phase]
+        if alpha is None:
+            return np.array(inst_freqs)
+        else:
+            return np.array([filt6(row, alpha) for row in inst_freqs]) # Filter freqs
 
     def show(self):
         plt.show()

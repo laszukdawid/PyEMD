@@ -177,6 +177,20 @@ class CEEMDANTest(unittest.TestCase):
         self.assertTrue(cIMFs.shape[0]>1)
         self.assertTrue(cIMFs.shape[1]==S.size)
 
+    def test_imfs_and_residue_accessor(self):
+        S = np.random.random(100)
+        ceemdan = CEEMDAN(parallel=False)
+        cIMFs = ceemdan(S)
+
+        imfs, residue = ceemdan.get_imfs_and_residue()
+        self.assertEqual(cIMFs.shape[0], imfs.shape[0], "Compare number of components")
+        self.assertEqual(len(residue), 100, "Check if residue exists")
+
+    def test_imfs_and_residue_accessor2(self):
+        ceemdan = CEEMDAN()
+        with self.assertRaises(ValueError):
+            imfs, residue = ceemdan.get_imfs_and_residue()
+
 
 if __name__ == "__main__":
     unittest.main()

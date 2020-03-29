@@ -199,6 +199,11 @@ class EMDTest(unittest.TestCase):
         self.assertTrue(np.array_equal(all_imfs[:-1], imfs), "Shouldn't matter where imfs are from")
         self.assertTrue(np.array_equal(all_imfs[-1], residue), "Residue, if any, is the last row")
 
+    def test_imfs_and_residue_accessor2(self):
+        emd = EMD()
+        with self.assertRaises(ValueError):
+            imfs, residue = emd.get_imfs_and_residue()
+
 
 if __name__ == "__main__":
     unittest.main()
