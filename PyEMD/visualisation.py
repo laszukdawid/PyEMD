@@ -76,14 +76,22 @@ class Visualisation(object):
         plt.tight_layout()
 
     def plot_instant_freq(self, t, imfs=None, order=False, alpha=None):
-        """Plots and shows instantaneous frequencies for all provided imfs.
+        """
+        Plots and shows instantaneous frequencies for all provided imfs.
 
         The necessary parameter is `t` which is the time array used to compute the EMD.
         One should pass `imfs` if no `emd` instances is passed when creating the Visualisation object.
-        param bool `order`:: represents whether the finite difference scheme is
+
+        Parameters
+        ----------
+
+        order : bool (default: False)
+            Represents whether the finite difference scheme is
             low-order (1st order forward scheme) or high-order (6th order
             compact scheme). The default value is False (low-order)
-        param float `alpha`:: filter intensity. Default value is None, which
+
+        alpha : float (default: None)
+            Filter intensity. Default value is None, which
             is equivalent to `alpha` = 0.5, meaning that no filter is applied.
             The `alpha` values must be in between -0.5 (fully active) and 0.5
             (no filter).

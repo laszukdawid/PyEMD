@@ -179,7 +179,7 @@ class EEMD:
             processes = None if "processes" not in self.__dict__ else self.__dict__["processes"]
             pool = Pool(processes=processes)
 
-            all_IMFs = pool.imap(self._trial_update, range(self.trials))
+            all_IMFs = pool.map(self._trial_update, range(self.trials))
 
             pool.close()
 

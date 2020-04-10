@@ -12,6 +12,7 @@ me through contact page.
 
    intro
    usage
+   speedup_eemd
    examples
    emd
    eemd
