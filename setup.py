@@ -30,7 +30,7 @@ def main():
         long_description_content_type="text/markdown",
         url="https://github.com/laszukdawid/PyEMD",
         author="Dawid Laszuk",
-        author_email="dawid@lasz.uk",
+        author_email="pyemd@dawid.lasz.uk",
         license="Apache-2.0",
         classifiers=classifiers,
         keywords="signal decomposition data analysis",

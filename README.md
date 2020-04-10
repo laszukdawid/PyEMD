@@ -22,7 +22,7 @@ intends to deliver more in time.
 * Ensemble EMD (EEMD),
 * "Complete Ensemble EMD" (CEEMDAN)
 * different settings and configurations of vanilla EMD.
-* Image decomposition (EMD2D & BEMD) (experimental)
+* Image decomposition (EMD2D & BEMD) (experimental, no support)
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
 and extrema interpolation.
@@ -167,11 +167,18 @@ emd2d = EMD2D()  # BEMD() also works
 IMFs_2D = emd2d(img)
 ```
 
+## F.A.Q
+
+### Why is EEMD/CEEMDAN so slow?
+Unfortunately, that's their nature. They execute EMD multiple times every time with slightly modified version. Added noise can cause a creation of many extrema which will decrease performance of the natural cubic spline. For some tweaks on how to deal with that please see [Speedup tricks](https://pyemd.readthedocs.io/en/latest/speedup_eemd.html) in the documentation.
+
+
+
 ## Contact
 
-Feel free to contact me with any questions, requests or simply to say
-*hi*. It's always nice to know that I one's work have eased others and saved
-someone's time. Contributing to the project is also acceptable.
+Feel free to contact me with any questions, requests or simply to say *hi*.
+It's always nice to know that I've helped someone or made their work easier. 
+Contributing to the project is also acceptable and warmly welcomed.
 
 Contact me either through gmail (laszukdawid @ gmail) or search me through your
 favourite web search.
