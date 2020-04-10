@@ -19,7 +19,7 @@ coverage:
     - "PyEMD/tests"
     - "PyEMD/BEMD.py"
     - "PyEMD/EMD2d.py"
-    - "PyEMD/visualisation.py"
+    - "PyEMD/compact.py"
     - "doc"
     - "example"
 
