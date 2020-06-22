@@ -724,6 +724,15 @@ class EMD:
 
         return x, y
 
+    def _normalize_time(self, t):
+        """
+        Normalize time array so that it doesn't explode on tiny values.
+        Returned array starts with 0 and the smallest increase is by 1.
+        """
+        d = np.diff(t)
+        assert np.all(d != 0), "All time domain values needs to be unique"
+        return (t - t[0])/np.min(d)
+
     def emd(self, S, T=None, max_imf=-1):
         """
         Performs Empirical Mode Decomposition on signal S.
@@ -751,6 +760,9 @@ class EMD:
 
         if T is None or self.extrema_detection == "simple":
             T = np.arange(len(S), dtype=S.dtype)
+
+        # Normalize T so that it doesn't explode
+        T = self._normalize_time(T)
 
         # Make sure same types are dealt
         S, T = self._common_dtype(S, T)
