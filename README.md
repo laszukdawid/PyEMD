@@ -186,7 +186,15 @@ favourite web search.
 ### Citation
 
 If you found this package useful and would like to cite it in your work
-please use following structure:
+please use the following structure:
 
-Dawid Laszuk (2017-), **Python implementation of Empirical Mode
-Decomposition algorithm**. <http://www.laszukdawid.com/codes>.
+```
+@misc{pyemd,
+  author = {Laszuk, Dawid},
+  title = {Python implementation of Empirical Mode Decomposition algorithm},
+  year = {2017},
+  publisher = {GitHub},
+  journal = {GitHub Repository},
+  howpublished = {\url{https://github.com/laszukdawid/PyEMD}},
+}
+```
