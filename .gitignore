@@ -5,3 +5,5 @@ venv
 .mypy_cache
 .vscode
 *.egg-info
+*.pyc
+*ipynb

@@ -2,7 +2,7 @@
 # coding: UTF-8
 #
 # Author:   Dawid Laszuk
-# Contact:  laszukdawid@gmail.com
+# Contact:  https://github.com/laszukdawid/PyEMD/issues
 #
 # Feel free to contact for any information.
 """
