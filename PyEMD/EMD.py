@@ -11,9 +11,11 @@ from __future__ import division, print_function
 import logging
 import numpy as np
 
+from typing import Optional, Tuple
 from scipy.interpolate import interp1d
 from PyEMD.splines import *
 
+FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
 class EMD:
     """
@@ -32,18 +34,6 @@ class EMD:
         * `total_power_thr` --- Test for the whole decomp how much of energy is solved.
         * `range_thr` --- Test for the whole decomp whether the difference is tiny.
 
-    Parameters
-    ----------
-    spline_kind : string, (default: 'cubic')
-        Defines type of spline, which connects extrema.
-        Possible: cubic, akima, slinear.
-    nbsym : int, (default: 2)
-        Number of extrema used in boundary mirroring.
-    extrema_detection : string, (default: 'simple')
-        How extrema are defined.
-
-        * *simple* - Extremum is above/below neighbours.
-        * *parabol* - Extremum is a peak of a parabola.
 
     References
     ----------
@@ -59,8 +49,7 @@ class EMD:
     >>> import numpy as np
     >>> T = np.linspace(0, 1, 100)
     >>> S = np.sin(2*2*np.pi*T)
-    >>> emd = EMD()
-    >>> emd.extrema_detection = "parabol"
+    >>> emd = EMD(extrema_detection='parabol')
     >>> IMFs = emd.emd(S)
     >>> IMFs.shape
     (1, 100)
@@ -68,46 +57,62 @@ class EMD:
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self, spline_kind='cubic', nbsym=2, **config):
+    def __init__(self, spline_kind: str='cubic', nbsym: int=2, **kwargs):
         """Initiate *EMD* instance.
 
-        Configuration, such as threshold values can be passed as config.
+        Configuration, such as threshold values, can be passed as kwargs (keyword arguments).
 
-        >>> config = {"std_thr": 0.01, "range_thr": 0.05}
-        >>> emd = EMD(**config)
+        Parameters
+        ----------
+        FIXE : int (default: 0)
+        FIXE_H : int (default: 0)
+        MAX_ITERATION : int (default 1000)
+            Maximum number of iterations per single sifting in EMD.
+        energy_ratio_thr : float (default: 0.2)
+            Threshold value on energy ratio per IMF check.
+        std_thr float : (default 0.2)
+            Threshold value on standard deviation per IMF check.
+        svar_thr float : (default 0.001)
+            Threshold value on scaled variance per IMF check.
+        total_power_thr : float (default 0.005)
+            Threshold value on total power per EMD decomposition.
+        range_thr : float (default 0.001)
+            Threshold for amplitude range (after scaling) per EMD decomposition.
+        extrema_detection : str (default 'simple')
+            Method used to finding extrema.
+        DTYPE : np.dtype (default np.float64)
+            Data type used.
+
+        >>> emd = EMD(std_thr=0.01, range_thr=0.05)
         """
         # Declare constants
-        self.energy_ratio_thr = 0.2
-        self.std_thr = 0.2
-        self.svar_thr = 0.001
-        self.total_power_thr = 0.005
-        self.range_thr = 0.001
+        self.energy_ratio_thr = float(kwargs.get('energy_ratio_thr', 0.2))
+        self.std_thr = float(kwargs.get('std_thr', 0.2))
+        self.svar_thr = float(kwargs.get('svar_thr', 0.001))
+        self.total_power_thr = float(kwargs.get('total_power_thr', 0.005))
+        self.range_thr = float(kwargs.get('range_thr', 0.001))
 
-        self.nbsym = nbsym
-        self.scale_factor = 1.
+        self.nbsym = int(kwargs.get('nbsym', nbsym))
+        self.scale_factor = float(kwargs.get('scale_factor', 1.))
 
         self.spline_kind = spline_kind
-        self.extrema_detection = 'simple' # simple, parabol
+        self.extrema_detection = kwargs.get('extrema_detection', 'simple') # simple, parabol
+        assert self.extrema_detection in ('simple', 'parabol')
 
-        self.DTYPE = np.float64
-        self.FIXE = 0
-        self.FIXE_H = 0
+        self.DTYPE = kwargs.get('DTYPE', np.float64)
+        self.FIXE: int = int(kwargs.get('FIXE', 0))
+        self.FIXE_H: int = int(kwargs.get('FIXE_H', 0))
 
-        self.MAX_ITERATION = 1000
+        self.MAX_ITERATION = int(kwargs.get('MAX_ITERATION', 1000))
 
         # Instance global declaration
-        self.imfs = None
-        self.residue = None
+        self.imfs: Optional[np.ndarray] = None
+        self.residue: Optional[np.ndarray] = None
 
-        # Update based on options
-        for key in config.keys():
-            if key in self.__dict__.keys():
-                self.__dict__[key] = config[key]
-
-    def __call__(self, S, T=None, max_imf=None):
+    def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         return self.emd(S, T=T, max_imf=max_imf)
 
-    def extract_max_min_spline(self, T, S):
+    def extract_max_min_spline(self, T: np.ndarray, S: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Extracts top and bottom envelopes based on the signal,
         which are constructed based on maxima and minima, respectively.
@@ -125,6 +130,10 @@ class EMD:
             Spline spanned on S maxima.
         min_spline : numpy array
             Spline spanned on S minima.
+        max_extrema : numpy array
+            Points indicating local maxima.
+        min_extrema : numpy array
+            Points indicating local minima.
         """
 
         # Get indexes of extrema
@@ -132,19 +141,23 @@ class EMD:
         max_pos, max_val = ext_res[0], ext_res[1]
         min_pos, min_val = ext_res[2], ext_res[3]
 
-        if len(max_pos) + len(min_pos) < 3: return [-1]*4
+        if len(max_pos) + len(min_pos) < 3:
+            return [-1]*4  # TODO: Fix this. Doesn't match the signature.
 
         #########################################
         # Extrapolation of signal (over boundaries)
-        pp_res = self.prepare_points(T, S, max_pos, max_val, min_pos, min_val)
-        max_extrema, min_extrema = pp_res
+        max_extrema, min_extrema = self.prepare_points(T, S, max_pos, max_val, min_pos, min_val)
 
         _, max_spline = self.spline_points(T, max_extrema)
         _, min_spline = self.spline_points(T, min_extrema)
 
         return max_spline, min_spline, max_extrema, min_extrema
 
-    def prepare_points(self, T, S, max_pos, max_val, min_pos, min_val):
+    def prepare_points(
+            self, T: np.ndarray, S: np.ndarray,
+            max_pos: np.ndarray, max_val: np.ndarray,
+            min_pos: np.ndarray, min_val: np.ndarray
+    ):
         """
         Performs extrapolation on edges by adding extra extrema, also known
         as mirroring signal. The number of added points depends on *nbsym*
@@ -177,11 +190,10 @@ class EMD:
         elif self.extrema_detection=="simple":
             return self._prepare_points_simple(T, S, max_pos, max_val, min_pos, min_val)
         else:
-            msg = "Incorrect extrema detection type. Please try: "
-            msg+= "'simple' or 'parabol'."
+            msg = "Incorrect extrema detection type. Please try: 'simple' or 'parabol'."
             raise ValueError(msg)
 
-    def _prepare_points_parabol(self, T, S, max_pos, max_val, min_pos, min_val):
+    def _prepare_points_parabol(self, T, S, max_pos, max_val, min_pos, min_val) -> Tuple[np.ndarray, np.ndarray]:
         """
         Performs mirroring on signal which extrema do not necessarily
         belong on the position array.
@@ -299,7 +311,11 @@ class EMD:
 
         return max_extrema, min_extrema
 
-    def _prepare_points_simple(self, T, S, max_pos, max_val, min_pos, min_val):
+    def _prepare_points_simple(
+        self, T: np.ndarray, S: np.ndarray,
+        max_pos: np.ndarray, max_val: Optional[np.ndarray],
+        min_pos: np.ndarray, min_val: Optional[np.ndarray]
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Performs mirroring on signal which extrema can be indexed on
         the position array.
@@ -417,7 +433,7 @@ class EMD:
 
         return max_extrema, min_extrema
 
-    def spline_points(self, T, extrema):
+    def spline_points(self, T: np.ndarray, extrema: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Constructs spline over given points.
 
@@ -455,7 +471,7 @@ class EMD:
             raise ValueError("No such interpolation method!")
 
     @staticmethod
-    def _not_duplicate(S):
+    def _not_duplicate(S: np.ndarray) -> np.ndarray:
         """
         Returns indices for not repeating values, where there is no extremum.
 
@@ -475,7 +491,7 @@ class EMD:
 
         return idx
 
-    def find_extrema(self, T, S):
+    def find_extrema(self, T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
         """
         Returns extrema (minima and maxima) for given signal S.
         Detection and definition of the extrema depends on
@@ -506,7 +522,7 @@ class EMD:
         else:
             raise ValueError("Incorrect extrema detection type. Please try: 'simple' or 'parabol'.")
 
-    def _find_extrema_parabol(self, T, S):
+    def _find_extrema_parabol(self, T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
         """
         Performs parabol estimation of extremum, i.e. an extremum is a peak
         of parabol spanned on 3 consecutive points, where the mid point is
@@ -568,8 +584,8 @@ class EMD:
 
         return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer
 
-    @classmethod
-    def _find_extrema_simple(cls, T, S):
+    @staticmethod
+    def _find_extrema_simple(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
         """
         Performs extrema detection, where extremum is defined as a point,
         that is above/below its neighbours.
@@ -648,7 +664,7 @@ class EMD:
 
         return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer
 
-    def end_condition(self, S, IMF):
+    def end_condition(self, S: np.ndarray, IMF: np.ndarray) -> bool:
         """Tests for end condition of whole EMD. The procedure will stop if:
 
         * Absolute amplitude (max - min) is below *range_thr* threshold, or
@@ -679,7 +695,7 @@ class EMD:
 
         return False
 
-    def check_imf(self, imf_new, imf_old, eMax, eMin):
+    def check_imf(self, imf_new: np.ndarray, imf_old: np.ndarray, eMax: np.ndarray, eMin: np.ndarray) -> bool:
         """
         Huang criteria for **IMF** (similar to Cauchy convergence test).
         Signal is an IMF if consecutive siftings do not affect signal
@@ -716,15 +732,15 @@ class EMD:
         return False
 
     @staticmethod
-    def _common_dtype(x, y):
-        """Determines common numpy DTYPE for arrays."""
+    def _common_dtype(x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Casts inputs (x, y) into a common numpy DTYPE."""
         dtype = np.find_common_type([x.dtype, y.dtype], [])
         if x.dtype != dtype: x = x.astype(dtype)
         if y.dtype != dtype: y = y.astype(dtype)
-
         return x, y
 
-    def _normalize_time(self, t):
+    @staticmethod
+    def _normalize_time(t: np.ndarray) -> np.ndarray:
         """
         Normalize time array so that it doesn't explode on tiny values.
         Returned array starts with 0 and the smallest increase is by 1.
@@ -733,7 +749,7 @@ class EMD:
         assert np.all(d != 0), "All time domain values needs to be unique"
         return (t - t[0])/np.min(d)
 
-    def emd(self, S, T=None, max_imf=-1):
+    def emd(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         """
         Performs Empirical Mode Decomposition on signal S.
         The decomposition is limited to *max_imf* imfs.
@@ -867,7 +883,7 @@ class EMD:
 
         return IMF
 
-    def get_imfs_and_residue(self):
+    def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Provides access to separated imfs and residue from recently analysed signal.
         :return: (imfs, residue)

@@ -86,6 +86,19 @@ class EMDTest(unittest.TestCase):
         emd = EMD(**params)
         self.assertTrue(emd.FIXE==FIXE, "{} == {}".format(emd.FIXE, FIXE))
 
+    def test_emd_passImplicitParamsDirectly(self):
+        FIXE = 10
+        svar_thr = 0.2
+
+        # First test without initiation
+        emd = EMD()
+        self.assertFalse(emd.FIXE==FIXE, "{} == {}".format(emd.FIXE, FIXE))
+
+        # Second: test with passing
+        emd = EMD(FIXE=FIXE, svar_thr=svar_thr, nothing=0)
+        self.assertTrue(emd.FIXE==FIXE, "{} == {}".format(emd.FIXE, FIXE))
+        self.assertTrue(emd.svar_thr==svar_thr, "{} == {}".format(emd.svar_thr, svar_thr))
+
     def test_emd_FIXE(self):
         T = np.linspace(0, 1, 100)
         c = np.sin(9*2*np.pi*T)

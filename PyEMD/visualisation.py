@@ -153,7 +153,7 @@ class Visualisation(object):
 
 if __name__ == "__main__":
     import numpy as np
-    from EMD import EMD
+    from PyEMD import EMD
 
     # Simple signal example
     t = np.arange(0, 3, 0.01)

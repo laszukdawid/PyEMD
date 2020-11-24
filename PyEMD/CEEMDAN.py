@@ -17,6 +17,7 @@ import logging
 import numpy as np
 
 from multiprocessing import Pool
+from typing import Dict, Optional, Sequence, Tuple, Union
 
 # Python3 handles mutliprocessing much better.
 # For Python2 we need to pickle instance differently.
@@ -31,6 +32,7 @@ if sys.version_info[0] < 3:
             return getattr, (m.im_self, m.im_func.func_name)
 
     copy_reg.pickle(types.MethodType, _pickle_method)
+
 
 class CEEMDAN:
     """
@@ -82,56 +84,55 @@ class CEEMDAN:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials=100, epsilon=0.005, ext_EMD=None, parallel=True, **config):
+    def __init__(self, trials: int=100, epsilon: float=0.005, ext_EMD=None, parallel: bool=True, **kwargs):
         """
         Configuration can be passed through config dictionary.
         For example, updating threshold would be through:
 
+        Example 1:
         >>> config = {"range_thr": 0.001, "total_power_thr": 0.01}
         >>> emd = EMD(**config)
+        Example 2:
+        >>> emd = EMD(range_thr=0.001, total_power_thr=0.01)
         """
 
         # Ensemble constants
         self.trials = trials
         self.epsilon = epsilon
         self.all_noise_std = np.zeros(self.trials)
+        self.noise_scale = float(kwargs.get("noise_scale", 1.))
+        self.range_thr = float(kwargs.get('range_thr', 0.01))
+        self.total_power_thr = float(kwargs.get('total_power_thr', 0.05))
 
         self.beta_progress = True # Scale noise by std
         self.random = np.random.RandomState()
-        self.noise_kind = "normal"
+        self.noise_kind = kwargs.get('noise_kind', "normal")
         self.parallel = parallel
+        self.processes: Optional[int] = kwargs.get('processes')
+        if self.processes is not None and not self.parallel:
+            self.logger.warning("Passing value for process has no effect if `parallel` is False.")
 
         self.all_noise_EMD = []
 
         if ext_EMD is None:
             from PyEMD import EMD
-            self.EMD = EMD()
+            self.EMD = EMD(**kwargs)
         else:
             self.EMD = ext_EMD
 
-        self.range_thr = 0.01
-        self.total_power_thr = 0.05
+        self.C_IMF: Optional[np.ndarray] = None
+        self.residue: Optional[np.ndarray] = None
 
-        self.C_IMF = None
-        self.residue = None
-
-        # Update based on options
-        for key in config.keys():
-            if key in self.__dict__.keys() or key == "processes":
-                self.__dict__[key] = config[key]
-            elif key in self.EMD.__dict__.keys():
-                self.EMD.__dict__[key] = config[key]
-
-    def __call__(self, S, T=None, max_imf=-1):
+    def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         return self.ceemdan(S, T=T, max_imf=max_imf)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
         if 'pool' in self_dict:
             del self_dict['pool']
         return self_dict
 
-    def generate_noise(self, scale, size):
+    def generate_noise(self, scale: float, size: Union[int, Sequence[int]]) -> np.ndarray:
         """
         Generate noise with specified parameters.
         Currently supported distributions are:
@@ -144,8 +145,8 @@ class CEEMDAN:
 
         scale : float
             Width for the distribution.
-        size : int
-            Number of generated samples.
+        size : int or shape
+            Shape of the noise that is added. In case of `int` an array of that len is generated.
 
         Returns
         -------
@@ -164,17 +165,17 @@ class CEEMDAN:
 
         return noise
 
-    def noise_seed(self, seed):
+    def noise_seed(self, seed: int) -> None:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def ceemdan(self, S, T=None, max_imf=-1):
+    def ceemdan(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
 
         scale_s = np.std(S)
         S = S/scale_s
 
         # Define all noise
-        self.all_noises = self.generate_noise(1, (self.trials,S.size))
+        self.all_noises = self.generate_noise(self.noise_scale, (self.trials,S.size))
 
         # Decompose all noise and remember 1st's std
         self.logger.debug("Decomposing all noises")
@@ -233,7 +234,7 @@ class CEEMDAN:
 
         return all_cimfs
 
-    def end_condition(self, S, cIMFs, max_imf):
+    def end_condition(self, S: np.ndarray, cIMFs: np.ndarray, max_imf: int) -> bool:
         """Test for end condition of CEEMDAN.
 
         Procedure stops if:
@@ -248,6 +249,8 @@ class CEEMDAN:
             Original signal on which CEEMDAN was performed.
         cIMFs : numpy 2D array
             Set of cIMFs where each row is cIMF.
+        max_imf : int
+            The maximum number of imfs to extract.
 
         Returns
         -------
@@ -281,7 +284,7 @@ class CEEMDAN:
 
         return False
 
-    def _eemd(self, S, T=None, max_imf=-1):
+    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         if T is None: T = np.arange(len(S), dtype=S.dtype)
 
         self._S = S
@@ -292,8 +295,7 @@ class CEEMDAN:
         # For trial number of iterations perform EMD on a signal
         # with added white noise
         if self.parallel:
-            processes = None if "processes" not in self.__dict__ else self.__dict__["processes"]
-            pool = Pool(processes=processes)
+            pool = Pool(processes=self.processes)
 
             all_IMFs = pool.map(self._trial_update, range(self.trials))
 
@@ -312,12 +314,13 @@ class CEEMDAN:
 
         return self.E_IMF/self.trials
 
-    def _trial_update(self, trial):
+    def _trial_update(self, trial: int) -> np.ndarray:
+        """A single trial evaluation, i.e. EMD(signal + noise)."""
         # Generate noise
         noise = self.epsilon*self.all_noise_EMD[trial][0]
         return self.emd(self._S+noise, self._T, self.max_imf)
 
-    def emd(self, S, T, max_imf=-1):
+    def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int=-1) -> np.ndarray:
         """Vanilla EMD method.
 
         Provides emd evaluation from provided EMD class.
@@ -325,15 +328,14 @@ class CEEMDAN:
         """
         return self.EMD.emd(S, T, max_imf)
 
-    def get_imfs_and_residue(self):
+    def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Provides access to separated imfs and residue from recently analysed signal.
         :return: (imfs, residue)
         """
         if self.C_IMF is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
-        else:
-            return self.C_IMF, self.residue
+        return self.C_IMF, self.residue
 
 ###################################################
 ## Beginning of program

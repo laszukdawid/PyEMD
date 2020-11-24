@@ -15,7 +15,7 @@ from scipy.interpolate import Rbf
 
 try:
     from skimage.morphology import reconstruction
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     raise ImportError("EMD2D and BEMD are not supported. Feel free to play around and improve them. " + \
             "Required depdenecies are in `requriements-extra`.")
 

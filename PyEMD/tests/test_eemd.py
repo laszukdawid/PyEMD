@@ -32,6 +32,7 @@ class EEMDTest(unittest.TestCase):
         eemd.eemd(S)
 
         self.assertTrue('processes' in eemd.__dict__)
+        self.assertTrue(eemd.processes == 1)
 
     def test_eemd_passingArgumentsViaDict(self):
         trials = 10
@@ -54,6 +55,35 @@ class EEMDTest(unittest.TestCase):
         params = {"trials": trials, "noise_kind": noise_kind,
                   "spline_kind": spline_kind}
         eemd = EEMD(**params)
+
+        self.assertTrue(eemd.trials==trials,
+                self.cmp_msg(eemd.trials, trials))
+
+        self.assertTrue(eemd.noise_kind==noise_kind,
+                self.cmp_msg(eemd.noise_kind, noise_kind))
+
+        self.assertTrue(eemd.EMD.spline_kind==spline_kind,
+                self.cmp_msg(eemd.EMD.spline_kind, spline_kind))
+
+    def test_eemd_passingArgumentsViaDict(self):
+        trials = 10
+        noise_kind = 'uniform'
+        spline_kind = 'linear'
+
+        # Making sure that we are not testing default options
+        eemd = EEMD()
+
+        self.assertFalse(eemd.trials==trials,
+                self.cmp_msg(eemd.trials, trials))
+
+        self.assertFalse(eemd.noise_kind==noise_kind,
+                self.cmp_msg(eemd.noise_kind, noise_kind))
+
+        self.assertFalse(eemd.EMD.spline_kind==spline_kind,
+                self.cmp_msg(eemd.EMD.spline_kind, spline_kind))
+
+        # Testing for passing attributes via params
+        eemd = EEMD(trials=trials, noise_kind=noise_kind, spline_kind=spline_kind)
 
         self.assertTrue(eemd.trials==trials,
                 self.cmp_msg(eemd.trials, trials))

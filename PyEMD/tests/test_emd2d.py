@@ -4,13 +4,14 @@
 from __future__ import division, print_function
 
 import numpy as np
-from PyEMD.EMD2d import EMD2D
 import unittest
+from PyEMD.EMD2d import EMD2D
 
-@unittest.skip
+@unittest.skip("Not supported until supported")
 class ImageEMDTest(unittest.TestCase):
 
-    emd2d = EMD2D()
+    def setUp(self) -> None:
+        self.emd2d = EMD2D()
 
     @staticmethod
     def _generate_image(r=64, c=64):

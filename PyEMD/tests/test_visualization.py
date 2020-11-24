@@ -121,15 +121,6 @@ class VisTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             vis.plot_instant_freq(t)
 
-    # Does not work for Python 2.7 (TravisCI), even with Agg backend
-    # def test_plot_instant_freq2(self):
-    #     t = np.linspace(0, 1, 50)
-    #     S = t + np.cos(np.cos(4.*t**2))
-    #     emd = EMD()
-    #     imfs = emd.emd(S, t)
-    #     vis = Visualisation(emd)
-    #     vis.plot_instant_freq(t, imfs=imfs, order=False, alpha=None)
-
 
 if __name__ == "__main__":
     unittest.main()

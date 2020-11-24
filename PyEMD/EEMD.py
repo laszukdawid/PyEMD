@@ -16,6 +16,7 @@ import logging
 import numpy as np
 
 from multiprocessing import Pool
+from typing import Dict, Optional, Sequence, Tuple, Union
 
 # Python3 handles mutliprocessing much better.
 # For Python2 we need to pickle instance differently.
@@ -69,42 +70,38 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials=100, noise_width=0.05, ext_EMD=None, parallel=True, **config):
+    def __init__(self, trials: int=100, noise_width: float=0.05, ext_EMD=None, parallel: bool=True, **kwargs):
 
         # Ensemble constants
         self.trials = trials
         self.noise_width = noise_width
 
         self.random = np.random.RandomState()
-        self.noise_kind = "normal"
+        self.noise_kind = kwargs.get('noise_kind', 'normal')
         self.parallel = parallel
+        self.processes: Optional[int] = kwargs.get('processes')
+        if self.processes is not None and not self.parallel:
+            self.logger.warning("Passing value for process has no effect if `parallel` is False.")
 
         if ext_EMD is None:
             from PyEMD import EMD
-            self.EMD = EMD()
+            self.EMD = EMD(**kwargs)
         else:
             self.EMD = ext_EMD
 
-        self.E_IMF = None
-        self.residue = None
+        self.E_IMF: Optional[np.ndarray] = None
+        self.residue: Optional[np.ndarray] = None
 
-        # Update based on options
-        for key in config.keys():
-            if key in self.__dict__.keys() or key == "processes":
-                self.__dict__[key] = config[key]
-            elif key in self.EMD.__dict__.keys():
-                self.EMD.__dict__[key] = config[key]
-
-    def __call__(self, S, T=None, max_imf=-1):
+    def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         return self.eemd(S, T=T, max_imf=max_imf)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
         if 'pool' in self_dict:
             del self_dict['pool']
         return self_dict
 
-    def generate_noise(self, scale, size):
+    def generate_noise(self, scale: float, size: Union[int, Sequence[int]]) -> np.ndarray:
         """
         Generate noise with specified parameters.
         Currently supported distributions are:
@@ -135,11 +132,11 @@ class EEMD:
 
         return noise
 
-    def noise_seed(self, seed):
+    def noise_seed(self, seed: int) -> None:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def eemd(self, S, T=None, max_imf=-1):
+    def eemd(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         """
         Performs EEMD on provided signal.
 
@@ -150,7 +147,7 @@ class EEMD:
         ----------
         S : numpy array,
             Input signal on which EEMD is performed.
-        T : numpy array, (default: None)
+        T : numpy array or None, (default: None)
             If none passed samples are numerated.
         max_imf : int, (default: -1)
             Defines up to how many IMFs each decomposition should
@@ -176,8 +173,7 @@ class EEMD:
         # For trial number of iterations perform EMD on a signal
         # with added white noise
         if self.parallel:
-            processes = None if "processes" not in self.__dict__ else self.__dict__["processes"]
-            pool = Pool(processes=processes)
+            pool = Pool(processes=self.processes)
 
             all_IMFs = pool.map(self._trial_update, range(self.trials))
 
@@ -199,12 +195,15 @@ class EEMD:
 
         return self.E_IMF
 
-    def _trial_update(self, trial):
-        # Generate noise
+    def _trial_update(self, trial) -> np.ndarray:
+        """A single trial evaluation, i.e. EMD(signal + noise). 
+
+        *Note*: Although `trial` argument isn't used it's needed for the (multiprocessing) map method.
+        """
         noise = self.generate_noise(self._scale, self._N)
         return self.emd(self._S+noise, self._T, self.max_imf)
 
-    def emd(self, S, T, max_imf=-1):
+    def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int=-1) -> np.ndarray:
         """Vanilla EMD method.
 
         Provides emd evaluation from provided EMD class.
@@ -212,15 +211,14 @@ class EEMD:
         """
         return self.EMD.emd(S, T, max_imf)
 
-    def get_imfs_and_residue(self):
+    def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Provides access to separated imfs and residue from recently analysed signal.
         :return: (imfs, residue)
         """
         if self.E_IMF is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
-        else:
-            return self.E_IMF, self.residue
+        return self.E_IMF, self.residue
 
 ###################################################
 ## Beginning of program
@@ -228,7 +226,6 @@ class EEMD:
 if __name__ == "__main__":
 
     import pylab as plt
-    global E_imfNo
     E_imfNo = np.zeros(50, dtype=np.int)
 
     # Logging options
@@ -245,8 +242,7 @@ if __name__ == "__main__":
     S = 3*np.sin(4*T) + 4*np.cos(9*T) + np.sin(8.11*T+1.2)
 
     # Prepare and run EEMD
-    eemd = EEMD()
-    eemd.trials = 50
+    eemd = EEMD(trials=50)
     eemd.noise_seed(12345)
 
     E_IMFs = eemd.eemd(S, T, max_imf)

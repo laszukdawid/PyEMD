@@ -2,7 +2,7 @@
 # coding: UTF-8
 #
 # Author:   Dawid Laszuk
-# Contact:  laszukdawid@gmail.com
+# Contact:  https://github.com/laszukdawid/PyEMD/issues
 #
 # Edited:   11/05/2017
 #
@@ -237,7 +237,7 @@ class EMD:
         kind = splineKind.lower()
         t = T[np.r_[T>=extrema[0,0]] & np.r_[T<=extrema[0,-1]]]
         if t.dtype != self.DTYPE: self.logger.error('t.dtype: '+str(t.dtype))
-        if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: '+str(xtrema.dtype))
+        if extrema.dtype != self.DTYPE: self.logger.error('extrema.dtype: '+str(extrema.dtype))
 
         if kind == "akima":
             return t, akima(extrema[0], extrema[1], t)
@@ -481,6 +481,7 @@ class EMD:
         ITER = {} # Dic for number of iterations
         TIME = {} # Dic for time of computation
         imfNo = 0
+        extNo = 0
         notFinish = True
 
         while(notFinish):
@@ -528,8 +529,8 @@ class EMD:
 
                     mean = 0.5*(maxEnv+minEnv)
 
-                    if maxEnv.dtype!=self.DTYPE: self.logger.error('maxEnvimf.dtype: '+str(maxEnv.dtype))
-                    if minEnv.dtype!=self.DTYPE: self.logger.error('minEnvimf.dtype: '+str(minEnvimf.dtype))
+                    if maxEnv.dtype!=self.DTYPE: self.logger.error('maxEnv.dtype: '+str(maxEnv.dtype))
+                    if minEnv.dtype!=self.DTYPE: self.logger.error('minEnv.dtype: '+str(minEnv.dtype))
                     if imf.dtype!=self.DTYPE: self.logger.error('imf.dtype: '+str(imf.dtype))
                     if mean.dtype!=self.DTYPE: self.logger.error('mean.dtype: '+str(mean.dtype))
 

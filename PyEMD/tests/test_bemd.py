@@ -3,12 +3,17 @@
 import unittest
 import numpy as np
 
-from PyEMD.BEMD import BEMD
+try:
+    from PyEMD.BEMD import BEMD
+except (ImportError, ModuleNotFoundError):
+    # Not supported until supported.
+    pass
 
-@unittest.skip
+@unittest.skip("Not supported until supported")
 class BEMDTest(unittest.TestCase):
 
-    bemd = BEMD()
+    def setUp(self) -> None:
+        self.bemd = BEMD()
 
     @staticmethod
     def _generate_image(r=64, c=64):
