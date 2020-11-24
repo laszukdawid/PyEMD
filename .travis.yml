@@ -1,9 +1,12 @@
-sudo: false
+os: linux
+dist: xenial
 language: python
 python:
   - 2.7
   - 3.5
   - 3.6
+  - 3.7
+  - 3.8
 # command to run tests
 before_install:
   - pip install --upgrade pip setuptools wheel

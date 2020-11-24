@@ -17,9 +17,9 @@ coverage:
   ignore:
     - "__init__.py"
     - "PyEMD/tests/*"
-    - "BEMD.py"
-    - "EMD2d.py"
-    - "visualisation.py"
+    - "PyEMD/BEMD.py"
+    - "PyEMD/EMD2d.py"
+    - "PyEMD/visualisation.py"
     - "doc/*"
     - "example/*"
 
