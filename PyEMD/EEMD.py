@@ -79,7 +79,7 @@ class EEMD:
         self.random = np.random.RandomState()
         self.noise_kind = kwargs.get('noise_kind', 'normal')
         self.parallel = parallel
-        self.processes: Optional[int] = kwargs.get('processes')
+        self.processes = kwargs.get('processes')  # Optional[int]
         if self.processes is not None and not self.parallel:
             self.logger.warning("Passing value for process has no effect if `parallel` is False.")
 
@@ -89,8 +89,8 @@ class EEMD:
         else:
             self.EMD = ext_EMD
 
-        self.E_IMF: Optional[np.ndarray] = None
-        self.residue: Optional[np.ndarray] = None
+        self.E_IMF = None  # Optional[np.ndarray]
+        self.residue = None  # Optional[np.ndarray]
 
     def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         return self.eemd(S, T=T, max_imf=max_imf)

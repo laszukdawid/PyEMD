@@ -100,14 +100,14 @@ class EMD:
         assert self.extrema_detection in ('simple', 'parabol')
 
         self.DTYPE = kwargs.get('DTYPE', np.float64)
-        self.FIXE: int = int(kwargs.get('FIXE', 0))
-        self.FIXE_H: int = int(kwargs.get('FIXE_H', 0))
+        self.FIXE = int(kwargs.get('FIXE', 0))
+        self.FIXE_H = int(kwargs.get('FIXE_H', 0))
 
         self.MAX_ITERATION = int(kwargs.get('MAX_ITERATION', 1000))
 
         # Instance global declaration
-        self.imfs: Optional[np.ndarray] = None
-        self.residue: Optional[np.ndarray] = None
+        self.imfs = None  # Optional[np.ndarray]
+        self.residue = None  # Optional[np.ndarray]
 
     def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         return self.emd(S, T=T, max_imf=max_imf)
