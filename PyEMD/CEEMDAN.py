@@ -58,15 +58,24 @@ class CEEMDAN:
 
     trials : int (default: 100)
         Number of trials or EMD performance with added noise.
-
     epsilon : float (default: 0.005)
         Scale for added noise (:math:`\epsilon`) which multiply std :math:`\sigma`:
         :math:`\\beta = \epsilon \cdot \sigma`
-
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
         is passed then EMD with default options is used.
+    parallel : bool (default: False)
+        Flag whether to use multiprocessing in EEMD execution.
+        Since each EMD(s+noise) is independent this should improve execution
+        speed considerably.
+        *Note* that it's disabled by default because it's the most common
+        problem when CEEMDAN takes too long time to finish.
+        If you set the flag to True, make also sure to set `processes` to
+        some reasonable value.
+    processes : int or None (optional)
+        Number of processes harness when executing in parallel mode.
+        The value should be between 1 and max that depends on your hardware.
 
     References
     ----------
@@ -84,7 +93,7 @@ class CEEMDAN:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int=100, epsilon: float=0.005, ext_EMD=None, parallel: bool=True, **kwargs):
+    def __init__(self, trials: int=100, epsilon: float=0.005, ext_EMD=None, parallel: bool=False, **kwargs):
         """
         Configuration can be passed through config dictionary.
         For example, updating threshold would be through:
@@ -110,7 +119,7 @@ class CEEMDAN:
         self.parallel = parallel
         self.processes = kwargs.get('processes')  # Optional[int]
         if self.processes is not None and not self.parallel:
-            self.logger.warning("Passing value for process has no effect if `parallel` is False.")
+            self.logger.warning("Passed value for process has no effect when `parallel` is False.")
 
         self.all_noise_EMD = []
 

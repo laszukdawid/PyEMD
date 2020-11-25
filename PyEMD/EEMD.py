@@ -58,6 +58,17 @@ class EEMD:
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
         is passed then EMD with default options is used.
+    parallel : bool (default: False)
+        Flag whether to use multiprocessing in EEMD execution.
+        Since each EMD(s+noise) is independent this should improve execution
+        speed considerably.
+        *Note* that it's disabled by default because it's the most common
+        problem when EEMD takes too long time to finish.
+        If you set the flag to True, make also sure to set `processes` to
+        some reasonable value.
+    processes : int or None (optional)
+        Number of processes harness when executing in parallel mode.
+        The value should be between 1 and max that depends on your hardware.
 
     References
     ----------
@@ -70,7 +81,7 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int=100, noise_width: float=0.05, ext_EMD=None, parallel: bool=True, **kwargs):
+    def __init__(self, trials: int=100, noise_width: float=0.05, ext_EMD=None, parallel: bool=False, **kwargs):
 
         # Ensemble constants
         self.trials = trials
@@ -81,7 +92,7 @@ class EEMD:
         self.parallel = parallel
         self.processes = kwargs.get('processes')  # Optional[int]
         if self.processes is not None and not self.parallel:
-            self.logger.warning("Passing value for process has no effect if `parallel` is False.")
+            self.logger.warning("Passed value for process has no effect when `parallel` is False.")
 
         if ext_EMD is None:
             from PyEMD import EMD
