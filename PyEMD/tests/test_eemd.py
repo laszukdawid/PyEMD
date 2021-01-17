@@ -173,6 +173,16 @@ class EEMDTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             imfs, residue = eemd.get_imfs_and_residue()
 
+    def test_separate_trends(self):
+        T = np.linspace(0, 2*np.pi, 100)
+        S = np.sin(T) + 3*np.sin(3*T + 0.1) + 0.2*(T+0.5)*(T-2)
+        eemd = EEMD(trials=20, separate_trends=True)
+
+        eIMFs = eemd(S)
+        for imf in eIMFs[:-1]:
+            self.assertLess(abs(imf.mean()), 0.5)
+        self.assertGreaterEqual(eIMFs[-1].mean(), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

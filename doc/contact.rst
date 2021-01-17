@@ -1,10 +1,16 @@
 Contact
 =======
 
-Feel free to send email with any questions, concerns or for whatever reason you feel like.
+The best way to reach out is through creating an issue on the GitHub page.
+That way anyone can help or chime in on the severity of the issue.
+Although that might seem "slower" than email, it is honestly much faster.
+
+
+**Tickets**
+    https://github.com/laszukdawid/PyEMD/issues
 
 **Email**
-    \\laszuk\\dawid\\@\\gmail.com (remove slashes \\).
+    \\pyemd@\\dawid.lasz.uk (remove slashes \\).
 
 **Homepage**
     http://www.laszukdawid.com

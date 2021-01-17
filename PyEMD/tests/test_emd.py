@@ -202,7 +202,7 @@ class EMDTest(unittest.TestCase):
         # guaranteed to have at least 2 imfs.
         self.assertTrue(imfs.shape[0]>1)
 
-    def test_imfs_and_residue_accessor(self):
+    def test_get_imfs_and_residue(self):
         S = np.random.random(200)
         emd = EMD(**{"MAX_ITERATION": 10, "FIXE": 20})
         all_imfs = emd(S, max_imf=3)
@@ -212,11 +212,26 @@ class EMDTest(unittest.TestCase):
         self.assertTrue(np.array_equal(all_imfs[:-1], imfs), "Shouldn't matter where imfs are from")
         self.assertTrue(np.array_equal(all_imfs[-1], residue), "Residue, if any, is the last row")
 
-    def test_imfs_and_residue_accessor2(self):
+    def test_get_imfs_and_residue_without_running(self):
         emd = EMD()
         with self.assertRaises(ValueError):
             imfs, residue = emd.get_imfs_and_residue()
 
+    def test_get_imfs_and_trend(self):
+        emd = EMD()
+        T = np.linspace(0, 2*np.pi, 100)
+        expected_trend = 5*T
+        S = 2*np.sin(4.1*6.28*T) + 1.2*np.cos(7.4*6.28*T) + expected_trend
+
+        all_imfs = emd(S)
+        imfs, trend = emd.get_imfs_and_trend()
+
+        onset_trend = trend - trend.mean()
+        onset_expected_trend = expected_trend - expected_trend.mean()
+        self.assertEqual(all_imfs.shape[0], imfs.shape[0]+1, "Compare number of components")
+        self.assertTrue(np.array_equal(all_imfs[:-1], imfs), "Shouldn't matter where imfs are from")
+        self.assertTrue(np.allclose(onset_trend, onset_expected_trend, rtol=0.1, atol=0.5),
+                        "Extracted trend should be close to the actual trend")
 
 if __name__ == "__main__":
     unittest.main()

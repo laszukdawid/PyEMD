@@ -876,7 +876,7 @@ class EMD:
                 break
 
         # Saving residuum
-        self.residue = residue = S - np.sum(IMF,axis=0)
+        self.residue = residue = S - np.sum(IMF, axis=0)
         self.imfs = IMF.copy()
         if not np.allclose(residue, 0):
             IMF = np.vstack((IMF, residue))
@@ -892,6 +892,24 @@ class EMD:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
         else:
             return self.imfs, self.residue
+
+    def get_imfs_and_trend(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Provides access to separated imfs and trend from recently analysed signal.
+        Note that this may differ from the `get_imfs_and_residue` as the trend isn't
+        necessarily the residue. Residue is a point-wise differnce between input signal
+        and all obtained components, whereas trend is the slowest component (can be zero).
+        :return: (imfs, trend)
+        """
+        if self.imfs is None or self.residue is None:
+            raise ValueError('No IMF found. Please, run EMD method or its variant first.')
+
+        imfs, residue = self.get_imfs_and_residue()
+        if np.allclose(residue, 0):
+            return imfs[:-1].copy(), imfs[-1].copy()
+        else:
+            return imfs, residue
+
 
 ###################################################
 

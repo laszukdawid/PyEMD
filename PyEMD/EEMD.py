@@ -11,10 +11,10 @@
 
 from __future__ import print_function
 
-import itertools
 import logging
 import numpy as np
 
+from collections import defaultdict
 from multiprocessing import Pool
 from typing import Dict, Optional, Sequence, Tuple, Union
 
@@ -66,9 +66,16 @@ class EEMD:
         problem when EEMD takes too long time to finish.
         If you set the flag to True, make also sure to set `processes` to
         some reasonable value.
+
+    Keyword parameters
+    ------------------
     processes : int or None (optional)
         Number of processes harness when executing in parallel mode.
         The value should be between 1 and max that depends on your hardware.
+    separate_trends : bool (default: False)
+        Flag whether to isolate trends from each EMD decosition into a separate component.
+        If `true`, the resulting EEMD will contain ensemble only from IMFs and
+        the mean residue will be stacked as the last element.
 
     References
     ----------
@@ -86,6 +93,7 @@ class EEMD:
         # Ensemble constants
         self.trials = trials
         self.noise_width = noise_width
+        self.separate_trends = bool(kwargs.get('separate_trends', False))
 
         self.random = np.random.RandomState()
         self.noise_kind = kwargs.get('noise_kind', 'normal')
@@ -193,26 +201,47 @@ class EEMD:
         else:  # Not parallel
             all_IMFs = map(self._trial_update, range(self.trials))
 
-        all_IMFs_1, all_IMFs_2 = itertools.tee(all_IMFs, 2)
+        proto_eimf = defaultdict(lambda: np.zeros(N))
+        proto_count = defaultdict(int)
+        for (imfs, trend) in all_IMFs:
 
-        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs_1])
+            # A bit of explanation here.
+            # If the `trend` is not None, that means it was intentionally separated in the decomp process.
+            # This might due to `separate_trends` flag which means that trends are summed up separately
+            # and treated as the last component. Since `proto_eimfs` is a dict, that `-1` is treated literally
+            # and **not** as the *last position*. We can then use that `-1` to always add it as the last pos
+            # in the actual eIMF, which indicates the trend.
+            if trend is not None:
+                proto_eimf[-1] += trend
+                proto_count[-1] += 1
 
-        self.E_IMF = np.zeros((max_imfNo, N))
-        for IMFs in all_IMFs_2:
-            self.E_IMF[:IMFs.shape[0]] += IMFs
+            for imf_num, imf in enumerate(imfs):
+                proto_eimf[imf_num] += imf
+                proto_count[imf_num] += 1
 
-        self.E_IMF /= self.trials
+        self.E_IMF = np.zeros((len(proto_eimf), N))
+
+        # *Note*: We are diving by proto-imf count per order, rather than blantly by num of trails.
+        #         This means we're calculating a mean over all observations rather.
+        for imf_num, imf in proto_eimf.items():
+            self.E_IMF[imf_num] += imf / proto_count[imf_num]
+
         self.residue = S - np.sum(self.E_IMF, axis=0)
 
         return self.E_IMF
 
-    def _trial_update(self, trial) -> np.ndarray:
-        """A single trial evaluation, i.e. EMD(signal + noise). 
+    def _trial_update(self, trial) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """A single trial evaluation, i.e. EMD(signal + noise).
 
         *Note*: Although `trial` argument isn't used it's needed for the (multiprocessing) map method.
         """
         noise = self.generate_noise(self._scale, self._N)
-        return self.emd(self._S+noise, self._T, self.max_imf)
+        imfs = self.emd(self._S+noise, self._T, self.max_imf)
+        trend = None
+        if self.separate_trends:
+            imfs, trend = self.EMD.get_imfs_and_trend()
+        
+        return (imfs, trend)
 
     def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int=-1) -> np.ndarray:
         """Vanilla EMD method.
@@ -225,11 +254,17 @@ class EEMD:
     def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Provides access to separated imfs and residue from recently analysed signal.
-        :return: (imfs, residue)
+
+        Returns
+        -------
+        (imfs, residue) : (np.ndarray, np.ndarray)
+            Tuple that contains all imfs and a residue (if any).
+
         """
         if self.E_IMF is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
         return self.E_IMF, self.residue
+
 
 ###################################################
 ## Beginning of program
