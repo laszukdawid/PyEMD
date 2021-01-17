@@ -66,9 +66,6 @@ class EEMD:
         problem when EEMD takes too long time to finish.
         If you set the flag to True, make also sure to set `processes` to
         some reasonable value.
-
-    Keyword parameters
-    ------------------
     processes : int or None (optional)
         Number of processes harness when executing in parallel mode.
         The value should be between 1 and max that depends on your hardware.
