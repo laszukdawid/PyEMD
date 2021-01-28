@@ -19,20 +19,6 @@ import numpy as np
 from multiprocessing import Pool
 from typing import Dict, Optional, Sequence, Tuple, Union
 
-# Python3 handles mutliprocessing much better.
-# For Python2 we need to pickle instance differently.
-import sys
-if sys.version_info[0] < 3:
-    import copy_reg as copy_reg
-    import types
-    def _pickle_method(m):
-        if m.im_self is None:
-            return getattr, (m.im_class, m.im_func.func_name)
-        else:
-            return getattr, (m.im_self, m.im_func.func_name)
-
-    copy_reg.pickle(types.MethodType, _pickle_method)
-
 
 class CEEMDAN:
     """
