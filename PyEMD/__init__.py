@@ -1,6 +1,6 @@
 import logging
 
-__version__ = "0.2.12"
+__version__ = "0.2.13"
 logger = logging.getLogger('pyemd')
 
 from PyEMD.EMD import EMD

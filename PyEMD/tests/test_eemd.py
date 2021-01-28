@@ -183,6 +183,17 @@ class EEMDTest(unittest.TestCase):
             self.assertLess(abs(imf.mean()), 0.5)
         self.assertGreaterEqual(eIMFs[-1].mean(), 1)
 
+    def test_eemd_ensemble_stats(self):
+        T = np.linspace(0, 2*np.pi, 100)
+        S = np.sin(T) + 3*np.sin(3*T + 0.1) + 0.2*(T+0.5)*(T-2)
+        eemd = EEMD(trials=20, separate_trends=True)
+
+        eIMFs = eemd(S)
+        self.assertEqual(type(eemd.all_imfs), dict, "All imfs are stored as a dict")
+        self.assertTrue(np.all(eIMFs == eemd.ensemble_mean()), "eIMFs are the mean over ensemble")
+        self.assertEqual(eemd.ensemble_count(), [len(imfs) for imfs in eemd.all_imfs.values()])
+        self.assertEqual(type(eemd.ensemble_std()), np.ndarray, "Ensemble std exists and it's a numpy array")
+
 
 if __name__ == "__main__":
     unittest.main()

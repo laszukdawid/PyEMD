@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-VERSION="0.2.12"
+VERSION="0.2.13"
 
 DESCRIPTION = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 
@@ -36,7 +36,7 @@ def main():
         keywords="signal decomposition data analysis",
         packages=["PyEMD"],
         install_requires=required,
-        python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+        python_requires='>=3.6, <4',
         test_suite="PyEMD.tests",
     )
 
