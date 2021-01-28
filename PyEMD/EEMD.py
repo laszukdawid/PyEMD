@@ -16,7 +16,7 @@ import numpy as np
 
 from collections import defaultdict
 from multiprocessing import Pool
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 # Python3 handles mutliprocessing much better.
 # For Python2 we need to pickle instance differently.
@@ -107,6 +107,7 @@ class EEMD:
 
         self.E_IMF = None  # Optional[np.ndarray]
         self.residue = None  # Optional[np.ndarray]
+        self._all_imfs = {}
 
     def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
         return self.eemd(S, T=T, max_imf=max_imf)
@@ -198,8 +199,7 @@ class EEMD:
         else:  # Not parallel
             all_IMFs = map(self._trial_update, range(self.trials))
 
-        proto_eimf = defaultdict(lambda: np.zeros(N))
-        proto_count = defaultdict(int)
+        self._all_imfs = defaultdict(list)
         for (imfs, trend) in all_IMFs:
 
             # A bit of explanation here.
@@ -209,20 +209,20 @@ class EEMD:
             # and **not** as the *last position*. We can then use that `-1` to always add it as the last pos
             # in the actual eIMF, which indicates the trend.
             if trend is not None:
-                proto_eimf[-1] += trend
-                proto_count[-1] += 1
+                self._all_imfs[-1].append(trend)
 
             for imf_num, imf in enumerate(imfs):
-                proto_eimf[imf_num] += imf
-                proto_count[imf_num] += 1
+                self._all_imfs[imf_num].append(imf)
 
-        self.E_IMF = np.zeros((len(proto_eimf), N))
+        # Convert defaultdict back to dict and explicitly rename `-1` position to be {the last value} for consistency.
+        self._all_imfs = dict(self._all_imfs)
+        if -1 in self._all_imfs:
+            self._all_imfs[len(self._all_imfs)] = self._all_imfs.pop(-1)
 
-        # *Note*: We are diving by proto-imf count per order, rather than blantly by num of trails.
-        #         This means we're calculating a mean over all observations rather.
-        for imf_num, imf in proto_eimf.items():
-            self.E_IMF[imf_num] += imf / proto_count[imf_num]
+        for imf_num in self._all_imfs.keys():
+            self._all_imfs[imf_num] =  np.array(self._all_imfs[imf_num])
 
+        self.E_IMF = self.ensemble_mean()
         self.residue = S - np.sum(self.E_IMF, axis=0)
 
         return self.E_IMF
@@ -261,7 +261,23 @@ class EEMD:
         if self.E_IMF is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
         return self.E_IMF, self.residue
+    
+    @property
+    def all_imfs(self):
+        """A dictionary with all computed imfs per given order."""
+        return self._all_imfs
+    
+    def ensemble_count(self) -> List[int]:
+        """Count of imfs observed for given order, e.g. 1st proto-imf, in the whole ensemble."""
+        return [len(imfs) for imfs in self._all_imfs.values()]
 
+    def ensemble_mean(self) -> np.ndarray:
+        """Pointwise mean over computed ensemble. Same as the output of `eemd()` method."""
+        return np.array([imfs.mean(axis=0) for imfs in self._all_imfs.values()])
+
+    def ensemble_std(self) -> np.ndarray:
+        """Pointwise standard deviation over computed ensemble."""
+        return np.array([imfs.std(axis=0) for imfs in self._all_imfs.values()])
 
 ###################################################
 ## Beginning of program
