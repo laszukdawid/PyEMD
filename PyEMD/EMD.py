@@ -82,8 +82,11 @@ class EMD:
             Method used to finding extrema.
         DTYPE : np.dtype (default np.float64)
             Data type used.
-
+        
+        Examples
+        --------
         >>> emd = EMD(std_thr=0.01, range_thr=0.05)
+
         """
         # Declare constants
         self.energy_ratio_thr = float(kwargs.get('energy_ratio_thr', 0.2))

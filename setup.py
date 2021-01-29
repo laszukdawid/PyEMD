@@ -38,6 +38,9 @@ def main():
         install_requires=required,
         python_requires='>=3.6, <4',
         test_suite="PyEMD.tests",
+        extras_require={
+            "doc": ["sphinx", "sphinx_rtd_theme"],
+        },
     )
 
     dist = setup(**setup_params)

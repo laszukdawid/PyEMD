@@ -16,10 +16,9 @@ me through contact page.
    examples
    emd
    eemd
-   bemd
-   emd2d
    ceemdan
    visualisation
+   Experimental <experimental>
    contact
 
 Indices and tables

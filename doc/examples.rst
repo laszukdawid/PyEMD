@@ -111,9 +111,11 @@ Simplest case of using Esnembld EMD (EEMD) is by importing `EEMD` and passing yo
 |eemdExample|
 
 
-.. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/simple_example.png?raw=true
-    :width: 640px
-    :height: 480px
+.. |simpleExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/simple_example.png
+    :align: middle
+    :alt: Oh, the quality. Please click on the image for better resolution.
+    :target: https://github.com/laszukdawid/PyEMD/raw/master/example/simple_example.png
+ 
 .. |eemdExample| image:: https://github.com/laszukdawid/PyEMD/raw/master/example/eemd_example.png?raw=true
     :width: 720px
     :height: 540px
