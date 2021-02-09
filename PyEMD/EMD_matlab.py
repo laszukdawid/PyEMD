@@ -74,7 +74,7 @@ class EMD:
             maxSpline - Upper envelope of signal S.
             minSpline - Bottom envelope of signal S.
             maxExtrema - Position (1st row) and values (2nd row) of maxima.
-            minExtrema - Position (1st row) and values (2nd row) of minma.
+            minExtrema - Position (1st row) and values (2nd row) of minima.
         """
 
         # Get indexes of extrema
@@ -225,12 +225,12 @@ class EMD:
         Input:
         ---------
             T: Time array.
-            extrema: Poistion (1st row) and values (2nd row) of points.
+            extrema: Position (1st row) and values (2nd row) of points.
             splineKind: Type of spline.
 
         Output:
         ---------
-            T: Poistion array.
+            T: Position array.
             spline: Spline over the given points.
         """
 
@@ -256,7 +256,7 @@ class EMD:
 
     def cubicSpline_3points(self, T, extrema):
         """
-        Apperently scipy.interpolate.interp1d does not support
+        Apparently scipy.interpolate.interp1d does not support
         cubic spline for less than 4 points.
         """
 
@@ -389,7 +389,7 @@ class EMD:
 
     def stop_sifting(self, imf, envMax, envMin, mean, extNo):
         """
-        Criterium for stopping sifting process.
+        Criterion for stopping sifting process.
         Based on conditions presented in [1].
 
         [1] G. Rilling, P. Flandrin and P. Goncalves
@@ -432,7 +432,7 @@ class EMD:
 
     def emd(self, S, T=None, maxImf=None):
         """
-        Performs Emerical Mode Decomposition on signal S.
+        Performs Empirical Mode Decomposition on signal S.
         The decomposition is limited to maxImf imf. No limitation as default.
         Returns IMF functions in dic format. IMF = {0:imf0, 1:imf1...}.
 
@@ -600,7 +600,7 @@ class EMD:
         return IMF, EXT, ITER, imfNo
 
 ###################################################
-## Beggining of program
+## Beginning of program
 
 if __name__ == "__main__":
 

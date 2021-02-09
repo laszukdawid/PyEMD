@@ -35,7 +35,7 @@ class EMD2D:
     Functions (IMFs).
 
     The current version of the algorithm detects local extrema, separately
-    minima and maxima, and then connects them to create envelopess. These
+    minima and maxima, and then connects them to create envelopes. These
     are then used to create a mean trend and subtracted from the input.
 
     Threshold values that control goodness of the decomposition:

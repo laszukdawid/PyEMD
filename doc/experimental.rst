@@ -3,11 +3,11 @@ Experimental
 
 Also known as **not supported**.
 
-Methods discussed and provieded here have no guarantee to work or provide any meaningful results.
-These are somehow abandoned projects and unfortunately mid-way through. They aren't completly
+Methods discussed and provided here have no guarantee to work or provide any meaningful results.
+These are somehow abandoned projects and unfortunately mid-way through. They aren't completely
 discarded simply because of hope that maybe someday someone will come and help fix them.
 We all know that the best motivation to do something is to be annoyed by the current state.
-Seriuosly though, mode decomposition in 2D and multi-dim is an interesting topic. Please?
+Seriously though, mode decomposition in 2D and multi-dim is an interesting topic. Please?
 
 
 BEMD

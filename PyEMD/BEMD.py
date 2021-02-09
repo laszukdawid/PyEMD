@@ -17,7 +17,7 @@ try:
     from skimage.morphology import reconstruction
 except (ImportError, ModuleNotFoundError):
     raise ImportError("EMD2D and BEMD are not supported. Feel free to play around and improve them. " + \
-            "Required depdenecies are in `requriements-extra`.")
+            "Required dependencies are in `requirements-extra`.")
 
 class BEMD:
     """
@@ -28,7 +28,7 @@ class BEMD:
     This method is only included in the package because someone asked for it, and I'm hoping
     that one day someone else will come and *fix it*. Until then, USE AT YOUR OWN RISK.
 
-    The guess why the decomosition doesn't work is that it's difficult to extrapolate image
+    The guess why the decomposition doesn't work is that it's difficult to extrapolate image
     far away from extrema. Not even mirroring helps in this case.
 
     Method decomposition 2D arrays like gray-scale images into 2D representations of
@@ -81,7 +81,7 @@ class BEMD:
         """Creates a spline for given set of points.
 
         Uses Radial-basis function to extrapolate surfaces. It's not the best but gives something.
-        Griddata algorithm didn't work.
+        Grid data algorithm didn't work.
         """
         spline = Rbf(X, Y, Z, function='cubic')
         return spline(xi, yi)
@@ -89,7 +89,7 @@ class BEMD:
     @classmethod
     def find_extrema_positions(cls, image):
         """
-        Finds extrema, both mininma and maxima, based on morphological reconstruction.
+        Finds extrema, both minima and maxima, based on morphological reconstruction.
         Returns extrema where the first and second elements are x and y positions, respectively.
 
         Parameters
@@ -121,7 +121,7 @@ class BEMD:
 
     @classmethod
     def end_condition(cls, image, IMFs):
-        """Determins whether decomposition should be stopped.
+        """Determines whether decomposition should be stopped.
 
         Parameters
         ----------
@@ -157,8 +157,8 @@ class BEMD:
         boolean
             Whether current proto IMF is actual IMF.
         """
-        #TODO: Sifiting is very sensitive and subtracting const val can often flip
-        #      maxima with minima in decompoisition and thus repeating above/below
+        #TODO: Sifting is very sensitive and subtracting const val can often flip
+        #      maxima with minima in decomposition and thus repeating above/below
         #      behaviour. For now, mean_env is checked whether close to zero excluding
         #      its offset.
         if np.all(np.abs(mean_env-mean_env.mean())<self.mean_thr):

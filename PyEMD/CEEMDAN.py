@@ -26,10 +26,10 @@ class CEEMDAN:
 
     "Complete ensemble empirical mode decomposition with adaptive
     noise" (CEEMDAN) [Torres2011]_  is noise-assisted EMD technique.
-    Word "complete" presumably refers to decomposing completly
+    Word "complete" presumably refers to decomposing completely
     everything, even added perturbation (noise).
 
-    Provided implementation contains proposed "improvmenets" from
+    Provided implementation contains proposed "improvements" from
     paper [Colominas2014]_.
 
     Any parameters can be updated directly on the instance or passed
@@ -81,7 +81,7 @@ class CEEMDAN:
 
     def __init__(self, trials: int=100, epsilon: float=0.005, ext_EMD=None, parallel: bool=False, **kwargs):
         """
-        Configuration can be passed through config dictionary.
+        Configuration can be passed through keyword parameters.
         For example, updating threshold would be through:
 
         Example 1:

@@ -63,7 +63,7 @@ The Figure below was produced with input:
 EEMD
 ====
 
-Simplest case of using Esnembld EMD (EEMD) is by importing `EEMD` and passing your signal to `eemd` method.
+Simplest case of using Ensemble EMD (EEMD) is by importing `EEMD` and passing your signal to `eemd` method.
 
 .. code:: python
 

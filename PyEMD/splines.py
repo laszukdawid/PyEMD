@@ -4,7 +4,7 @@ from scipy.interpolate import Akima1DInterpolator
 
 def cubic_spline_3pts(x, y, T):
     """
-    Apperently scipy.interpolate.interp1d does not support
+    Apparently scipy.interpolate.interp1d does not support
     cubic spline for less than 4 points.
     """
 

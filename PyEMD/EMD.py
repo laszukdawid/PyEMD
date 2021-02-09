@@ -183,7 +183,7 @@ class EMD:
 
         Returns
         -------
-        min_extrema : numpy array (2 rows)
+        max_extrema : numpy array (2 rows)
             Position (1st row) and values (2nd row) of minima.
         min_extrema : numpy array (2 rows)
             Position (1st row) and values (2nd row) of maxima.
@@ -844,7 +844,7 @@ class EMD:
 
                         if n == 1:
                             continue
-                        
+
                         # If proto-IMF add one, or reset counter otherwise
                         n_h = n_h + 1 if abs(extNo-nzm) < 2 else 0
 
@@ -900,7 +900,7 @@ class EMD:
         """
         Provides access to separated imfs and trend from recently analysed signal.
         Note that this may differ from the `get_imfs_and_residue` as the trend isn't
-        necessarily the residue. Residue is a point-wise differnce between input signal
+        necessarily the residue. Residue is a point-wise difference between input signal
         and all obtained components, whereas trend is the slowest component (can be zero).
         :return: (imfs, trend)
         """

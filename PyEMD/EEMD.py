@@ -56,7 +56,7 @@ class EEMD:
         Number of processes harness when executing in parallel mode.
         The value should be between 1 and max that depends on your hardware.
     separate_trends : bool (default: False)
-        Flag whether to isolate trends from each EMD decosition into a separate component.
+        Flag whether to isolate trends from each EMD decomposition into a separate component.
         If `true`, the resulting EEMD will contain ensemble only from IMFs and
         the mean residue will be stacked as the last element.
 
@@ -223,7 +223,7 @@ class EEMD:
         trend = None
         if self.separate_trends:
             imfs, trend = self.EMD.get_imfs_and_trend()
-        
+
         return (imfs, trend)
 
     def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int=-1) -> np.ndarray:
@@ -247,12 +247,12 @@ class EEMD:
         if self.E_IMF is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
         return self.E_IMF, self.residue
-    
+
     @property
     def all_imfs(self):
         """A dictionary with all computed imfs per given order."""
         return self._all_imfs
-    
+
     def ensemble_count(self) -> List[int]:
         """Count of imfs observed for given order, e.g. 1st proto-imf, in the whole ensemble."""
         return [len(imfs) for imfs in self._all_imfs.values()]

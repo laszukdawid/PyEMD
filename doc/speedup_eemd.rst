@@ -25,7 +25,7 @@ Many programming frameworks by default casts numerical values to the largest dat
 Change spline method
 --------------------
 
-EMD was presented with the natural cubic spline method to span envelops and that's the default option in the PyEMD. It's great for signals with not many extrema but its not suggested for longer/more complex signals. The suggestion is to change the spline method to some piecewise splines like 'Akima' or 'piecewise cubic'.
+EMD was presented with the natural cubic spline method to span envelopes and that's the default option in the PyEMD. It's great for signals with not many extrema but its not suggested for longer/more complex signals. The suggestion is to change the spline method to some piecewise splines like 'Akima' or 'piecewise cubic'.
 
 Example: ::
 
