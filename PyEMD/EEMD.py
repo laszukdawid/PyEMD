@@ -17,6 +17,7 @@ import numpy as np
 from collections import defaultdict
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
+from PyEMD.utils import get_timeline
 
 
 class EEMD:
@@ -162,7 +163,8 @@ class EEMD:
             these do not have to be, and most likely will not be, same as IMFs
             produced using EMD.
         """
-        if T is None: T = np.arange(len(S), dtype=S.dtype)
+        if T is None:
+            T = get_timeline(len(S), S.dtype)
 
         scale = self.noise_width*np.abs(np.max(S)-np.min(S))
         self._S = S

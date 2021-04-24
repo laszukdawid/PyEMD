@@ -233,5 +233,6 @@ class EMDTest(unittest.TestCase):
         self.assertTrue(np.allclose(onset_trend, onset_expected_trend, rtol=0.1, atol=0.5),
                         "Extracted trend should be close to the actual trend")
 
+
 if __name__ == "__main__":
     unittest.main()

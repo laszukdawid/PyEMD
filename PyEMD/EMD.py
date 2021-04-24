@@ -14,6 +14,7 @@ import numpy as np
 from typing import Optional, Tuple
 from scipy.interpolate import interp1d
 from PyEMD.splines import akima, cubic_spline_3pts
+from PyEMD.utils import get_timeline
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
@@ -775,7 +776,7 @@ class EMD:
             raise ValueError("Time series have different sizes: len(S) -> {} != {} <- len(T)".format(len(S), len(T)))
 
         if T is None or self.extrema_detection == "simple":
-            T = np.arange(len(S), dtype=S.dtype)
+            T = get_timeline(len(S), S.dtype)
 
         # Normalize T so that it doesn't explode
         T = self._normalize_time(T)
