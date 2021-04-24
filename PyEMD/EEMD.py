@@ -71,7 +71,7 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int=100, noise_width: float=0.05, ext_EMD=None, parallel: bool=False, **kwargs):
+    def __init__(self, trials: int = 100, noise_width: float = 0.05, ext_EMD = None, parallel: bool = False, **kwargs):
 
         # Ensemble constants
         self.trials = trials
@@ -95,7 +95,7 @@ class EEMD:
         self.residue = None  # Optional[np.ndarray]
         self._all_imfs = {}
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         return self.eemd(S, T=T, max_imf=max_imf)
 
     def __getstate__(self) -> Dict:
@@ -124,22 +124,20 @@ class EEMD:
         noise : numpy array
             Noise sampled from selected distribution.
         """
-
-        if self.noise_kind=="normal":
+        if self.noise_kind == "normal":
             noise = self.random.normal(loc=0, scale=scale, size=size)
-        elif self.noise_kind=="uniform":
+        elif self.noise_kind == "uniform":
             noise = self.random.uniform(low=-scale/2, high=scale/2, size=size)
         else:
-            raise ValueError("Unsupported noise kind. Please assigned `noise_kind`"
-                + " to be one of these: " + str(self.noise_kinds_all))
-
+            raise ValueError("Unsupported noise kind. Please assigned `noise_kind` to be one of these: {0}".format(
+                str(self.noise_kinds_all)))
         return noise
 
     def noise_seed(self, seed: int) -> None:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def eemd(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         """
         Performs EEMD on provided signal.
 
@@ -169,7 +167,7 @@ class EEMD:
         scale = self.noise_width*np.abs(np.max(S)-np.min(S))
         self._S = S
         self._T = T
-        self._N = N = len(S)
+        self._N = len(S)
         self._scale = scale
         self.max_imf = max_imf
 
@@ -177,9 +175,7 @@ class EEMD:
         # with added white noise
         if self.parallel:
             pool = Pool(processes=self.processes)
-
             all_IMFs = pool.map(self._trial_update, range(self.trials))
-
             pool.close()
 
         else:  # Not parallel
@@ -226,7 +222,7 @@ class EEMD:
 
         return (imfs, trend)
 
-    def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int=-1) -> np.ndarray:
+    def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int = -1) -> np.ndarray:
         """Vanilla EMD method.
 
         Provides emd evaluation from provided EMD class.
@@ -265,9 +261,9 @@ class EEMD:
         """Pointwise standard deviation over computed ensemble."""
         return np.array([imfs.std(axis=0) for imfs in self._all_imfs.values()])
 
-###################################################
-## Beginning of program
 
+###################################################
+# Beginning of program
 if __name__ == "__main__":
 
     import pylab as plt
@@ -295,18 +291,18 @@ if __name__ == "__main__":
 
     # Plot results in a grid
     c = np.floor(np.sqrt(imfNo+1))
-    r = np.ceil( (imfNo+1)/c)
+    r = np.ceil((imfNo+1)/c)
 
     plt.ioff()
-    plt.subplot(r,c,1)
+    plt.subplot(r, c, 1)
     plt.plot(T, S, 'r')
     plt.xlim((tMin, tMax))
     plt.title("Original signal")
 
     for num in range(imfNo):
-        plt.subplot(r,c,num+2)
+        plt.subplot(r, c, num+2)
         plt.plot(T, E_IMFs[num],'g')
         plt.xlim((tMin, tMax))
-        plt.title("Imf "+str(num+1))
+        plt.title("Imf " + str(num+1))
 
     plt.show()

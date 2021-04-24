@@ -79,7 +79,7 @@ class CEEMDAN:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int=100, epsilon: float=0.005, ext_EMD=None, parallel: bool=False, **kwargs):
+    def __init__(self, trials: int=100, epsilon: float = 0.005, ext_EMD = None, parallel: bool = False, **kwargs):
         """
         Configuration can be passed through keyword parameters.
         For example, updating threshold would be through:
@@ -118,7 +118,7 @@ class CEEMDAN:
         self.C_IMF = None  # Optional[np.ndarray]
         self.residue = None  # Optional[np.ndarray]
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         return self.ceemdan(S, T=T, max_imf=max_imf)
 
     def __getstate__(self) -> Dict:
@@ -150,13 +150,13 @@ class CEEMDAN:
             Noise sampled from selected distribution.
         """
 
-        if self.noise_kind=="normal":
+        if self.noise_kind == "normal":
             noise = self.random.normal(loc=0, scale=scale, size=size)
-        elif self.noise_kind=="uniform":
+        elif self.noise_kind == "uniform":
             noise = self.random.uniform(low=-scale/2, high=scale/2, size=size)
         else:
-            raise ValueError("Unsupported noise kind. Please assigned `noise_kind`"
-                + " to be one of these: " + str(self.noise_kinds_all))
+            raise ValueError("Unsupported noise kind. Please assigned `noise_kind` to be one of these: {0}".format(
+                str(self.noise_kinds_all)))
 
         return noise
 
@@ -164,7 +164,7 @@ class CEEMDAN:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def ceemdan(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def ceemdan(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
 
         scale_s = np.std(S)
         S = S/scale_s
@@ -190,7 +190,7 @@ class CEEMDAN:
         prev_res = S - last_imf
 
         self.logger.debug("Starting CEEMDAN")
-        while(True):
+        while True:
             # Check end condition in the beginning because we've already have 1 IMF
             if self.end_condition(S, all_cimfs, max_imf):
                 self.logger.debug("End Condition - Pass")
@@ -221,7 +221,7 @@ class CEEMDAN:
         all_cimfs = np.vstack((all_cimfs,res))
         all_cimfs = all_cimfs*scale_s
 
-        # Emptyfy all IMFs noise
+        # Empty all IMFs noise
         del self.all_noise_EMD[:]
 
         self.C_IMF = all_cimfs
@@ -255,7 +255,7 @@ class CEEMDAN:
         imfNo = cIMFs.shape[0]
 
         # Check if hit maximum number of cIMFs
-        if max_imf > 0 and imfNo >= max_imf:
+        if 0 < max_imf <= imfNo:
             return True
 
         # Compute EMD on residue
@@ -279,7 +279,7 @@ class CEEMDAN:
 
         return False
 
-    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         if T is None: T = np.arange(len(S), dtype=S.dtype)
 
         self._S = S
@@ -291,9 +291,7 @@ class CEEMDAN:
         # with added white noise
         if self.parallel:
             pool = Pool(processes=self.processes)
-
             all_IMFs = pool.map(self._trial_update, range(self.trials))
-
             pool.close()
 
         else:  # Not parallel
@@ -315,7 +313,7 @@ class CEEMDAN:
         noise = self.epsilon*self.all_noise_EMD[trial][0]
         return self.emd(self._S+noise, self._T, self.max_imf)
 
-    def emd(self, S: np.ndarray, T: np.ndarray, max_imf: int=-1) -> np.ndarray:
+    def emd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         """Vanilla EMD method.
 
         Provides emd evaluation from provided EMD class.
@@ -332,11 +330,10 @@ class CEEMDAN:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
         return self.C_IMF, self.residue
 
+
 ###################################################
-## Beginning of program
-
+# Beginning of program
 if __name__ == "__main__":
-
     import pylab as plt
 
     # Logging options
@@ -363,18 +360,18 @@ if __name__ == "__main__":
     r = np.ceil((imfNo+2)/c)
 
     plt.ioff()
-    plt.subplot(r,c,1)
+    plt.subplot(r, c, 1)
     plt.plot(T, S, 'r')
     plt.xlim((tMin, tMax))
     plt.title("Original signal")
 
-    plt.subplot(r,c,2)
+    plt.subplot(r, c, 2)
     plt.plot(T, S-np.sum(C_IMFs, axis=0), 'r')
     plt.xlim((tMin, tMax))
     plt.title("Residuum")
 
     for num in range(imfNo):
-        plt.subplot(r,c,num+3)
+        plt.subplot(r, c, num+3)
         plt.plot(T, C_IMFs[num],'g')
         plt.xlim((tMin, tMax))
         plt.title("Imf "+str(num+1))

@@ -13,9 +13,10 @@ import numpy as np
 
 from typing import Optional, Tuple
 from scipy.interpolate import interp1d
-from PyEMD.splines import *
+from PyEMD.splines import akima, cubic_spline_3pts
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+
 
 class EMD:
     """
@@ -57,7 +58,7 @@ class EMD:
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self, spline_kind: str='cubic', nbsym: int=2, **kwargs):
+    def __init__(self, spline_kind: str = 'cubic', nbsym: int = 2, **kwargs):
         """Initiate *EMD* instance.
 
         Configuration, such as threshold values, can be passed as kwargs (keyword arguments).
@@ -99,8 +100,8 @@ class EMD:
         self.scale_factor = float(kwargs.get('scale_factor', 1.))
 
         self.spline_kind = spline_kind
-        self.extrema_detection = kwargs.get('extrema_detection', 'simple') # simple, parabol
-        assert self.extrema_detection in ('simple', 'parabol')
+        self.extrema_detection = kwargs.get('extrema_detection', 'simple')  # simple, parabol
+        assert self.extrema_detection in ('simple', 'parabol'), "Only 'simple' and 'parabol' values supported"
 
         self.DTYPE = kwargs.get('DTYPE', np.float64)
         self.FIXE = int(kwargs.get('FIXE', 0))
@@ -112,7 +113,7 @@ class EMD:
         self.imfs = None  # Optional[np.ndarray]
         self.residue = None  # Optional[np.ndarray]
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         return self.emd(S, T=T, max_imf=max_imf)
 
     def extract_max_min_spline(self, T: np.ndarray, S: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -168,13 +169,13 @@ class EMD:
 
         Parameters
         ----------
-        S : numpy array
-            Input signal.
         T : numpy array
             Position or time array.
+        S : numpy array
+            Input signal.
         max_pos : iterable
             Sorted time positions of maxima.
-        max_vali : iterable
+        max_val : iterable
             Signal values at max_pos positions.
         min_pos : iterable
             Sorted time positions of minima.
@@ -188,9 +189,9 @@ class EMD:
         min_extrema : numpy array (2 rows)
             Position (1st row) and values (2nd row) of maxima.
         """
-        if self.extrema_detection=="parabol":
+        if self.extrema_detection == "parabol":
             return self._prepare_points_parabol(T, S, max_pos, max_val, min_pos, min_val)
-        elif self.extrema_detection=="simple":
+        elif self.extrema_detection == "simple":
             return self._prepare_points_simple(T, S, max_pos, max_val, min_pos, min_val)
         else:
             msg = "Incorrect extrema detection type. Please try: 'simple' or 'parabol'."
@@ -269,7 +270,7 @@ class EMD:
                 # mirror signal to last extrema
                 idx_max = max(0, end_max-nbsym)
                 idx_min = max(0, end_min-nbsym-1)
-                expand_right_maxPos = 2*min_pos[-1] - max_pos[idx_max:]
+                expand_right_max_pos = 2*min_pos[-1] - max_pos[idx_max:]
                 expand_right_min_pos = 2*min_pos[-1] - min_pos[idx_min:-1]
                 expand_right_max_val = max_val[idx_max:]
                 expand_right_min_val = min_val[idx_min:-1]
@@ -277,7 +278,7 @@ class EMD:
                 # mirror signal to end
                 idx_max = max(0, end_max-nbsym+1)
                 idx_min = max(0, end_min-nbsym)
-                expand_right_maxPos = 2*T[-1] - np.append(max_pos[idx_max:], T[-1])
+                expand_right_max_pos = 2*T[-1] - np.append(max_pos[idx_max:], T[-1])
                 expand_right_min_pos = 2*T[-1] - min_pos[idx_min:]
                 expand_right_max_val = np.append(max_val[idx_max:],S[-1])
                 expand_right_min_val = min_val[idx_min:]
@@ -288,7 +289,7 @@ class EMD:
                 # mirror signal to last extremum
                 idx_max = max(0, end_max-nbsym-1)
                 idx_min = max(0, end_min-nbsym)
-                expand_right_maxPos = 2*max_pos[-1] - max_pos[idx_max:-1]
+                expand_right_max_pos = 2*max_pos[-1] - max_pos[idx_max:-1]
                 expand_right_min_pos = 2*max_pos[-1] - min_pos[idx_min:]
                 expand_right_max_val = max_val[idx_max:-1]
                 expand_right_min_val = min_val[idx_min:]
@@ -296,18 +297,18 @@ class EMD:
                 # mirror signal to end
                 idx_max = max(0, end_max-nbsym)
                 idx_min = max(0, end_min-nbsym+1)
-                expand_right_maxPos = 2*T[-1] - max_pos[idx_max:]
+                expand_right_max_pos = 2*T[-1] - max_pos[idx_max:]
                 expand_right_min_pos = 2*T[-1] - np.append(min_pos[idx_min:], T[-1])
                 expand_right_max_val = max_val[idx_max:]
                 expand_right_min_val = np.append(min_val[idx_min:], S[-1])
 
         if not expand_right_min_pos.shape:
             expand_right_min_pos, expand_right_min_val = min_pos, min_val
-        if not expand_right_maxPos.shape:
-            expand_right_maxPos, expand_right_max_val = max_pos, max_val
+        if not expand_right_max_pos.shape:
+            expand_right_max_pos, expand_right_max_val = max_pos, max_val
 
         expand_right_min = np.vstack((expand_right_min_pos[::-1], expand_right_min_val[::-1]))
-        expand_right_max = np.vstack((expand_right_maxPos[::-1], expand_right_max_val[::-1]))
+        expand_right_max = np.vstack((expand_right_max_pos[::-1], expand_right_max_val[::-1]))
 
         max_extrema = np.hstack((expand_left_max, max_extrema, expand_right_max))
         min_extrema = np.hstack((expand_left_min, min_extrema, expand_right_min))
@@ -429,9 +430,9 @@ class EMD:
         min_extrema = np.array([tmin, zmin])
 
         # Make double sure, that each extremum is significant
-        max_dup_idx = np.where(max_extrema[0,1:]==max_extrema[0,:-1])
+        max_dup_idx = np.where(max_extrema[0, 1:] == max_extrema[0,:-1])
         max_extrema = np.delete(max_extrema, max_dup_idx, axis=1)
-        min_dup_idx = np.where(min_extrema[0,1:]==min_extrema[0,:-1])
+        min_dup_idx = np.where(min_extrema[0, 1:] == min_extrema[0,:-1])
         min_extrema = np.delete(min_extrema, min_dup_idx, axis=1)
 
         return max_extrema, min_extrema
@@ -535,17 +536,15 @@ class EMD:
         """
         # Finds indexes of zero-crossings
         S1, S2 = S[:-1], S[1:]
-        indzer = np.nonzero(S1*S2<0)[0]
+        indzer = np.nonzero(S1*S2 < 0)[0]
         if np.any(S == 0):
-            iz = np.nonzero(S==0)[0]
-            if np.any(np.diff(iz)==1):
+            indz = np.nonzero(S == 0)[0]
+            if np.any(np.diff(indz) == 1):
                 zer = S == 0
                 dz = np.diff(np.append(np.append(0, zer), 0))
                 debz = np.nonzero(dz == 1)[0]
                 finz = np.nonzero(dz == -1)[0]-1
                 indz = np.round((debz+finz)/2.)
-            else:
-                indz = iz
 
             indzer = np.sort(np.append(indzer, indz))
 
@@ -600,15 +599,13 @@ class EMD:
         S1, S2 = S[:-1], S[1:]
         indzer = np.nonzero(S1*S2<0)[0]
         if np.any(S==0):
-            iz = np.nonzero(S==0)[0]
-            if np.any(np.diff(iz)==1):
+            indz = np.nonzero(S==0)[0]
+            if np.any(np.diff(indz)==1):
                 zer = (S==0)
                 dz = np.diff(np.append(np.append(0, zer), 0))
                 debz = np.nonzero(dz==1)[0]
                 finz = np.nonzero(dz==-1)[0]-1
                 indz = np.round((debz+finz)/2.)
-            else:
-                indz = iz
 
             indzer = np.sort(np.append(indzer, indz))
 
@@ -752,7 +749,7 @@ class EMD:
         assert np.all(d != 0), "All time domain values needs to be unique"
         return (t - t[0])/np.min(d)
 
-    def emd(self, S: np.ndarray, T: Optional[np.ndarray]=None, max_imf: int=-1) -> np.ndarray:
+    def emd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         """
         Performs Empirical Mode Decomposition on signal S.
         The decomposition is limited to *max_imf* imfs.
@@ -763,8 +760,8 @@ class EMD:
         S : numpy array,
             Input signal.
         T : numpy array, (default: None)
-            Position or time array. If None passed or if self.extrema_detection == "simple",
-            then numpy arange is created.
+            Position or time array. If None is passed or self.extrema_detection == "simple",
+            then numpy range is created.
         max_imf : int, (default: -1)
             IMF number to which decomposition should be performed.
             Negative value means *all*.
@@ -811,7 +808,7 @@ class EMD:
             n = 0   # All iterations for current imf.
             n_h = 0 # counts when |#zero - #ext| <=1
 
-            while(True):
+            while True:
                 n += 1
                 if n >= self.MAX_ITERATION:
                     self.logger.info("Max iterations reached for IMF. Continuing with another IMF.")
@@ -913,7 +910,6 @@ class EMD:
         else:
             return imfs, residue
 
-
 ###################################################
 
 
@@ -957,10 +953,10 @@ if __name__ == "__main__":
     plt.title("Original signal")
 
     for num in range(imfNo):
-        plt.subplot(r,c,num+2)
+        plt.subplot(r, c, num+2)
         plt.plot(T, imfs[num], 'g')
         plt.xlim((tMin, tMax))
-        plt.ylabel("Imf "+str(num+1))
+        plt.ylabel("Imf " + str(num+1))
 
     plt.tight_layout()
     plt.show()

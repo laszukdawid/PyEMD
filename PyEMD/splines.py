@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 from scipy.interpolate import Akima1DInterpolator
 
+
 def cubic_spline_3pts(x, y, T):
     """
     Apparently scipy.interpolate.interp1d does not support
@@ -43,8 +44,8 @@ def cubic_spline_3pts(x, y, T):
 
     return t, q
 
-def akima(X, Y, x):
 
+def akima(X, Y, x):
     spl = Akima1DInterpolator(X,Y)
     return spl(x)
 
