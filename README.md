@@ -2,13 +2,12 @@
 [![BuildStatus](https://travis-ci.com/laszukdawid/PyEMD.png?branch=master)](https://travis-ci.org/laszukdawid/PyEMD)
 [![DocStatus](https://readthedocs.org/projects/pyemd/badge/?version=latest)](https://pyemd.readthedocs.io/)
 [![Codacy](https://api.codacy.com/project/badge/Grade/5385d5ddc8e84908bd4e38f325443a21)](https://www.codacy.com/app/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=badger)
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A110NUD)
 
 # PyEMD
 
 ## Links
 
--   HTML documentation: <https://pyemd.readthedocs.org>
+-   Online documentation: <https://pyemd.readthedocs.org>
 -   Issue tracker: <https://github.com/laszukdawid/pyemd/issues>
 -   Source code repository: <https://github.com/laszukdawid/pyemd>
 
@@ -44,25 +43,26 @@ and extrema interpolation.
 
 ## Installation
 
-### Recommended
+### PyPi (recommended)
 
-Simply download this directory either directly from GitHub, or using
-command line:
+The quickest way to install package is through `pip`.
+
+> \$ pip install EMD-signal
+
+### From source
+
+In case you only want to *use* EMD and its variation, the best way to install PyEMD is through `pip`.
+However, if you are want to modify the code anyhow you might want to download the code and build package yourself.
+The source is publicaly available and hosted on [GitHub](https://github.com/laszukdawid/PyEMD).
+To download the code you can either go to the source code page and click `Code -> Download ZIP`, or use **git** command line
 
 > \$ git clone <https://github.com/laszukdawid/PyEMD>
 
-Then go into the downloaded project and run from command line:
+Installing package from source is done using command line:
 
 > \$ python setup.py install
 
-### PyPi
-
-Packaged obtained from PyPi is/will be slightly behind this project, so
-some features might not be the same. However, it seems to be the
-easiest/nicest way of installing any Python packages, so why not this
-one?
-
-> \$ pip install EMD-signal
+**Note**, however, that this will install it in your current environment. If you are working on many projects, or sharing reources with others, we suggest using [virtual environments](https://docs.python.org/3/library/venv.html).
 
 ## Example
 
