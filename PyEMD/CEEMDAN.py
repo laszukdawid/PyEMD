@@ -39,6 +39,18 @@ class CEEMDAN:
     values. Two are `range_thr` and `total_power_thr` which relate to
     the value range (max - min) and check for total power below, respectively.
 
+    Configuration can be passed through keyword parameters.
+    For example, updating threshold would be through:
+
+    Example 1:
+
+    >>> config = {"range_thr": 0.001, "total_power_thr": 0.01}
+    >>> emd = EMD(**config)
+
+    Example 2:
+
+    >>> emd = EMD(range_thr=0.001, total_power_thr=0.01)
+
     Parameters
     ----------
 
@@ -62,6 +74,17 @@ class CEEMDAN:
     processes : int or None (optional)
         Number of processes harness when executing in parallel mode.
         The value should be between 1 and max that depends on your hardware.
+    noise_scale : float (default: 1)
+        Scale (amplitude) of the added noise.
+    noise_kind : str (default: "normal")
+        What type of noise to add. Allowed are "normal" (default) and "uniform".
+    range_thr : float (default: 0.01)
+        Range threshold used as an IMF check. The value is in percentage compared
+        to initial signal's amplitude. If absolute amplitude (max - min) is below
+        the `range_thr` then the decomposition is finished.
+    total_power_thr : float (default: 0.05)
+        Signal's power threshold. Finishes decomposition if sum(abs(r)) < thr.
+
 
     References
     ----------
@@ -80,16 +103,6 @@ class CEEMDAN:
     noise_kinds_all = ["normal", "uniform"]
 
     def __init__(self, trials: int=100, epsilon: float = 0.005, ext_EMD = None, parallel: bool = False, **kwargs):
-        """
-        Configuration can be passed through keyword parameters.
-        For example, updating threshold would be through:
-
-        Example 1:
-        >>> config = {"range_thr": 0.001, "total_power_thr": 0.01}
-        >>> emd = EMD(**config)
-        Example 2:
-        >>> emd = EMD(range_thr=0.001, total_power_thr=0.01)
-        """
 
         # Ensemble constants
         self.trials = trials

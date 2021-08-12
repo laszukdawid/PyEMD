@@ -1,5 +1,5 @@
-Example
-*******
+Examples
+********
 
 Some examples can be found in PyEMD/example directory.
 

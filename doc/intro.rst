@@ -28,7 +28,9 @@ The easiest way is to either add `EMD-signal`_ to your `requirements.txt` file, 
 
     $ pip install EMD-signal
 
-And, yes, the package is updated every time there is a new algorithm or other cools features added.
+Once the package is installed it should be accessible in your Python as `PyEMD`, e.g. ::
+
+    >>> from PyEMD import EMD
 
 Research (github)
 `````````````````

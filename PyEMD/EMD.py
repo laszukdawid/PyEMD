@@ -887,7 +887,14 @@ class EMD:
     def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Provides access to separated imfs and residue from recently analysed signal.
-        :return: (imfs, residue)
+
+        Returns
+        -------
+        imfs : np.ndarray
+            Obtained IMFs
+        residue : np.ndarray
+            Residue.
+
         """
         if self.imfs is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
@@ -900,7 +907,14 @@ class EMD:
         Note that this may differ from the `get_imfs_and_residue` as the trend isn't
         necessarily the residue. Residue is a point-wise difference between input signal
         and all obtained components, whereas trend is the slowest component (can be zero).
-        :return: (imfs, trend)
+
+        Returns
+        -------
+        imfs : np.ndarray
+            Obtained IMFs
+        trend : np.ndarray
+            The main trend.
+
         """
         if self.imfs is None or self.residue is None:
             raise ValueError('No IMF found. Please, run EMD method or its variant first.')
