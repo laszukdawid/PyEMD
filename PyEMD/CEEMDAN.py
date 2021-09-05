@@ -198,7 +198,6 @@ class CEEMDAN:
         -------
         components : np.ndarray
             CEEMDAN components.
-
         """
 
         scale_s = np.std(S)

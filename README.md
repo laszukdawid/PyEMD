@@ -4,14 +4,13 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f56b6fc3f855476dbaebd3c02ae88f3e)](https://www.codacy.com/gh/laszukdawid/PyEMD/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=laszukdawid/PyEMD&amp;utm_campaign=Badge_Grade)
 [![DOI](https://zenodo.org/badge/65324353.svg)](https://zenodo.org/badge/latestdoi/65324353)
 
-
 # PyEMD
 
 ## Links
 
--   Online documentation: <https://pyemd.readthedocs.org>
--   Issue tracker: <https://github.com/laszukdawid/pyemd/issues>
--   Source code repository: <https://github.com/laszukdawid/pyemd>
+- Online documentation: <https://pyemd.readthedocs.org>
+- Issue tracker: <https://github.com/laszukdawid/pyemd/issues>
+- Source code repository: <https://github.com/laszukdawid/pyemd>
 
 ## Introduction
 
@@ -19,29 +18,29 @@ This is yet another Python implementation of Empirical Mode
 Decomposition (EMD). The package contains many EMD variations and
 intends to deliver more in time.
 
-### EMD variations:
-  - Ensemble EMD (EEMD),
-  - "Complete Ensemble EMD" (CEEMDAN)
-  - different settings and configurations of vanilla EMD.
-  - Image decomposition (EMD2D & BEMD) (experimental, no support)
+### EMD variations
+-  Ensemble EMD (EEMD),
+-  "Complete Ensemble EMD" (CEEMDAN)
+-  different settings and configurations of vanilla EMD.
+-  Image decomposition (EMD2D & BEMD) (experimental, no support)
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
 and extrema interpolation.
 
 ### Available splines
-  - Natural cubic [default]
-  - Pointwise cubic
-  - Akima
-  - Linear
+-  Natural cubic (**default**)
+-  Pointwise cubic
+-  Akima
+-  Linear
 
 ### Available stopping criteria
-  - Cauchy convergence [default]
-  - Fixed number of iterations
-  - Number of consecutive proto-imfs
+-  Cauchy convergence (**default**)
+-  Fixed number of iterations
+-  Number of consecutive proto-imfs
 
 ### Extrema detection
-  - Discrete extrema [default]
-  - Parabolic interpolation
+-  Discrete extrema (**default**)
+-  Parabolic interpolation
 
 ## Installation
 

@@ -3,9 +3,11 @@
 
 from __future__ import print_function
 
+import unittest
+
 import numpy as np
 from PyEMD import EMD
-import unittest
+
 
 class ExtremaTest(unittest.TestCase):
 
@@ -40,9 +42,7 @@ class ExtremaTest(unittest.TestCase):
             emd.find_extrema(t, s)
 
     def test_find_extrema_simple(self):
-        """
-        Simple test for extrema.
-        """
+        """Simple test for extrema."""
         emd = EMD()
         emd.extrema_detection = "simple"
 

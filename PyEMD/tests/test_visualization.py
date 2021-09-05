@@ -24,15 +24,15 @@ class VisTest(unittest.TestCase):
         emd.emd(S, t)
         imfs, res = emd.get_imfs_and_residue()
         vis = Visualisation(emd)
-        assert (vis.imfs == imfs).all()
-        assert (vis.residue == res).all()
+        self.assertTrue(np.alltrue(vis.imfs == imfs))
+        self.assertTrue(np.alltrue(vis.residue == res))
 
     def test_check_imfs(self):
         vis = Visualisation()
         imfs = np.arange(50).reshape(2,25)
         res = np.arange(25)
         imfs, res = vis._check_imfs(imfs, res, False)
-        assert len(imfs) == 2
+        self.assertEqual(len(imfs), 2)
 
     def test_check_imfs2(self):
         vis = Visualisation()
@@ -42,7 +42,11 @@ class VisTest(unittest.TestCase):
     def test_check_imfs3(self):
         vis = Visualisation()
         imfs = np.arange(50).reshape(2,25)
-        vis._check_imfs(imfs, None, False)
+
+        out_imfs, out_res = vis._check_imfs(imfs, None, False)
+
+        self.assertTrue(np.alltrue(imfs == out_imfs))
+        self.assertIsNone(out_res)
 
     def test_check_imfs4(self):
         vis = Visualisation()
@@ -58,8 +62,8 @@ class VisTest(unittest.TestCase):
         imfs, res = emd.get_imfs_and_residue()
         vis = Visualisation(emd)
         imfs2, res2 = vis._check_imfs(imfs, res, False)
-        assert (imfs == imfs2).all()
-        assert (res == res2).all()
+        self.assertTrue(np.alltrue(imfs == imfs2))
+        self.assertTrue(np.alltrue(res == res2))
 
     def test_plot_imfs(self):
         vis = Visualisation()
@@ -97,7 +101,7 @@ class VisTest(unittest.TestCase):
         imfs = emd.emd(S, t)
         vis = Visualisation()
         with self.assertRaises(AssertionError):
-            phase = vis._calc_inst_phase(imfs, 0.8)
+            _ = vis._calc_inst_phase(imfs, 0.8)
 
     def test_calc_instant_freq_alphaNone(self):
         t = np.linspace(0, 1, 50)
@@ -106,7 +110,7 @@ class VisTest(unittest.TestCase):
         imfs = emd.emd(S, t)
         vis = Visualisation()
         freqs = vis._calc_inst_freq(imfs, t, False, None)
-        assert imfs.shape == freqs.shape
+        self.assertEqual(imfs.shape, freqs.shape)
 
     def test_calc_instant_freq(self):
         t = np.linspace(0, 1, 50)
@@ -115,14 +119,10 @@ class VisTest(unittest.TestCase):
         imfs = emd.emd(S, t)
         vis = Visualisation()
         freqs = vis._calc_inst_freq(imfs, t, False, 0.4)
-        assert imfs.shape == freqs.shape
+        self.assertEqual(imfs.shape, freqs.shape)
 
     def test_plot_instant_freq(self):
         vis = Visualisation()
         t = np.arange(20)
         with self.assertRaises(AttributeError):
             vis.plot_instant_freq(t)
-
-
-if __name__ == "__main__":
-    unittest.main()

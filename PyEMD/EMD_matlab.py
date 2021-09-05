@@ -562,7 +562,7 @@ class EMD:
                     # Stops after default stopping criteria are meet.
                     else:
 
-                        mP,mV,MP,MV, indzer = self.findExtrema(T, imf)
+                        mP, _, MP, _, indzer = self.findExtrema(T, imf)
                         extNo = len(mP)+len(MP)
                         nzm = len(indzer)
 

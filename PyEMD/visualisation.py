@@ -77,8 +77,7 @@ class Visualisation(object):
         plt.tight_layout()
 
     def plot_instant_freq(self, t, imfs=None, order=False, alpha=None):
-        """
-        Plots and shows instantaneous frequencies for all provided imfs.
+        """Plots and shows instantaneous frequencies for all provided imfs.
 
         The necessary parameter is `t` which is the time array used to compute the EMD.
         One should pass `imfs` if no `emd` instances is passed when creating the Visualisation object.

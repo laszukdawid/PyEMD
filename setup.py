@@ -43,7 +43,7 @@ def main():
         },
     )
 
-    dist = setup(**setup_params)
+    _ = setup(**setup_params)
 
 if __name__=="__main__":
     main()
