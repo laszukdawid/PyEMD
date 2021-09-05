@@ -2,6 +2,8 @@
 [![BuildStatus](https://travis-ci.com/laszukdawid/PyEMD.png?branch=master)](https://travis-ci.org/laszukdawid/PyEMD)
 [![DocStatus](https://readthedocs.org/projects/pyemd/badge/?version=latest)](https://pyemd.readthedocs.io/)
 [![Codacy](https://api.codacy.com/project/badge/Grade/5385d5ddc8e84908bd4e38f325443a21)](https://www.codacy.com/app/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=badger)
+[![DOI](https://zenodo.org/badge/65324353.svg)](https://zenodo.org/badge/latestdoi/65324353)
+
 
 # PyEMD
 
@@ -193,5 +195,6 @@ please use the following structure:
   publisher = {GitHub},
   journal = {GitHub Repository},
   howpublished = {\url{https://github.com/laszukdawid/PyEMD}},
+  doi = {10.5281/zenodo.5459184}
 }
 ```

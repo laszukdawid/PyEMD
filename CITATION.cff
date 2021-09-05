@@ -7,4 +7,5 @@ authors:
 title: "Python implementation of Empirical Mode Decomposition algorithm"
 version: 1.0.1
 date-released: 2017-01-01
+doi: 10.5281/zenodo.5459184
 url: "https://github.com/laszukdawid/PyEMD"
