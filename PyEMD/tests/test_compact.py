@@ -5,7 +5,6 @@ from __future__ import print_function
 
 import numpy as np
 import scipy as sp
-import scipy.sparse
 from PyEMD.compact import *
 import unittest
 

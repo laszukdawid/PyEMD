@@ -77,7 +77,7 @@ class ExtremaTest(unittest.TestCase):
         expMinPos = [7, 11]
         expMinVal = [-1, -9]
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         self.assertEqual(maxPos.tolist(), expMaxPos)
         self.assertEqual(maxVal.tolist(), expMaxVal)
@@ -107,7 +107,7 @@ class ExtremaTest(unittest.TestCase):
         s = S.copy()
         t = T.copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -123,7 +123,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[1:-1].copy()
         t = np.arange(s.size)
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -139,7 +139,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[2:-3].copy()
         t = np.arange(s.size)
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -155,7 +155,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[3:-4].copy()
         t = np.arange(s.size)
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -180,7 +180,7 @@ class ExtremaTest(unittest.TestCase):
         expMinPos = [4, 8]
         expMinVal = [-1, -9]
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         self.assertEqual(maxPos.tolist(), expMaxPos)
         self.assertEqual(maxVal.tolist(), expMaxVal)
@@ -202,7 +202,7 @@ class ExtremaTest(unittest.TestCase):
         expMinPos = [7, 11]
         expMinVal = [-1, -9]
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         self.assertEqual(maxPos.tolist(), expMaxPos)
         self.assertEqual(maxVal.tolist(), expMaxVal)
@@ -232,7 +232,7 @@ class ExtremaTest(unittest.TestCase):
         s = S.copy()
         t = T.copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -251,7 +251,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[1:-1].copy()
         t = T[1:-1].copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -270,7 +270,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[2:-3].copy()
         t = T[2:-3].copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \
@@ -289,7 +289,7 @@ class ExtremaTest(unittest.TestCase):
         s = S[3:-4].copy()
         t = T[3:-4].copy()
 
-        maxPos, maxVal, minPos, minVal, nz = emd.find_extrema(t, s)
+        maxPos, maxVal, minPos, minVal, _ = emd.find_extrema(t, s)
 
         # Should extrapolate left and right bounds
         maxExtrema, minExtrema = pp(t, s, \

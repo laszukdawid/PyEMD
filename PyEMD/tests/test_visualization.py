@@ -3,10 +3,12 @@
 
 from __future__ import print_function
 
-import numpy as np
-from PyEMD import EMD, EEMD, CEEMDAN
-from PyEMD.visualisation import Visualisation
 import unittest
+
+import numpy as np
+from PyEMD import EMD
+from PyEMD.visualisation import Visualisation
+
 
 class VisTest(unittest.TestCase):
 
@@ -97,7 +99,7 @@ class VisTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             phase = vis._calc_inst_phase(imfs, 0.8)
 
-    def test_calc_instant_freq(self):
+    def test_calc_instant_freq_alphaNone(self):
         t = np.linspace(0, 1, 50)
         S = t + np.cos(np.cos(4.*t**2))
         emd = EMD()

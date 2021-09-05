@@ -189,7 +189,7 @@ class CEEMDANTest(unittest.TestCase):
     def test_imfs_and_residue_accessor2(self):
         ceemdan = CEEMDAN()
         with self.assertRaises(ValueError):
-            imfs, residue = ceemdan.get_imfs_and_residue()
+            _, _ = ceemdan.get_imfs_and_residue()
 
 
 if __name__ == "__main__":

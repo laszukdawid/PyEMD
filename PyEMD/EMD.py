@@ -852,7 +852,7 @@ class EMD:
                     # Stops after default stopping criteria are met
                     else:
                         ext_res = self.find_extrema(T, imf)
-                        max_pos, max_val, min_pos, min_val, ind_zer = ext_res
+                        max_pos, _, min_pos, _, ind_zer = ext_res
                         extNo = len(max_pos) + len(min_pos)
                         nzm = len(ind_zer)
 

@@ -65,7 +65,7 @@ class EEMDTest(unittest.TestCase):
         self.assertTrue(eemd.EMD.spline_kind==spline_kind,
                 self.cmp_msg(eemd.EMD.spline_kind, spline_kind))
 
-    def test_eemd_passingArgumentsViaDict(self):
+    def test_eemd_passingArgumentsDirectly(self):
         trials = 10
         noise_kind = 'uniform'
         spline_kind = 'linear'

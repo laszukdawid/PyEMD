@@ -183,7 +183,6 @@ class EMDTest(unittest.TestCase):
         self.assertTrue(close_imfs1)
 
         close_imfs2 = np.allclose(c2[2:-2], imfs[1,2:-2], atol=0.24)
-        diff = np.abs(c2[2:-2] - imfs[1,2:-2])
         self.assertTrue(close_imfs2)
 
         close_offset = np.allclose(offset, imfs[2,1:-1], atol=0.5)
@@ -215,7 +214,7 @@ class EMDTest(unittest.TestCase):
     def test_get_imfs_and_residue_without_running(self):
         emd = EMD()
         with self.assertRaises(ValueError):
-            imfs, residue = emd.get_imfs_and_residue()
+            _, _ = emd.get_imfs_and_residue()
 
     def test_get_imfs_and_trend(self):
         emd = EMD()

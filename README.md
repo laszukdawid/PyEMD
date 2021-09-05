@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/laszukdawid/PyEMD/branch/master/graph/badge.svg)](https://codecov.io/gh/laszukdawid/PyEMD)
-[![BuildStatus](https://travis-ci.com/laszukdawid/PyEMD.png?branch=master)](https://travis-ci.org/laszukdawid/PyEMD)
+[![Build Status](https://app.travis-ci.com/laszukdawid/PyEMD.svg?branch=master)](https://app.travis-ci.com/laszukdawid/PyEMD)
 [![DocStatus](https://readthedocs.org/projects/pyemd/badge/?version=latest)](https://pyemd.readthedocs.io/)
-[![Codacy](https://api.codacy.com/project/badge/Grade/5385d5ddc8e84908bd4e38f325443a21)](https://www.codacy.com/app/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=badger)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f56b6fc3f855476dbaebd3c02ae88f3e)](https://www.codacy.com/gh/laszukdawid/PyEMD/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=laszukdawid/PyEMD&amp;utm_campaign=Badge_Grade)
 [![DOI](https://zenodo.org/badge/65324353.svg)](https://zenodo.org/badge/latestdoi/65324353)
 
 
@@ -20,28 +20,28 @@ Decomposition (EMD). The package contains many EMD variations and
 intends to deliver more in time.
 
 ### EMD variations:
-* Ensemble EMD (EEMD),
-* "Complete Ensemble EMD" (CEEMDAN)
-* different settings and configurations of vanilla EMD.
-* Image decomposition (EMD2D & BEMD) (experimental, no support)
+  - Ensemble EMD (EEMD),
+  - "Complete Ensemble EMD" (CEEMDAN)
+  - different settings and configurations of vanilla EMD.
+  - Image decomposition (EMD2D & BEMD) (experimental, no support)
 
 *PyEMD* allows to use different splines for envelopes, stopping criteria
 and extrema interpolation.
 
-### Available splines:
-* Natural cubic [default]
-* Pointwise cubic
-* Akima
-* Linear
+### Available splines
+  - Natural cubic [default]
+  - Pointwise cubic
+  - Akima
+  - Linear
 
-### Available stopping criteria:
-* Cauchy convergence [default]
-* Fixed number of iterations
-* Number of consecutive proto-imfs
+### Available stopping criteria
+  - Cauchy convergence [default]
+  - Fixed number of iterations
+  - Number of consecutive proto-imfs
 
-### Extrema detection:
-* Discrete extrema [default]
-* Parabolic interpolation
+### Extrema detection
+  - Discrete extrema [default]
+  - Parabolic interpolation
 
 ## Installation
 
@@ -173,8 +173,6 @@ IMFs_2D = emd2d(img)
 
 ### Why is EEMD/CEEMDAN so slow?
 Unfortunately, that's their nature. They execute EMD multiple times every time with slightly modified version. Added noise can cause a creation of many extrema which will decrease performance of the natural cubic spline. For some tweaks on how to deal with that please see [Speedup tricks](https://pyemd.readthedocs.io/en/latest/speedup.html) in the documentation.
-
-
 
 ## Contact
 
