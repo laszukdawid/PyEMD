@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/474a50842d604c089225ab5840fcfb71)](https://app.codacy.com/gh/laszukdawid/PyEMD?utm_source=github.com&utm_medium=referral&utm_content=laszukdawid/PyEMD&utm_campaign=Badge_Grade_Settings)
 [![codecov](https://codecov.io/gh/laszukdawid/PyEMD/branch/master/graph/badge.svg)](https://codecov.io/gh/laszukdawid/PyEMD)
 [![Build Status](https://app.travis-ci.com/laszukdawid/PyEMD.svg?branch=master)](https://app.travis-ci.com/laszukdawid/PyEMD)
 [![DocStatus](https://readthedocs.org/projects/pyemd/badge/?version=latest)](https://pyemd.readthedocs.io/)
