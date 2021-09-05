@@ -12,9 +12,6 @@ Although that might seem "slower" than email, it is honestly much faster.
 **Email**
     \\pyemd@\\dawid.lasz.uk (remove slashes \\).
 
-**Homepage**
-    http://www.laszukdawid.com
-
 **GitHub**
     You can also visit `PyEMD GitHub project <https://www.github.com/laszukdawid/PyEMD>`_ page for this project.
 

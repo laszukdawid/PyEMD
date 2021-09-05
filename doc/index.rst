@@ -12,7 +12,7 @@ me through contact page.
 
    intro
    usage
-   speedup_eemd
+   speedup
    examples
    emd
    eemd

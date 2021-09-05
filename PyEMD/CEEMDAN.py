@@ -42,14 +42,19 @@ class CEEMDAN:
     Configuration can be passed through keyword parameters.
     For example, updating threshold would be through:
 
-    Example 1:
+    Example:
 
-    >>> config = {"range_thr": 0.001, "total_power_thr": 0.01}
-    >>> emd = EMD(**config)
+    >>> ceemdan = CEEMDAN(range_thr=0.001, total_power_thr=0.01)
 
-    Example 2:
+    To perform the decomposition one can either use directly initiated object,
+    or use the `ceemdan` method. The following two lines produce the same output:
 
-    >>> emd = EMD(range_thr=0.001, total_power_thr=0.01)
+    >>> ceemdan = CEEMDAN()
+    >>> c_imfs = ceemdan(signal)
+    >>> c_imfs = ceemdan.ceemdan(signal)
+
+    **Note** that some decompositions can take a while to complete. Please check
+    docs to some tricks on how to improve performance.
 
     Parameters
     ----------
@@ -178,6 +183,23 @@ class CEEMDAN:
         self.random.seed(seed)
 
     def ceemdan(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
+        """Perform CEEMDAN decomposition.
+
+        Parameters
+        ----------
+        S : numpy array
+            Original signal on which CEEMDAN is to perform.
+        T : Optional(numpy array) (default: None)
+            Time (x) values for the signal. If not passed, i.e. `T = None`, then it's assumed that values are equidistant.
+        max_imf : int (default: -1)
+            Maximum number of components to extract.
+
+        Returns
+        -------
+        components : np.ndarray
+            CEEMDAN components.
+
+        """
 
         scale_s = np.std(S)
         S = S/scale_s
@@ -227,7 +249,6 @@ class CEEMDAN:
             last_imf = prev_res - local_mean
             all_cimfs = np.vstack((all_cimfs, last_imf))
             prev_res = local_mean.copy()
-
         # END of while
 
         res = S - np.sum(all_cimfs, axis=0)

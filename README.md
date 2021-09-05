@@ -170,7 +170,7 @@ IMFs_2D = emd2d(img)
 ## F.A.Q
 
 ### Why is EEMD/CEEMDAN so slow?
-Unfortunately, that's their nature. They execute EMD multiple times every time with slightly modified version. Added noise can cause a creation of many extrema which will decrease performance of the natural cubic spline. For some tweaks on how to deal with that please see [Speedup tricks](https://pyemd.readthedocs.io/en/latest/speedup_eemd.html) in the documentation.
+Unfortunately, that's their nature. They execute EMD multiple times every time with slightly modified version. Added noise can cause a creation of many extrema which will decrease performance of the natural cubic spline. For some tweaks on how to deal with that please see [Speedup tricks](https://pyemd.readthedocs.io/en/latest/speedup.html) in the documentation.
 
 
 
@@ -180,15 +180,12 @@ Feel free to contact me with any questions, requests or simply to say *hi*.
 It's always nice to know that I've helped someone or made their work easier. 
 Contributing to the project is also acceptable and warmly welcomed.
 
-Contact me either through gmail (laszukdawid @ gmail) or search me through your
-favourite web search.
-
 ### Citation
 
 If you found this package useful and would like to cite it in your work
 please use the following structure:
 
-```
+```latex
 @misc{pyemd,
   author = {Laszuk, Dawid},
   title = {Python implementation of Empirical Mode Decomposition algorithm},
