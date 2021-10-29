@@ -505,7 +505,7 @@ class EMD:
         dup = np.r_[S[1:-1] == S[0:-2]] & np.r_[S[1:-1] == S[2:]]
         not_dup_idx = np.arange(1, len(S) - 1)[~dup]
 
-        idx = np.empty(len(not_dup_idx) + 2, dtype=np.int)
+        idx = np.empty(len(not_dup_idx) + 2, dtype=np.int64)
         idx[0] = 0
         idx[-1] = len(S) - 1
         idx[1:-1] = not_dup_idx

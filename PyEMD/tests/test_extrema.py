@@ -60,7 +60,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual(nz.tolist(), expZeros.tolist())
 
     def test_find_extrema_simple_repeat(self):
-        """
+        r"""
         Test what happens in /^^\ situation, i.e.
         when extremum is somewhere between two consecutive pts.
         """
@@ -181,7 +181,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual(minVal.tolist(), expMinVal)
 
     def test_find_extrema_parabol_repeat(self):
-        """
+        r"""
         Test what happens in /^^\ situation, i.e.
         when extremum is somewhere between two consecutive pts.
         """
