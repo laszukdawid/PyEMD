@@ -9,14 +9,13 @@
 .. currentmodule:: EEMD
 """
 
-from __future__ import print_function
-
 import logging
-import numpy as np
-
 from collections import defaultdict
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
+
+import numpy as np
+
 from PyEMD.utils import get_timeline
 
 
@@ -72,22 +71,23 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int = 100, noise_width: float = 0.05, ext_EMD = None, parallel: bool = False, **kwargs):
+    def __init__(self, trials: int = 100, noise_width: float = 0.05, ext_EMD=None, parallel: bool = False, **kwargs):
 
         # Ensemble constants
         self.trials = trials
         self.noise_width = noise_width
-        self.separate_trends = bool(kwargs.get('separate_trends', False))
+        self.separate_trends = bool(kwargs.get("separate_trends", False))
 
         self.random = np.random.RandomState()
-        self.noise_kind = kwargs.get('noise_kind', 'normal')
+        self.noise_kind = kwargs.get("noise_kind", "normal")
         self.parallel = parallel
-        self.processes = kwargs.get('processes')  # Optional[int]
+        self.processes = kwargs.get("processes")  # Optional[int]
         if self.processes is not None and not self.parallel:
             self.logger.warning("Passed value for process has no effect when `parallel` is False.")
 
         if ext_EMD is None:
             from PyEMD import EMD
+
             self.EMD = EMD(**kwargs)
         else:
             self.EMD = ext_EMD
@@ -101,8 +101,8 @@ class EEMD:
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
-        if 'pool' in self_dict:
-            del self_dict['pool']
+        if "pool" in self_dict:
+            del self_dict["pool"]
         return self_dict
 
     def generate_noise(self, scale: float, size: Union[int, Sequence[int]]) -> np.ndarray:
@@ -128,10 +128,13 @@ class EEMD:
         if self.noise_kind == "normal":
             noise = self.random.normal(loc=0, scale=scale, size=size)
         elif self.noise_kind == "uniform":
-            noise = self.random.uniform(low=-scale/2, high=scale/2, size=size)
+            noise = self.random.uniform(low=-scale / 2, high=scale / 2, size=size)
         else:
-            raise ValueError("Unsupported noise kind. Please assigned `noise_kind` to be one of these: {0}".format(
-                str(self.noise_kinds_all)))
+            raise ValueError(
+                "Unsupported noise kind. Please assigned `noise_kind` to be one of these: {0}".format(
+                    str(self.noise_kinds_all)
+                )
+            )
         return noise
 
     def noise_seed(self, seed: int) -> None:
@@ -166,7 +169,7 @@ class EEMD:
         if T is None:
             T = get_timeline(len(S), S.dtype)
 
-        scale = self.noise_width*np.abs(np.max(S)-np.min(S))
+        scale = self.noise_width * np.abs(np.max(S) - np.min(S))
         self._S = S
         self._T = T
         self._N = len(S)
@@ -204,7 +207,7 @@ class EEMD:
             self._all_imfs[len(self._all_imfs)] = self._all_imfs.pop(-1)
 
         for imf_num in self._all_imfs.keys():
-            self._all_imfs[imf_num] =  np.array(self._all_imfs[imf_num])
+            self._all_imfs[imf_num] = np.array(self._all_imfs[imf_num])
 
         self.E_IMF = self.ensemble_mean()
         self.residue = S - np.sum(self.E_IMF, axis=0)
@@ -217,7 +220,7 @@ class EEMD:
         *Note*: Although `trial` argument isn't used it's needed for the (multiprocessing) map method.
         """
         noise = self.generate_noise(self._scale, self._N)
-        imfs = self.emd(self._S+noise, self._T, self.max_imf)
+        imfs = self.emd(self._S + noise, self._T, self.max_imf)
         trend = None
         if self.separate_trends:
             imfs, trend = self.EMD.get_imfs_and_trend()
@@ -243,7 +246,7 @@ class EEMD:
 
         """
         if self.E_IMF is None or self.residue is None:
-            raise ValueError('No IMF found. Please, run EMD method or its variant first.')
+            raise ValueError("No IMF found. Please, run EMD method or its variant first.")
         return self.E_IMF, self.residue
 
     @property
@@ -269,6 +272,7 @@ class EEMD:
 if __name__ == "__main__":
 
     import pylab as plt
+
     E_imfNo = np.zeros(50, dtype=np.int)
 
     # Logging options
@@ -279,32 +283,32 @@ if __name__ == "__main__":
 
     # Signal options
     N = 500
-    tMin, tMax = 0, 2*np.pi
+    tMin, tMax = 0, 2 * np.pi
     T = np.linspace(tMin, tMax, N)
 
-    S = 3*np.sin(4*T) + 4*np.cos(9*T) + np.sin(8.11*T+1.2)
+    S = 3 * np.sin(4 * T) + 4 * np.cos(9 * T) + np.sin(8.11 * T + 1.2)
 
     # Prepare and run EEMD
     eemd = EEMD(trials=50)
     eemd.noise_seed(12345)
 
     E_IMFs = eemd.eemd(S, T, max_imf)
-    imfNo  = E_IMFs.shape[0]
+    imfNo = E_IMFs.shape[0]
 
     # Plot results in a grid
-    c = np.floor(np.sqrt(imfNo+1))
-    r = np.ceil((imfNo+1)/c)
+    c = np.floor(np.sqrt(imfNo + 1))
+    r = np.ceil((imfNo + 1) / c)
 
     plt.ioff()
     plt.subplot(r, c, 1)
-    plt.plot(T, S, 'r')
+    plt.plot(T, S, "r")
     plt.xlim((tMin, tMax))
     plt.title("Original signal")
 
     for num in range(imfNo):
-        plt.subplot(r, c, num+2)
-        plt.plot(T, E_IMFs[num],'g')
+        plt.subplot(r, c, num + 2)
+        plt.plot(T, E_IMFs[num], "g")
         plt.xlim((tMin, tMax))
-        plt.title("Imf " + str(num+1))
+        plt.title("Imf " + str(num + 1))
 
     plt.show()

@@ -1,27 +1,25 @@
 #!/usr/bin/python
 # Coding: UTF-8
 
-from __future__ import print_function
+import unittest
 
 import numpy as np
 import scipy as sp
 from PyEMD.compact import *
-import unittest
 
 
 class CompactTest(unittest.TestCase):
-
     @staticmethod
     def create_signal():
         # Do NOT modify this function! If you do, the following can happen:
         # -- Possible test errors for filter (tolerace of np.allclose).
         # -- Error in the derivative test (analytical derivative is hardcoded)
         t = np.linspace(0.0, np.pi, 200)
-        return 0.1*np.cos(2.0*np.pi*t)
+        return 0.1 * np.cos(2.0 * np.pi * t)
 
     def test_TDMA(self):
 
-        diags = np.array([0.5*np.ones(10), 1.0*np.ones(10), 0.5*np.ones(10)])
+        diags = np.array([0.5 * np.ones(10), 1.0 * np.ones(10), 0.5 * np.ones(10)])
         positions = [-1, 0, 1]
         tridiag = sp.sparse.spdiags(diags, positions, 10, 10).todense()
 
@@ -34,7 +32,7 @@ class CompactTest(unittest.TestCase):
         rhs = np.arange(10)
 
         answer = np.linalg.solve(tridiag, rhs)
-        #result = TDMAsolver(*diags, rhs)
+        # result = TDMAsolver(*diags, rhs)
         result = TDMAsolver(diags[0], diags[1], diags[2], rhs)
 
         self.assertTrue(np.allclose(answer, result))
@@ -58,8 +56,8 @@ class CompactTest(unittest.TestCase):
     def test_pade6(self):
         t = np.linspace(0.0, np.pi, 200)
         S = self.create_signal()
-        Sprime = -0.1*2.0*np.pi*np.sin(2.0*np.pi*t)
-        self.assertTrue(np.allclose(Sprime, pade6(S, t[1]-t[0]), atol=1e-5))
+        Sprime = -0.1 * 2.0 * np.pi * np.sin(2.0 * np.pi * t)
+        self.assertTrue(np.allclose(Sprime, pade6(S, t[1] - t[0]), atol=1e-5))
 
 
 if __name__ == "__main__":

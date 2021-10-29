@@ -1,8 +1,3 @@
-#!/usr/bin/python
-# Coding: UTF-8
-
-from __future__ import print_function
-
 import unittest
 
 import numpy as np
@@ -11,7 +6,6 @@ from PyEMD.visualisation import Visualisation
 
 
 class VisTest(unittest.TestCase):
-
     def test_instantiation(self):
         emd = EMD()
         with self.assertRaises(ValueError):
@@ -19,7 +13,7 @@ class VisTest(unittest.TestCase):
 
     def test_instantiation2(self):
         t = np.linspace(0, 1, 50)
-        S = t + np.cos(np.cos(4.*t**2))
+        S = t + np.cos(np.cos(4.0 * t ** 2))
         emd = EMD()
         emd.emd(S, t)
         imfs, res = emd.get_imfs_and_residue()
@@ -29,7 +23,7 @@ class VisTest(unittest.TestCase):
 
     def test_check_imfs(self):
         vis = Visualisation()
-        imfs = np.arange(50).reshape(2,25)
+        imfs = np.arange(50).reshape(2, 25)
         res = np.arange(25)
         imfs, res = vis._check_imfs(imfs, res, False)
         self.assertEqual(len(imfs), 2)
@@ -41,7 +35,7 @@ class VisTest(unittest.TestCase):
 
     def test_check_imfs3(self):
         vis = Visualisation()
-        imfs = np.arange(50).reshape(2,25)
+        imfs = np.arange(50).reshape(2, 25)
 
         out_imfs, out_res = vis._check_imfs(imfs, None, False)
 
@@ -50,13 +44,13 @@ class VisTest(unittest.TestCase):
 
     def test_check_imfs4(self):
         vis = Visualisation()
-        imfs = np.arange(50).reshape(2,25)
+        imfs = np.arange(50).reshape(2, 25)
         with self.assertRaises(AttributeError):
             vis._check_imfs(imfs, None, True)
 
     def test_check_imfs5(self):
         t = np.linspace(0, 1, 50)
-        S = t + np.cos(np.cos(4.*t**2))
+        S = t + np.cos(np.cos(4.0 * t ** 2))
         emd = EMD()
         emd.emd(S, t)
         imfs, res = emd.get_imfs_and_residue()
@@ -87,7 +81,7 @@ class VisTest(unittest.TestCase):
 
     def test_calc_instant_phase2(self):
         t = np.linspace(0, 1, 50)
-        S = t + np.cos(np.cos(4.*t**2))
+        S = t + np.cos(np.cos(4.0 * t ** 2))
         emd = EMD()
         imfs = emd.emd(S, t)
         vis = Visualisation()
@@ -96,7 +90,7 @@ class VisTest(unittest.TestCase):
 
     def test_calc_instant_phase3(self):
         t = np.linspace(0, 1, 50)
-        S = t + np.cos(np.cos(4.*t**2))
+        S = t + np.cos(np.cos(4.0 * t ** 2))
         emd = EMD()
         imfs = emd.emd(S, t)
         vis = Visualisation()
@@ -105,7 +99,7 @@ class VisTest(unittest.TestCase):
 
     def test_calc_instant_freq_alphaNone(self):
         t = np.linspace(0, 1, 50)
-        S = t + np.cos(np.cos(4.*t**2))
+        S = t + np.cos(np.cos(4.0 * t ** 2))
         emd = EMD()
         imfs = emd.emd(S, t)
         vis = Visualisation()
@@ -114,7 +108,7 @@ class VisTest(unittest.TestCase):
 
     def test_calc_instant_freq(self):
         t = np.linspace(0, 1, 50)
-        S = t + np.cos(np.cos(4.*t**2))
+        S = t + np.cos(np.cos(4.0 * t ** 2))
         emd = EMD()
         imfs = emd.emd(S, t)
         vis = Visualisation()

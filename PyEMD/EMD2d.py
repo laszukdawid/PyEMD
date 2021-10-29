@@ -8,18 +8,21 @@
 #
 # Feel free to contact for any information.
 
-from __future__ import division, print_function
-
 import logging
+
 import numpy as np
 
 try:
-    from scipy.ndimage.filters import maximum_filter
-    from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
     from scipy.interpolate import SmoothBivariateSpline as SBS
+    from scipy.ndimage.filters import maximum_filter
+    from scipy.ndimage.morphology import (binary_erosion,
+                                          generate_binary_structure)
 except ImportError:
-    raise ImportError("EMD2D and BEMD are not supported. Feel free to play around and improve them. " + \
-            "Required depdenecies are in `requriements-extra`.")
+    raise ImportError(
+        "EMD2D and BEMD are not supported. Feel free to play around and improve them. "
+        + "Required depdenecies are in `requriements-extra`."
+    )
+
 
 class EMD2D:
     """
@@ -78,13 +81,12 @@ class EMD2D:
             Top envelope in form of an image.
         """
 
-
         big_image = self.prepare_image(image)
         big_min_peaks, big_max_peaks = self.find_extrema(big_image)
 
         # Prepare grid for interpolation. Doesn't seem necessary.
-        xi = np.arange(image.shape[0],image.shape[0]*2)
-        yi = np.arange(image.shape[1],image.shape[1]*2)
+        xi = np.arange(image.shape[0], image.shape[0] * 2)
+        yi = np.arange(image.shape[1], image.shape[1] * 2)
 
         big_min_image_val = big_image[big_min_peaks]
         big_max_image_val = big_image[big_max_peaks]
@@ -111,10 +113,10 @@ class EMD2D:
             neighbouring panels are respective mirror images.
         """
 
-        #TODO: This is nasty. Instead of bloating whole image and then trying to
+        # TODO: This is nasty. Instead of bloating whole image and then trying to
         #      find all extrema, it's better to deal directly with indices.
         shape = image.shape
-        big_image = np.zeros((shape[0]*3, shape[1]*3))
+        big_image = np.zeros((shape[0] * 3, shape[1] * 3))
 
         image_lr = np.fliplr(image)
         image_ud = np.flipud(image)
@@ -122,31 +124,31 @@ class EMD2D:
         image_lr_ud = np.fliplr(image_ud)
 
         # Fill center with default image
-        big_image[shape[0]:2*shape[0], shape[1]:2*shape[1]] = image
+        big_image[shape[0] : 2 * shape[0], shape[1] : 2 * shape[1]] = image
 
         # Fill left center
-        big_image[shape[0]:2*shape[0], :shape[1]] = image_lr
+        big_image[shape[0] : 2 * shape[0], : shape[1]] = image_lr
 
         # Fill right center
-        big_image[shape[0]:2*shape[0], 2*shape[1]:] = image_lr
+        big_image[shape[0] : 2 * shape[0], 2 * shape[1] :] = image_lr
 
         # Fill center top
-        big_image[:shape[0], shape[1]:shape[1]*2] = image_ud
+        big_image[: shape[0], shape[1] : shape[1] * 2] = image_ud
 
         # Fill center bottom
-        big_image[2*shape[0]:, shape[1]:2*shape[1]] = image_ud
+        big_image[2 * shape[0] :, shape[1] : 2 * shape[1]] = image_ud
 
         # Fill left top
-        big_image[:shape[0], :shape[1]] = image_ud_lr
+        big_image[: shape[0], : shape[1]] = image_ud_lr
 
         # Fill left bottom
-        big_image[2*shape[0]:, :shape[1]] = image_ud_lr
+        big_image[2 * shape[0] :, : shape[1]] = image_ud_lr
 
         # Fill right top
-        big_image[:shape[0], 2*shape[1]:] = image_lr_ud
+        big_image[: shape[0], 2 * shape[1] :] = image_lr_ud
 
         # Fill right bottom
-        big_image[2*shape[0]:, 2*shape[1]:] = image_lr_ud
+        big_image[2 * shape[0] :, 2 * shape[1] :] = image_lr_ud
 
         return big_image
 
@@ -190,12 +192,10 @@ class EMD2D:
         local_max = maximum_filter(image, footprint=neighborhood) == image
 
         # can't distinguish between background zero and filter zero
-        background = (image == 0)
+        background = image == 0
 
-        #appear along the bg border (artifact of the local max filter)
-        eroded_background = binary_erosion(background,
-                                           structure=neighborhood,
-                                           border_value=1)
+        # appear along the bg border (artifact of the local max filter)
+        eroded_background = binary_erosion(background, structure=neighborhood, border_value=1)
 
         # we obtain the final mask, containing only peaks,
         # by removing the background from the local_max mask (xor operation)
@@ -253,13 +253,12 @@ class EMD2D:
             Whether current proto IMF is actual IMF.
         """
 
-
-        #TODO: Sifiting is very sensitive and subtracting const val can often flip
+        # TODO: Sifiting is very sensitive and subtracting const val can often flip
         #      maxima with minima in decompoisition and thus repeating above/below
         #      behaviour. For now, mean_env is checked whether close to zero excluding
         #      its offset.
-        if np.all(np.abs(mean_env-mean_env.mean()) < self.mean_thr):
-        #if np.all(np.abs(mean_env)<self.mean_thr):
+        if np.all(np.abs(mean_env - mean_env.mean()) < self.mean_thr):
+            # if np.all(np.abs(mean_env)<self.mean_thr):
             return True
 
         # If very little change with sifting
@@ -271,7 +270,7 @@ class EMD2D:
             return True
 
         # Everything relatively close to 0
-        mse_proto_imf = np.mean(proto_imf*proto_imf)
+        mse_proto_imf = np.mean(proto_imf * proto_imf)
         if mse_proto_imf < self.mse_thr:
             return True
 
@@ -296,19 +295,19 @@ class EMD2D:
         """
         image_min, image_max = np.min(image), np.max(image)
         offset = image_min
-        scale = image_max-image_min
+        scale = image_max - image_min
 
-        image_s = (image-offset)/scale
+        image_s = (image - offset) / scale
 
         imf = np.zeros(image.shape)
         imf_old = imf.copy()
 
         imfNo = 0
-        IMF = np.empty((imfNo,)+image.shape)
+        IMF = np.empty((imfNo,) + image.shape)
         notFinished = True
 
-        while(notFinished):
-            self.logger.debug('IMF -- '+str(imfNo))
+        while notFinished:
+            self.logger.debug("IMF -- " + str(imfNo))
 
             res = image_s - np.sum(IMF[:imfNo], axis=0)
             imf = res.copy()
@@ -316,17 +315,16 @@ class EMD2D:
             stop_sifting = False
 
             # Counters
-            n = 0   # All iterations for current imf.
-            n_h = 0 # counts when mean(proto_imf) < threshold
+            n = 0  # All iterations for current imf.
+            n_h = 0  # counts when mean(proto_imf) < threshold
 
-            while(not stop_sifting and n < self.MAX_ITERATION):
+            while not stop_sifting and n < self.MAX_ITERATION:
                 n += 1
-                self.logger.debug("Iteration: "+str(n))
+                self.logger.debug("Iteration: " + str(n))
 
                 min_peaks, max_peaks = self.find_extrema(imf)
 
-                self.logger.debug("min_peaks = %i  |  max_peaks = %i",
-                                  len(min_peaks[0]), len(max_peaks[0]))
+                self.logger.debug("min_peaks = %i  |  max_peaks = %i", len(min_peaks[0]), len(max_peaks[0]))
                 if len(min_peaks[0]) > 4 and len(max_peaks[0]) > 4:
 
                     imf_old = imf.copy()
@@ -334,21 +332,22 @@ class EMD2D:
 
                     min_env, max_env = self.extract_max_min_spline(imf)
 
-                    mean_env = 0.5*(min_env+max_env)
+                    mean_env = 0.5 * (min_env + max_env)
 
                     imf_old = imf.copy()
                     imf = imf - mean_env
 
                     # Fix number of iterations
                     if self.FIXE:
-                        if n >= self.FIXE+1:
+                        if n >= self.FIXE + 1:
                             stop_sifting = True
 
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
 
-                        if n == 1: continue
+                        if n == 1:
+                            continue
                         if self.check_proto_imf(imf, imf_old, mean_env):
                             n_h += 1
                         else:
@@ -368,21 +367,22 @@ class EMD2D:
                     notFinished = False
                     stop_sifting = True
 
-            IMF = np.vstack((IMF, imf.copy()[None,:]))
+            IMF = np.vstack((IMF, imf.copy()[None, :]))
             imfNo += 1
 
-            if self.end_condition(image, IMF) or (max_imf>0 and imfNo>=max_imf):
+            if self.end_condition(image, IMF) or (max_imf > 0 and imfNo >= max_imf):
                 notFinished = False
                 break
 
         res = image_s - np.sum(IMF[:imfNo], axis=0)
         if not np.allclose(res, 0):
-            IMF = np.vstack((IMF, res[None,:]))
+            IMF = np.vstack((IMF, res[None, :]))
             imfNo += 1
 
-        IMF = IMF*scale
+        IMF = IMF * scale
         IMF[-1] += offset
         return IMF
+
 
 ########################################
 if __name__ == "__main__":
@@ -395,20 +395,20 @@ if __name__ == "__main__":
     print("Generating image... ", end="")
     rows, cols = 1024, 1024
     row_scale, col_scale = 256, 256
-    x = np.arange(rows)/float(row_scale)
-    y = np.arange(cols).reshape((-1,1))/float(col_scale)
+    x = np.arange(rows) / float(row_scale)
+    y = np.arange(cols).reshape((-1, 1)) / float(col_scale)
 
-    pi2 = 2*np.pi
-    img = np.zeros((rows,cols))
-    img = img + np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
-    img = img + 3*np.sin(2*pi2*x)+2
-    img = img + 5*x*y + 2*(y-0.2)*y
+    pi2 = 2 * np.pi
+    img = np.zeros((rows, cols))
+    img = img + np.sin(2 * pi2 * x) * np.cos(y * 4 * pi2 + 4 * x * pi2)
+    img = img + 3 * np.sin(2 * pi2 * x) + 2
+    img = img + 5 * x * y + 2 * (y - 0.2) * y
     print("Done")
 
     # Perform decomposition
     print("Performing decomposition... ", end="")
     emd2d = EMD2D()
-    #emd2d.FIXE_H = 5
+    # emd2d.FIXE_H = 5
     IMFs = emd2d.emd(img, max_imf=4)
     imfNo = IMFs.shape[0]
     print("Done")
@@ -418,18 +418,18 @@ if __name__ == "__main__":
         import pylab as plt
 
         # Save image for preview
-        plt.figure(figsize=(4,4*(imfNo+1)))
-        plt.subplot(imfNo+1, 1, 1)
+        plt.figure(figsize=(4, 4 * (imfNo + 1)))
+        plt.subplot(imfNo + 1, 1, 1)
         plt.imshow(img)
         plt.colorbar()
         plt.title("Input image")
 
         # Save reconstruction
         for n, imf in enumerate(IMFs):
-            plt.subplot(imfNo+1, 1, n+2)
+            plt.subplot(imfNo + 1, 1, n + 2)
             plt.imshow(imf)
             plt.colorbar()
-            plt.title("IMF %i"%(n+1))
+            plt.title("IMF %i" % (n + 1))
 
         plt.savefig("image_decomp")
         print("Done")

@@ -4,7 +4,6 @@ from PyEMD.utils import get_timeline
 
 
 class MyTestCase(unittest.TestCase):
-
     def test_get_timeline_default_dtype(self):
         S = np.random.random(100)
         T = get_timeline(len(S))
@@ -39,5 +38,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(T[-1], len(S) - 1, "Range is kept")
         self.assertEqual(T.dtype, np.float32, "Float32 is the min type that matches requirements")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

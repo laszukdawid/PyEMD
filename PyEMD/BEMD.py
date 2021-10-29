@@ -6,8 +6,6 @@
 #
 # Feel free to contact for any information.
 
-from __future__ import division, print_function
-
 import logging
 import numpy as np
 
@@ -16,8 +14,11 @@ from scipy.interpolate import Rbf
 try:
     from skimage.morphology import reconstruction
 except (ImportError, ModuleNotFoundError):
-    raise ImportError("EMD2D and BEMD are not supported. Feel free to play around and improve them. " + \
-            "Required dependencies are in `requirements-extra`.")
+    raise ImportError(
+        "EMD2D and BEMD are not supported. Feel free to play around and improve them. "
+        + "Required dependencies are in `requirements-extra`."
+    )
+
 
 class BEMD:
     """
@@ -70,8 +71,8 @@ class BEMD:
             Top envelope in form of an image.
         """
         xi, yi = np.meshgrid(np.arange(image.shape[0]), np.arange(image.shape[1]))
-        min_val = np.array([image[x,y] for x, y in zip(*min_peaks_pos)])
-        max_val = np.array([image[x,y] for x, y in zip(*max_peaks_pos)])
+        min_val = np.array([image[x, y] for x, y in zip(*min_peaks_pos)])
+        max_val = np.array([image[x, y] for x, y in zip(*max_peaks_pos)])
         min_env = self.spline_points(min_peaks_pos[0], min_peaks_pos[1], min_val, xi, yi)
         max_env = self.spline_points(max_peaks_pos[0], max_peaks_pos[1], max_val, xi, yi)
         return min_env, max_env
@@ -83,7 +84,7 @@ class BEMD:
         Uses Radial-basis function to extrapolate surfaces. It's not the best but gives something.
         Grid data algorithm didn't work.
         """
-        spline = Rbf(X, Y, Z, function='cubic')
+        spline = Rbf(X, Y, Z, function="cubic")
         return spline(xi, yi)
 
     @classmethod
@@ -115,9 +116,9 @@ class BEMD:
     @classmethod
     def extract_maxima_positions(cls, image):
         seed_min = image - 1
-        dilated = reconstruction(seed_min, image, method='dilation')
+        dilated = reconstruction(seed_min, image, method="dilation")
         cleaned_image = image - dilated
-        return np.where(cleaned_image>0)[::-1]
+        return np.where(cleaned_image > 0)[::-1]
 
     @classmethod
     def end_condition(cls, image, IMFs):
@@ -157,12 +158,12 @@ class BEMD:
         boolean
             Whether current proto IMF is actual IMF.
         """
-        #TODO: Sifting is very sensitive and subtracting const val can often flip
+        # TODO: Sifting is very sensitive and subtracting const val can often flip
         #      maxima with minima in decomposition and thus repeating above/below
         #      behaviour. For now, mean_env is checked whether close to zero excluding
         #      its offset.
-        if np.all(np.abs(mean_env-mean_env.mean())<self.mean_thr):
-        #if np.all(np.abs(mean_env)<self.mean_thr):
+        if np.all(np.abs(mean_env - mean_env.mean()) < self.mean_thr):
+            # if np.all(np.abs(mean_env)<self.mean_thr):
             return True
 
         # If very little change with sifting
@@ -174,7 +175,7 @@ class BEMD:
             return True
 
         # Everything relatively close to 0
-        mse_proto_imf = np.mean(proto_imf*proto_imf)
+        mse_proto_imf = np.mean(proto_imf * proto_imf)
         if mse_proto_imf > self.mse_thr:
             return False
 
@@ -203,11 +204,11 @@ class BEMD:
         imf_old = imf.copy()
 
         imfNo = 0
-        IMF = np.empty((imfNo,)+image.shape)
+        IMF = np.empty((imfNo,) + image.shape)
         notFinished = True
 
-        while(notFinished):
-            self.logger.debug('IMF -- '+str(imfNo))
+        while notFinished:
+            self.logger.debug("IMF -- " + str(imfNo))
 
             res = image_s - np.sum(IMF[:imfNo], axis=0)
             imf = res.copy()
@@ -215,31 +216,34 @@ class BEMD:
             stop_sifting = False
 
             # Counters
-            n = 0   # All iterations for current imf.
-            n_h = 0 # counts when mean(proto_imf) < threshold
+            n = 0  # All iterations for current imf.
+            n_h = 0  # counts when mean(proto_imf) < threshold
 
-            while(not stop_sifting and n<self.MAX_ITERATION):
+            while not stop_sifting and n < self.MAX_ITERATION:
                 n += 1
                 self.logger.debug("Iteration: %i", n)
 
                 min_peaks_pos, max_peaks_pos = self.find_extrema_positions(imf)
-                self.logger.debug("min_peaks_pos = %i  |  max_peaks_pos = %i", len(min_peaks_pos[0]), len(max_peaks_pos[0]))
-                if len(min_peaks_pos[0])>1 and len(max_peaks_pos[0])>1:
+                self.logger.debug(
+                    "min_peaks_pos = %i  |  max_peaks_pos = %i", len(min_peaks_pos[0]), len(max_peaks_pos[0])
+                )
+                if len(min_peaks_pos[0]) > 1 and len(max_peaks_pos[0]) > 1:
                     min_env, max_env = self.extract_max_min_spline(imf, min_peaks_pos, max_peaks_pos)
-                    mean_env = 0.5*(min_env+max_env)
+                    mean_env = 0.5 * (min_env + max_env)
 
                     imf_old = imf.copy()
                     imf = imf - mean_env
 
                     # Fix number of iterations
                     if self.FIXE:
-                        if n>=self.FIXE+1:
+                        if n >= self.FIXE + 1:
                             stop_sifting = True
 
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
-                        if n == 1: continue
+                        if n == 1:
+                            continue
                         if self.check_proto_imf(imf, imf_old, mean_env):
                             n_h += 1
                         else:
@@ -257,16 +261,16 @@ class BEMD:
                 else:
                     stop_sifting = True
 
-            IMF = np.vstack((IMF, imf.copy()[None,:]))
+            IMF = np.vstack((IMF, imf.copy()[None, :]))
             imfNo += 1
 
-            if self.end_condition(image, IMF) or (max_imf>0 and imfNo>=max_imf):
+            if self.end_condition(image, IMF) or (max_imf > 0 and imfNo >= max_imf):
                 notFinished = False
                 break
 
         res = image_s - np.sum(IMF[:imfNo], axis=0)
         if not np.allclose(res, 0):
-            IMF = np.vstack((IMF, res[None,:]))
+            IMF = np.vstack((IMF, res[None, :]))
             imfNo += 1
 
         return IMF
@@ -282,20 +286,20 @@ if __name__ == "__main__":
     print("Generating image... ", end="")
     rows, cols = 256, 256
     row_scale, col_scale = 256, 256
-    x = np.arange(rows)/float(row_scale)
-    y = np.arange(cols).reshape((-1,1))/float(col_scale)
+    x = np.arange(rows) / float(row_scale)
+    y = np.arange(cols).reshape((-1, 1)) / float(col_scale)
 
-    pi2 = 2*np.pi
-    img = np.zeros((rows,cols))
+    pi2 = 2 * np.pi
+    img = np.zeros((rows, cols))
     # img = img + np.sin(2*pi2*x)*np.cos(y*4*pi2+4*x*pi2)
-    img = img + 3*np.sin(2*pi2*x)+2
+    img = img + 3 * np.sin(2 * pi2 * x) + 2
     # img = img + 5*x*y + 2*(y-0.2)*y
     print("Done")
 
     # Perform decomposition
     print("Performing decomposition... ", end="")
     bemd = BEMD()
-    #bemd.FIXE_H = 5
+    # bemd.FIXE_H = 5
     IMFs = bemd.bemd(img, max_imf=3)
     imfNo = IMFs.shape[0]
     print("Done")
@@ -305,18 +309,18 @@ if __name__ == "__main__":
         import pylab as plt
 
         # Save image for preview
-        plt.figure(figsize=(4,4*(imfNo+1)))
-        plt.subplot(imfNo+1, 1, 1)
+        plt.figure(figsize=(4, 4 * (imfNo + 1)))
+        plt.subplot(imfNo + 1, 1, 1)
         plt.imshow(img)
         plt.colorbar()
         plt.title("Input image")
 
         # Save reconstruction
         for n, imf in enumerate(IMFs):
-            plt.subplot(imfNo+1, 1, n+2)
+            plt.subplot(imfNo + 1, 1, n + 2)
             plt.imshow(imf)
             plt.colorbar()
-            plt.title("IMF %i"%(n+1))
+            plt.title("IMF %i" % (n + 1))
 
         plt.savefig("image_decomp")
         print("Done")

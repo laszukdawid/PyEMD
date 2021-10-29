@@ -9,15 +9,12 @@
 .. currentmodule:: CEEMDAN
 """
 
-from __future__ import print_function
-
-
 import itertools
 import logging
-import numpy as np
-
 from multiprocessing import Pool
 from typing import Dict, Optional, Sequence, Tuple, Union
+
+import numpy as np
 
 
 class CEEMDAN:
@@ -107,28 +104,28 @@ class CEEMDAN:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int=100, epsilon: float = 0.005, ext_EMD = None, parallel: bool = False, **kwargs):
+    def __init__(self, trials: int = 100, epsilon: float = 0.005, ext_EMD=None, parallel: bool = False, **kwargs):
 
         # Ensemble constants
         self.trials = trials
         self.epsilon = epsilon
         self.all_noise_std = np.zeros(self.trials)
-        self.noise_scale = float(kwargs.get("noise_scale", 1.))
-        self.range_thr = float(kwargs.get('range_thr', 0.01))
-        self.total_power_thr = float(kwargs.get('total_power_thr', 0.05))
+        self.noise_scale = float(kwargs.get("noise_scale", 1.0))
+        self.range_thr = float(kwargs.get("range_thr", 0.01))
+        self.total_power_thr = float(kwargs.get("total_power_thr", 0.05))
 
-        self.beta_progress = True # Scale noise by std
+        self.beta_progress = True  # Scale noise by std
         self.random = np.random.RandomState()
-        self.noise_kind = kwargs.get('noise_kind', "normal")
+        self.noise_kind = kwargs.get("noise_kind", "normal")
         self.parallel = parallel
-        self.processes = kwargs.get('processes')  # Optional[int]
+        self.processes = kwargs.get("processes")  # Optional[int]
         if self.processes is not None and not self.parallel:
             self.logger.warning("Passed value for process has no effect when `parallel` is False.")
 
         self.all_noise_EMD = []
 
         if ext_EMD is None:
-            from PyEMD import EMD
+            from PyEMD import EMD  # fmt: skip
             self.EMD = EMD(**kwargs)
         else:
             self.EMD = ext_EMD
@@ -141,8 +138,8 @@ class CEEMDAN:
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
-        if 'pool' in self_dict:
-            del self_dict['pool']
+        if "pool" in self_dict:
+            del self_dict["pool"]
         return self_dict
 
     def generate_noise(self, scale: float, size: Union[int, Sequence[int]]) -> np.ndarray:
@@ -171,10 +168,13 @@ class CEEMDAN:
         if self.noise_kind == "normal":
             noise = self.random.normal(loc=0, scale=scale, size=size)
         elif self.noise_kind == "uniform":
-            noise = self.random.uniform(low=-scale/2, high=scale/2, size=size)
+            noise = self.random.uniform(low=-scale / 2, high=scale / 2, size=size)
         else:
-            raise ValueError("Unsupported noise kind. Please assigned `noise_kind` to be one of these: {0}".format(
-                str(self.noise_kinds_all)))
+            raise ValueError(
+                "Unsupported noise kind. Please assigned `noise_kind` to be one of these: {0}".format(
+                    str(self.noise_kinds_all)
+                )
+            )
 
         return noise
 
@@ -201,10 +201,10 @@ class CEEMDAN:
         """
 
         scale_s = np.std(S)
-        S = S/scale_s
+        S = S / scale_s
 
         # Define all noise
-        self.all_noises = self.generate_noise(self.noise_scale, (self.trials,S.size))
+        self.all_noises = self.generate_noise(self.noise_scale, (self.trials, S.size))
 
         # Decompose all noise and remember 1st's std
         self.logger.debug("Decomposing all noises")
@@ -213,7 +213,7 @@ class CEEMDAN:
 
             # If beta_progress then scale all IMFs with 1st std
             if self.beta_progress:
-                _imfs = _imfs/np.std(_imfs[0])
+                _imfs = _imfs / np.std(_imfs[0])
             self.all_noise_EMD.append(_imfs)
 
         # Create first IMF
@@ -231,7 +231,7 @@ class CEEMDAN:
                 break
 
             imfNo = all_cimfs.shape[0]
-            beta = self.epsilon*np.std(prev_res)
+            beta = self.epsilon * np.std(prev_res)
 
             local_mean = np.zeros(S.size)
             for trial in range(self.trials):
@@ -239,11 +239,11 @@ class CEEMDAN:
                 noise_imf = self.all_noise_EMD[trial]
                 res = prev_res.copy()
                 if len(noise_imf) > imfNo:
-                    res += beta*noise_imf[imfNo]
+                    res += beta * noise_imf[imfNo]
 
                 # Extract local mean, which is at 2nd position
                 imfs = self.emd(res, T, 1)
-                local_mean += imfs[-1]/self.trials
+                local_mean += imfs[-1] / self.trials
 
             last_imf = prev_res - local_mean
             all_cimfs = np.vstack((all_cimfs, last_imf))
@@ -251,14 +251,14 @@ class CEEMDAN:
         # END of while
 
         res = S - np.sum(all_cimfs, axis=0)
-        all_cimfs = np.vstack((all_cimfs,res))
-        all_cimfs = all_cimfs*scale_s
+        all_cimfs = np.vstack((all_cimfs, res))
+        all_cimfs = all_cimfs * scale_s
 
         # Empty all IMFs noise
         del self.all_noise_EMD[:]
 
         self.C_IMF = all_cimfs
-        self.residue = S*scale_s - np.sum(self.C_IMF, axis=0)
+        self.residue = S * scale_s - np.sum(self.C_IMF, axis=0)
 
         return all_cimfs
 
@@ -313,7 +313,8 @@ class CEEMDAN:
         return False
 
     def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
-        if T is None: T = np.arange(len(S), dtype=S.dtype)
+        if T is None:
+            T = np.arange(len(S), dtype=S.dtype)
 
         self._S = S
         self._T = T
@@ -336,15 +337,15 @@ class CEEMDAN:
 
         self.E_IMF = np.zeros((max_imfNo, N))
         for IMFs in all_IMFs_2:
-            self.E_IMF[:IMFs.shape[0]] += IMFs
+            self.E_IMF[: IMFs.shape[0]] += IMFs
 
-        return self.E_IMF/self.trials
+        return self.E_IMF / self.trials
 
     def _trial_update(self, trial: int) -> np.ndarray:
         """A single trial evaluation, i.e. EMD(signal + noise)."""
         # Generate noise
-        noise = self.epsilon*self.all_noise_EMD[trial][0]
-        return self.emd(self._S+noise, self._T, self.max_imf)
+        noise = self.epsilon * self.all_noise_EMD[trial][0]
+        return self.emd(self._S + noise, self._T, self.max_imf)
 
     def emd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         """Vanilla EMD method.
@@ -360,7 +361,7 @@ class CEEMDAN:
         :return: (imfs, residue)
         """
         if self.C_IMF is None or self.residue is None:
-            raise ValueError('No IMF found. Please, run EMD method or its variant first.')
+            raise ValueError("No IMF found. Please, run EMD method or its variant first.")
         return self.C_IMF, self.residue
 
 
@@ -376,37 +377,37 @@ if __name__ == "__main__":
 
     # Signal options
     N = 500
-    tMin, tMax = 0, 2*np.pi
+    tMin, tMax = 0, 2 * np.pi
     T = np.linspace(tMin, tMax, N)
 
-    S = 3*np.sin(4*T) + 4*np.cos(9*T) + np.sin(8.11*T+1.2)
+    S = 3 * np.sin(4 * T) + 4 * np.cos(9 * T) + np.sin(8.11 * T + 1.2)
 
     # Prepare and run EEMD
     trials = 20
     ceemdan = CEEMDAN(trials=trials)
 
     C_IMFs = ceemdan(S, T, max_imf)
-    imfNo  = C_IMFs.shape[0]
+    imfNo = C_IMFs.shape[0]
 
     # Plot results in a grid
-    c = np.floor(np.sqrt(imfNo+2))
-    r = np.ceil((imfNo+2)/c)
+    c = np.floor(np.sqrt(imfNo + 2))
+    r = np.ceil((imfNo + 2) / c)
 
     plt.ioff()
     plt.subplot(r, c, 1)
-    plt.plot(T, S, 'r')
+    plt.plot(T, S, "r")
     plt.xlim((tMin, tMax))
     plt.title("Original signal")
 
     plt.subplot(r, c, 2)
-    plt.plot(T, S-np.sum(C_IMFs, axis=0), 'r')
+    plt.plot(T, S - np.sum(C_IMFs, axis=0), "r")
     plt.xlim((tMin, tMax))
     plt.title("Residuum")
 
     for num in range(imfNo):
-        plt.subplot(r, c, num+3)
-        plt.plot(T, C_IMFs[num],'g')
+        plt.subplot(r, c, num + 3)
+        plt.plot(T, C_IMFs[num], "g")
         plt.xlim((tMin, tMax))
-        plt.title("Imf "+str(num+1))
+        plt.title("Imf " + str(num + 1))
 
     plt.show()

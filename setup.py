@@ -1,25 +1,25 @@
-#!/usr/bin/env python
+from setuptools import find_packages, setup
 
-VERSION="1.0.0"
+VERSION = "1.0.1"
 
 DESCRIPTION = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 
+
 def main():
     import io
-    from setuptools import setup
 
-    with io.open('README.md', encoding="utf8") as fp:
+    with io.open("README.md", encoding="utf8") as fp:
         long_description = fp.read().strip()
 
-    with open('requirements.txt') as f:
+    with open("requirements.txt") as f:
         required = f.read().splitlines()
 
-    classifiers=[
+    classifiers = [
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
-        "Topic :: Scientific/Engineering :: Mathematics"
+        "Topic :: Scientific/Engineering :: Mathematics",
     ]
 
     setup_params = dict(
@@ -34,16 +34,20 @@ def main():
         license="Apache-2.0",
         classifiers=classifiers,
         keywords="signal decomposition data analysis",
-        packages=["PyEMD"],
+        packages=find_packages("PyEMD"),
+        package_dir={"": "PyEMD"},
         install_requires=required,
-        python_requires='>=3.6, <4',
+        python_requires=">=3.6, <4",
         test_suite="PyEMD.tests",
         extras_require={
-            "doc": ["sphinx", "sphinx_rtd_theme"],
+            "doc": ["sphinx", "sphinx_rtd_theme", "numpydoc"],
+            "dev": ["pycodestyle", "black"],
+            "test": ["pytest"],
         },
     )
 
     _ = setup(**setup_params)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

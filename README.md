@@ -19,6 +19,7 @@ Decomposition (EMD). The package contains many EMD variations and
 intends to deliver more in time.
 
 ### EMD variations
+
 -  Ensemble EMD (EEMD),
 -  "Complete Ensemble EMD" (CEEMDAN)
 -  different settings and configurations of vanilla EMD.
@@ -28,17 +29,20 @@ intends to deliver more in time.
 and extrema interpolation.
 
 ### Available splines
+
 -  Natural cubic (**default**)
 -  Pointwise cubic
 -  Akima
 -  Linear
 
 ### Available stopping criteria
+
 -  Cauchy convergence (**default**)
 -  Fixed number of iterations
 -  Number of consecutive proto-imfs
 
 ### Extrema detection
+
 -  Discrete extrema (**default**)
 -  Parabolic interpolation
 
