@@ -822,6 +822,7 @@ class EMD:
 
         # Create arrays
         imfNo = 0
+        extNo = -1
         IMF = np.empty((imfNo, N))  # Numpy container for IMF
         finished = False
 
@@ -911,11 +912,17 @@ class EMD:
                 finished = True
                 break
 
-        # Saving residuum
-        self.residue = residue = S - np.sum(IMF, axis=0)
+        # If the last sifting had 2 or less extrema then that's a trend (residue)
+        if extNo <= 2:
+            IMF = IMF[:-1]
+
+        # Saving imfs and residue for external references
         self.imfs = IMF.copy()
-        if not np.allclose(residue, 0):
-            IMF = np.vstack((IMF, residue))
+        self.residue = S - np.sum(self.imfs, axis=0)
+
+        # If residue isn't 0 then add it to the output
+        if not np.allclose(self.residue, 0):
+            IMF = np.vstack((IMF, self.residue))
 
         return IMF
 
