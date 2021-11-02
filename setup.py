@@ -1,6 +1,6 @@
-from setuptools import find_packages, setup
+from setuptools import setup
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 DESCRIPTION = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 
@@ -34,8 +34,7 @@ def main():
         license="Apache-2.0",
         classifiers=classifiers,
         keywords="signal decomposition data analysis",
-        packages=find_packages("PyEMD"),
-        package_dir={"": "PyEMD"},
+        packages=["PyEMD"],
         install_requires=required,
         python_requires=">=3.6, <4",
         test_suite="PyEMD.tests",

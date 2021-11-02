@@ -51,7 +51,6 @@ class EMDTest(unittest.TestCase):
         S = c1.copy()
 
         # Input - linear function f(t) = sin(2Hz t)
-        # import pdb; pdb.set_trace()
         imfs = emd.emd(S, t)
         self.assertEqual(imfs.shape[0], 1, "Expecting sin + trend")
 
