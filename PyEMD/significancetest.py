@@ -31,7 +31,6 @@ def mean_period(data):
     else:
         return len(data)
 
-
 #helper function: find energy of signal/IMF
 def energy(data):
     return sum(pow(data, 2))
@@ -45,6 +44,7 @@ def significance_apriori(energy_density, T, N, alpha):
         else:
             return True
     except Exception as e:
+        print(e)
         return False
 
 #helper function: find significance in 'a posteriori' test
@@ -92,7 +92,7 @@ def whitenoisecheck(data: np.ndarray, method: str='EMD',  test: str='aposteriori
     elif method == 'CEEMDAN':
         ceemdan = CEEMDAN()
         IMFs = ceemdan.ceemdan(normalize(data))
-    
+
     assert rescaling_imf > 0 and rescaling_imf <= len(IMFs), 'Invalid rescaling IMF'
 
     output = {}
