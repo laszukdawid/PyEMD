@@ -108,7 +108,7 @@ def whitenoisecheck(data: np.ndarray, method: str='EMD',  test: str='aposteriori
     else:
         scaling_imf_mean_period = mean_period(IMFs[rescaling_imf-1])
         scaling_imf_energy_density = energy(IMFs[rescaling_imf-1])/N
-        
+
         k = abs(stats.norm.ppf((1-alpha)/2))
         upper_limit = -math.log(scaling_imf_mean_period)+k*(math.sqrt(2/N))*math.exp(math.log(scaling_imf_mean_period)/2)
         scaling_factor = upper_limit - math.log(scaling_imf_energy_density)
