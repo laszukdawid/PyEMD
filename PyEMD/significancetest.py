@@ -11,7 +11,7 @@ def normalize(data):
     dmax = max(data)
     ret = np.array([])
     for val in data:
-        ret = np.append(ret, (val-mean)/(dmax-dmin))        
+        ret = np.append(ret, (val-mean)/(dmax-dmin))
     return ret
 
 #helper function: find zero-crossings in IMF, used for finding mean period of IMF
@@ -36,7 +36,7 @@ def mean_period(data):
 def energy(data):
     return sum(pow(data, 2))
 
-#helper function: find IMF significance in 'a priori' test    
+#helper function: find IMF significance in 'a priori' test
 def significance_apriori(energy_density, T, N, alpha):
     try:
         k = abs(stats.norm.ppf((1-alpha)/2))
@@ -44,10 +44,10 @@ def significance_apriori(energy_density, T, N, alpha):
             return False
         else:
             return True
-    except:
+    except Exception as e:
         return False
 
-#helper function: find significance in 'a posteriori' test 
+#helper function: find significance in 'a posteriori' test
 def significance_aposteriori(scaled_energy_density, T, N, alpha):
     try:
         k = abs(stats.norm.ppf((1-alpha)/2))
@@ -60,11 +60,11 @@ def significance_aposteriori(scaled_energy_density, T, N, alpha):
         return False
 
 def whitenoisecheck(data: np.ndarray, method: str='EMD',  test: str='aposteriori', rescaling_imf: int=1, alpha: float= 0.95):
-    ''' 
+    '''
     References
     --------------
     -- Zhaohua Wu, and Norden E. Huang. “A Study of the Characteristics of White Noise Using the Empirical Mode Decomposition Method.” Proceedings: Mathematical, Physical and Engineering Sciences, vol. 460, no. 2046, The Royal Society, 2004, pp. 1597–611, http://www.jstor.org/stable/4143111.
-    
+
     Examples
     --------------
     >>> import numpy as np
@@ -80,8 +80,8 @@ def whitenoisecheck(data: np.ndarray, method: str='EMD',  test: str='aposteriori
     assert alpha > 0 and alpha < 1, "alpha value should be in between (0,1)"
     assert method == 'EMD' or method == 'EEMD' or method == 'CEEMDAN', 'Invalid decomposition method'
     assert test == 'apriori' or test == 'aposteriori', 'Invalid test type'
-    assert type(data) == np.ndarray, 'Invalid Data type, Pass a numpy.ndarray'
-    
+    assert isinstance(data, np.ndarray), 'Invalid Data type, Pass a numpy.ndarray'
+
     N = len(data)
     if method == 'EMD':
         emd = EMD()
@@ -94,7 +94,7 @@ def whitenoisecheck(data: np.ndarray, method: str='EMD',  test: str='aposteriori
         IMFs = ceemdan.ceemdan(normalize(data))
     
     assert rescaling_imf > 0 and rescaling_imf <= len(IMFs), 'Invalid rescaling IMF'
-    
+
     output = {}
     if test == 'apriori':
         for idx,imf in enumerate(IMFs):
@@ -104,7 +104,7 @@ def whitenoisecheck(data: np.ndarray, method: str='EMD',  test: str='aposteriori
             if sig_priori:
                 output[idx+1] = 1
             else:
-                output[idx+1] = 0                
+                output[idx+1] = 0
     else:
         scaling_imf_mean_period = mean_period(IMFs[rescaling_imf-1])
         scaling_imf_energy_density = energy(IMFs[rescaling_imf-1])/N
