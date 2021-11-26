@@ -96,7 +96,7 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
                 output[idx+1] = 1
             else:
                 output[idx+1] = 0
-    elif test = 'aposteriori':
+    elif test == 'aposteriori':
         scaling_imf_mean_period = mean_period(IMFs[rescaling_imf-1])
         scaling_imf_energy_density = energy(IMFs[rescaling_imf-1])/N
 
