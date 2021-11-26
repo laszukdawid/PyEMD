@@ -1,18 +1,18 @@
 import numpy as np
 import unittest
-from PyEMD.significancetest import *
+from PyEMD.significancetest import normalize
+from PyEMD.significancetest import mean_period
+from PyEMD.significancetest import energy
+from PyEMD.significancetest import significance_apriori
+from PyEMD.significancetest import significance_aposteriori
+from PyEMD.significancetest import whitenoise_check
+from PyEMD.significancetest import normalize
 
 class TestCase(unittest.TestCase):
     def test_normalize(self):
         T = np.linspace(0, 1, 100)
         norm = normalize(T)
         self.assertEqual(len(T), len(norm), "Lengths must be equal")
-
-    def test_sign_change(self):
-        T = np.linspace(0, 2, 200)
-        S = np.sin(2*2*np.pi*T)
-        res = sign_change(normalize(S))
-        self.assertEqual(type(res), int, "Default data type is int")
 
     def test_mean_period(self):
         T = np.linspace(0, 2, 200)
@@ -38,7 +38,7 @@ class TestCase(unittest.TestCase):
         res = significance_aposteriori(S, 2, len(S), 0.095)
         self.assertEqual(type(res), bool, "Default data type is bool")
 
-    def test_whitenoisecheck(self):
+    def test_whitenoise_check(self):
         T = np.linspace(0, 2, 200)
         S = np.sin(2*2*np.pi*T)
         res = whitenoisecheck(S)
