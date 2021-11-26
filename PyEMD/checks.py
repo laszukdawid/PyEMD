@@ -10,7 +10,7 @@ def normalize(data):
 
 #helper function: Find mean period of an IMF
 def mean_period(data):
-    return len(data)/len(argrelextrema(S, np.greater)[0])
+    return len(data)/len(argrelextrema(data, np.greater)[0])
 
 #helper function: find energy of signal/IMF
 def energy(data):
@@ -39,7 +39,7 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
     References
     ----------
     -- Zhaohua Wu, and Norden E. Huang. “A Study of the Characteristics of White Noise Using the Empirical Mode Decomposition Method.” Proceedings: Mathematical, Physical and Engineering Sciences, vol. 460, no. 2046, The Royal Society, 2004, pp. 1597–611, http://www.jstor.org/stable/4143111.
-    
+
     Parameters
     ----------
     data: np.ndarray
@@ -51,7 +51,7 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
     rescaling_imf: int
         (Optional) Default IMF number(index starts at 1) used for scaling in 'a posteriori test' is 1. rescaling_imf = ith IMF of the signal. Basically, if we are aware that a certain IMF is purely composed of noise we can use that rescale all the other IMFs.
     alpha:
-        (Optional) Default is 0.95 or 95%. The percentiles at which the test is to be performed; 0 < alpha < 1;  
+        (Optional) Default is 0.95 or 95%. The percentiles at which the test is to be performed; 0 < alpha < 1;
     **kwargs:
         The keyword arguments for configuring the decomposition method of choice.
 
@@ -92,10 +92,9 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
             T = mean_period(imf)
             energy_density = energy(imf)/N
             sig_priori = significance_apriori(math.log(energy_density), T, N, alpha)
-            if sig_priori:
-                output[idx+1] = 1
-            else:
-                output[idx+1] = 0
+
+            output[idx+1] = int(sig_priori)
+
     elif test == 'aposteriori':
         scaling_imf_mean_period = mean_period(IMFs[rescaling_imf-1])
         scaling_imf_energy_density = energy(IMFs[rescaling_imf-1])/N
@@ -110,7 +109,7 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
             scaled_energy_density = math.log(energy_density) + scaling_factor
             sig_aposteriori = significance_aposteriori(scaled_energy_density, T, N, alpha)
  
-            output[idx+1] = int(sig_priori)
+            output[idx+1] = int(sig_aposteriori)
 
     else:
         raise AssertionError("Only 'apriori' and 'aposteriori' are allowed")
