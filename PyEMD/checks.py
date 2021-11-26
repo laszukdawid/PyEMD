@@ -113,5 +113,5 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
 
     else:
         raise AssertionError("Only 'apriori' and 'aposteriori' are allowed")
-    
+
     return output
