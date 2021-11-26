@@ -108,7 +108,7 @@ def whitenoise_check(data: np.ndarray, method: str='EMD',  test: str='aposterior
             energy_density = energy(imf)/N
             scaled_energy_density = math.log(energy_density) + scaling_factor
             sig_aposteriori = significance_aposteriori(scaled_energy_density, T, N, alpha)
- 
+
             output[idx+1] = int(sig_aposteriori)
 
     else:
