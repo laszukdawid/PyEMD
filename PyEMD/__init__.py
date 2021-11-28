@@ -1,9 +1,9 @@
 import logging
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 logger = logging.getLogger("pyemd")
 
-from PyEMD.CEEMDAN import CEEMDAN
-from PyEMD.EEMD import EEMD
-from PyEMD.EMD import EMD
-from PyEMD.visualisation import Visualisation
+from PyEMD.CEEMDAN import CEEMDAN  # noqa
+from PyEMD.EEMD import EEMD  # noqa
+from PyEMD.EMD import EMD  # noqa
+from PyEMD.visualisation import Visualisation  # noqa

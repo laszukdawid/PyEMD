@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 DESCRIPTION = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 

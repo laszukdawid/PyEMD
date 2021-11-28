@@ -105,7 +105,8 @@ class EEMDTest(unittest.TestCase):
         S = np.sin(2 * np.pi * T + 4 ** T) + np.cos((T - 0.4) ** 2)
 
         # Compare up to machine epsilon
-        cmpMachEps = lambda x, y: np.abs(x - y) <= 2 * np.finfo(x.dtype).eps
+        def cmpMachEps(x, y):
+            return np.abs(x - y) <= 2 * np.finfo(x.dtype).eps
 
         config = {"processes": 1}
         eemd = EEMD(trials=10, **config)

@@ -628,7 +628,7 @@ class EMD:
 
 
 ###################################################
-## Beginning of program
+# Beginning of program
 
 if __name__ == "__main__":
 

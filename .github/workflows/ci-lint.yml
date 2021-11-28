@@ -22,3 +22,5 @@ jobs:
           pip install -e .[dev]
       - name: Run ISort check
         run: python -m isort --check PyEMD
+      - name: Run PyCodeStyle check
+        run: python -m pycodestyle
