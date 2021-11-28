@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+
 from PyEMD import EMD
 
 
@@ -41,7 +42,8 @@ class EMDTest(unittest.TestCase):
         Input is IMF. Expecint single shifting.
         """
 
-        max_diff = lambda a, b: np.max(np.abs(a - b))
+        def max_diff(a, b):
+            return np.max(np.abs(a - b))
 
         emd = EMD()
         emd.FIXE_H = 2

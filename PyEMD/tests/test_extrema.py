@@ -4,6 +4,7 @@
 import unittest
 
 import numpy as np
+
 from PyEMD import EMD
 
 
@@ -99,7 +100,7 @@ class ExtremaTest(unittest.TestCase):
         # L3) ^. -- ext[0] is max, s[0] > ext[1] (1st min)
         # L4) \ -- ext[0] is max, s[0] < ext[1] (1st min)
 
-        ## CASE 1
+        # CASE 1
         # L1, R1 -- no edge MIN & no edge MIN
         s = S.copy()
         t = T.copy()
@@ -114,7 +115,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([-4, 1, 6, 11, 17, 23], minExtrema[0].tolist())
         self.assertEqual([-2, -3, -2, 0, -2, 0], minExtrema[1].tolist())
 
-        ## CASE 2
+        # CASE 2
         # L2, R2 -- edge MIN, edge MIN
         s = S[1:-1].copy()
         t = np.arange(s.size)
@@ -129,7 +130,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([0, 5, 10, 16], minExtrema[0].tolist())
         self.assertEqual([-3, -2, 0, -2], minExtrema[1].tolist())
 
-        ## CASE 3
+        # CASE 3
         # L3, R3 -- no edge MAX & no edge MAX
         s = S[2:-3].copy()
         t = np.arange(s.size)
@@ -144,7 +145,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([-2, 4, 9, 15], minExtrema[0].tolist())
         self.assertEqual([-2, -2, 0, 0], minExtrema[1].tolist())
 
-        ## CASE 4
+        # CASE 4
         # L4, R4 -- edge MAX & edge MAX
         s = S[3:-4].copy()
         t = np.arange(s.size)
@@ -220,7 +221,7 @@ class ExtremaTest(unittest.TestCase):
         # L3) ^. -- ext[0] is max, s[0] > ext[1] (1st min)
         # L4) \ -- ext[0] is max, s[0] < ext[1] (1st min)
 
-        ## CASE 1
+        # CASE 1
         # L1, R1 -- no edge MIN & no edge MIN
         s = S.copy()
         t = T.copy()
@@ -238,7 +239,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([-4.31, 0.929, 6.167, 11, 17.167, 23.333], minExtrema[0].tolist())
         self.assertEqual([-2.083, -3.018, -2.083, 0, -2.042, 0], minExtrema[1].tolist())
 
-        ## CASE 2
+        # CASE 2
         # L2, R2 -- edge MIN, edge MIN
         s = S[1:-1].copy()
         t = T[1:-1].copy()
@@ -256,7 +257,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([1, 6.167, 11, 17], minExtrema[0].tolist())
         self.assertEqual([-3, -2.083, 0, -2], minExtrema[1].tolist())
 
-        ## CASE 3
+        # CASE 3
         # L3, R3 -- no edge MAX & no edge MAX
         s = S[2:-3].copy()
         t = T[2:-3].copy()
@@ -274,7 +275,7 @@ class ExtremaTest(unittest.TestCase):
         self.assertEqual([0.333, 6.167, 11, 17.5], minExtrema[0].tolist())
         self.assertEqual([-2.083, -2.083, 0, 0], minExtrema[1].tolist())
 
-        ## CASE 4
+        # CASE 4
         # L4, R4 -- edge MAX & edge MAX
         s = S[3:-4].copy()
         t = T[3:-4].copy()

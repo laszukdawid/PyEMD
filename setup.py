@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 DESCRIPTION = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 
@@ -40,8 +40,8 @@ def main():
         test_suite="PyEMD.tests",
         extras_require={
             "doc": ["sphinx", "sphinx_rtd_theme", "numpydoc"],
-            "dev": ["pycodestyle", "black"],
-            "test": ["pytest"],
+            "dev": ["pycodestyle", "black", "isort"],
+            "test": ["pytest", "codecov"],
         },
     )
 
