@@ -3,19 +3,16 @@ name: Linter
 on: [ push ]
 
 jobs:
-  build:
+  build-n-lint:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        python-version: [3.6]
 
     steps:
       - uses: actions/checkout@v2
-      - name: Running Python ${{ matrix.python-version }}
+      - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.8'
+
       - name: Install test dependencies
         run: |
           pip install --only-binary=numpy,scipy numpy scipy

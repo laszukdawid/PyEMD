@@ -4,10 +4,10 @@ on:
   push:
     branches: [ $default-branch ]
   pull_request:
-    branches: [ $default-branch, ci-test ]
+    branches: [ $default-branch ]
 
 jobs:
-  build:
+  build-n-test:
     runs-on: ubuntu-latest
 
     strategy:
