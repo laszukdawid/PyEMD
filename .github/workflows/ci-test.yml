@@ -1,8 +1,10 @@
-name: Linter
+name: Test
 
 on:
   push:
-    branches: [ ci-test ]
+    branches: [ $default-branch, ci-test ]
+  pull_request:
+    branches: [ $default-branch, ci-test ]
 
 jobs:
   build:
@@ -25,8 +27,3 @@ jobs:
       - name: Run tests
         run: |
           python -m PyEMD.tests.test_all
-      - name: Create coverage
-        run: |
-          coverage run PyEMD/tests/test_all.py
-          codecov
-      

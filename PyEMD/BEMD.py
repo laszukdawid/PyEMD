@@ -7,8 +7,8 @@
 # Feel free to contact for any information.
 
 import logging
-import numpy as np
 
+import numpy as np
 from scipy.interpolate import Rbf
 
 try:

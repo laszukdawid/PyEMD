@@ -1,5 +1,6 @@
-import numpy as np
 from typing import Optional
+
+import numpy as np
 
 
 def get_timeline(range_max: int, dtype: Optional[np.dtype] = None) -> np.ndarray:

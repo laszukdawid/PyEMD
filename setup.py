@@ -40,7 +40,7 @@ def main():
         test_suite="PyEMD.tests",
         extras_require={
             "doc": ["sphinx", "sphinx_rtd_theme", "numpydoc"],
-            "dev": ["pycodestyle", "black"],
+            "dev": ["pycodestyle", "black", "isort"],
             "test": ["pytest", "codecov"],
         },
     )
