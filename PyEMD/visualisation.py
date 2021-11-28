@@ -1,6 +1,6 @@
 import numpy as np
-
 from scipy.signal import hilbert
+
 from PyEMD.compact import filt6, pade6
 
 # Visualisation is an optional module. To minimise installation, `matplotlib` is not added

@@ -9,10 +9,11 @@
 # Feel free to contact for any information.
 
 import logging
-import numpy as np
 import time
 
+import numpy as np
 from scipy.interpolate import interp1d
+
 from PyEMD.splines import akima
 
 
@@ -627,7 +628,7 @@ class EMD:
 
 
 ###################################################
-## Beginning of program
+# Beginning of program
 
 if __name__ == "__main__":
 

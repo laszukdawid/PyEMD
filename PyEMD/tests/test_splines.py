@@ -4,6 +4,7 @@
 import unittest
 
 import numpy as np
+
 from PyEMD import EMD
 from PyEMD.splines import *
 

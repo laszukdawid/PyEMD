@@ -5,6 +5,7 @@ import unittest
 
 import numpy as np
 import scipy as sp
+
 from PyEMD.compact import *
 
 

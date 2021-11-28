@@ -190,7 +190,7 @@ class CEEMDAN:
         S : numpy array
             Original signal on which CEEMDAN is to perform.
         T : Optional(numpy array) (default: None)
-            Time (x) values for the signal. If not passed, i.e. `T = None`, then it's assumed that values are equidistant.
+            Time (x) values for the signal. If not passed, i.e. `T = None`, then assumes equidistant values.
         max_imf : int (default: -1)
             Maximum number of components to extract.
 
