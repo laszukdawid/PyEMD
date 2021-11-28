@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m PyEMD.tests.test_all
       - name: Create coverage
+        run: |
           coverage run PyEMD/tests/test_all.py
           codecov
       
