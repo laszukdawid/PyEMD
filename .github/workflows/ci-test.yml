@@ -4,7 +4,8 @@ on:
   push:
     branches: [ $default-branch ]
   pull_request:
-    branches: [ $default-branch ]
+    paths:
+      - 'PyEMD/**.py'
 
 jobs:
   build-n-test:
