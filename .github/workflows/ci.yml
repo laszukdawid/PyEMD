@@ -20,8 +20,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
         run: |
+          pip install --only-binary=numpy,scipy numpy scipy
           pip install -e .[test]
       - name: Run tests
         run: |
-          python -m pytest
+          python -m PyEMD.tests.test_all
+      - name: Create coverage
+          coverage run PyEMD/tests/test_all.py
+          codecov
       

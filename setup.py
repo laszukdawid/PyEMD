@@ -41,7 +41,7 @@ def main():
         extras_require={
             "doc": ["sphinx", "sphinx_rtd_theme", "numpydoc"],
             "dev": ["pycodestyle", "black"],
-            "test": ["pytest"],
+            "test": ["pytest", "codecov"],
         },
     )
 
