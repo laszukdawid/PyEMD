@@ -23,4 +23,6 @@ jobs:
       - name: Run ISort check
         run: python -m isort --check PyEMD
       - name: Run PyCodeStyle check
-        run: python -m pycodestyle
+        run: python -m pycodestyle PyEMD
+      - name: Run Black check
+        run: python -m black --check PyEMD

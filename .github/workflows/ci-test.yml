@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [ $default-branch, ci-test ]
+    branches: [ $default-branch ]
   pull_request:
     branches: [ $default-branch, ci-test ]
 
