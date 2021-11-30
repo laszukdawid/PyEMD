@@ -1,11 +1,10 @@
 """Tests for checks.py."""
-import numpy as np
 import unittest
-from PyEMD.checks import mean_period
-from PyEMD.checks import energy
-from PyEMD.checks import significance_apriori
-from PyEMD.checks import significance_aposteriori
-from PyEMD.checks import whitenoise_check
+
+import numpy as np
+
+from PyEMD.checks import energy, mean_period, significance_aposteriori, significance_apriori, whitenoise_check
+
 
 class TestCase(unittest.TestCase):
     '''Test cases.'''
