@@ -1,39 +1,43 @@
 """Calculate the statistical Significance of IMFs."""
+import math
+
 import numpy as np
 from scipy import stats
-import math
 from scipy.signal import find_peaks
 
-#helper function: Find mean period of an IMF
+
+# helper function: Find mean period of an IMF
 def mean_period(data):
     """Return mean-period of signal."""
     peaks = len(find_peaks(data, height=0)[0])
-    return len(data)/peaks if peaks > 0 else len(data)
+    return len(data) / peaks if peaks > 0 else len(data)
 
-#helper function: find energy of signal/IMF
+
+# helper function: find energy of signal/IMF
 def energy(data):
     """Return energy of signal."""
     return sum(pow(data, 2))
 
-#helper function: find IMF significance in 'a priori' test
+
+# helper function: find IMF significance in 'a priori' test
 def significance_apriori(energy_density, T, N, alpha):
     """Check a priori significance and Return True if significant else False."""
-    k = abs(stats.norm.ppf((1-alpha)/2))
-    upper_limit = -T + ( k * (math.sqrt(2/N) * math.exp(T/2)) )
-    lower_limit = -T - ( k * (math.sqrt(2/N) * math.exp(T/2)) )
+    k = abs(stats.norm.ppf((1 - alpha) / 2))
+    upper_limit = -T + (k * (math.sqrt(2 / N) * math.exp(T / 2)))
+    lower_limit = -T - (k * (math.sqrt(2 / N) * math.exp(T / 2)))
 
     return not (lower_limit <= energy_density <= upper_limit)
 
 
-#helper function: find significance in 'a posteriori' test
+# helper function: find significance in 'a posteriori' test
 def significance_aposteriori(scaled_energy_density, T, N, alpha):
     """Check a posteriori significance and Return True if significant else False."""
-    k = abs(stats.norm.ppf((1-alpha)/2))
-    upper_limit = -T + ( k * (math.sqrt(2/N) * math.exp(T/2)) )
+    k = abs(stats.norm.ppf((1 - alpha) / 2))
+    upper_limit = -T + (k * (math.sqrt(2 / N) * math.exp(T / 2)))
     return not (scaled_energy_density <= upper_limit)
 
 
-def whitenoise_check(IMFs: np.ndarray,  test: str='aposteriori', rescaling_imf: int=1, alpha: float= 0.95):
+def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf: int = 1, alpha: float = 0.95):
     """Whitenoise statistical significance test.
 
     References
@@ -72,42 +76,42 @@ def whitenoise_check(IMFs: np.ndarray,  test: str='aposteriori', rescaling_imf: 
     <class 'dict'>
     """
     assert 0 < alpha < 1, "alpha value should be in between (0,1)"
-    assert test == 'apriori' or test == 'aposteriori', 'Invalid test type'
-    assert isinstance(IMFs, np.ndarray), 'Invalid Data type, Pass a numpy.ndarray containing IMFs'
-    assert rescaling_imf > 0 and rescaling_imf <= len(IMFs), 'Invalid rescaling IMF'
+    assert test == "apriori" or test == "aposteriori", "Invalid test type"
+    assert isinstance(IMFs, np.ndarray), "Invalid Data type, Pass a numpy.ndarray containing IMFs"
+    assert rescaling_imf > 0 and rescaling_imf <= len(IMFs), "Invalid rescaling IMF"
 
     N = len(IMFs[0])
-    output ={}
+    output = {}
     if N == 0:
         return {}
-    if np.isnan(np.sum(IMFs)) == True:
-        #Return NaN if input has NaN
+    if np.isnan(np.sum(IMFs)) is True:
+        # Return NaN if input has NaN
         return None
 
-    if test == 'apriori':
-        for idx,imf in enumerate(IMFs):
+    if test == "apriori":
+        for idx, imf in enumerate(IMFs):
             T = math.log(mean_period(imf))
-            energy_density = math.log(energy(imf)/N)
+            energy_density = math.log(energy(imf) / N)
             sig_priori = significance_apriori(energy_density, T, N, alpha)
 
-            output[idx+1] = int(sig_priori)
+            output[idx + 1] = int(sig_priori)
 
-    elif test == 'aposteriori':
-        scaling_imf_mean_period = math.log(mean_period(IMFs[rescaling_imf-1]))
-        scaling_imf_energy_density = math.log(energy(IMFs[rescaling_imf-1])/N)
+    elif test == "aposteriori":
+        scaling_imf_mean_period = math.log(mean_period(IMFs[rescaling_imf - 1]))
+        scaling_imf_energy_density = math.log(energy(IMFs[rescaling_imf - 1]) / N)
 
-        k = abs(stats.norm.ppf((1-alpha)/2))
-        up_limit = -scaling_imf_mean_period+(k*math.sqrt(2/N)*math.exp(scaling_imf_mean_period)/2)
+        k = abs(stats.norm.ppf((1 - alpha) / 2))
+        up_limit = -scaling_imf_mean_period + (k * math.sqrt(2 / N) * math.exp(scaling_imf_mean_period) / 2)
 
-        scaling_factor = up_limit-scaling_imf_energy_density
+        scaling_factor = up_limit - scaling_imf_energy_density
 
-        for idx,imf in enumerate(IMFs):
+        for idx, imf in enumerate(IMFs):
             T = math.log(mean_period(imf))
-            energy_density = math.log(energy(imf)/N)
+            energy_density = math.log(energy(imf) / N)
             scaled_energy_density = energy_density + scaling_factor
             sig_aposteriori = significance_aposteriori(scaled_energy_density, T, N, alpha)
 
-            output[idx+1] = int(sig_aposteriori)
+            output[idx + 1] = int(sig_aposteriori)
 
     else:
         raise AssertionError("Only 'apriori' and 'aposteriori' are allowed")
