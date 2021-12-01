@@ -87,14 +87,13 @@ class TestCase(unittest.TestCase):
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=0)
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=-10)
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=2)
-        self.assertRaises(AssertionError, whitenoise_check, S, alpha='0.5')
-
+        self.assertRaises(AssertionError, whitenoise_check, S, alpha="0.5")
 
     def test_invalid_test(self):
         """Test if invalid test return AssertionError."""
         S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
-        self.assertRaises(AssertionError, whitenoise_check, S, test='apri')
-        self.assertRaises(AssertionError, whitenoise_check, S, test='apost')
+        self.assertRaises(AssertionError, whitenoise_check, S, test="apri")
+        self.assertRaises(AssertionError, whitenoise_check, S, test="apost")
 
     def test_invalid_input_type(self):
         """Test if invalid input type return AssertionError."""
@@ -102,7 +101,7 @@ class TestCase(unittest.TestCase):
         self.assertRaises(AssertionError, whitenoise_check, S)
         self.assertRaises(AssertionError, whitenoise_check, 1)
         self.assertRaises(AssertionError, whitenoise_check, 1.2)
-        self.assertRaises(AssertionError, whitenoise_check, '[1,2,3,4,5]')
+        self.assertRaises(AssertionError, whitenoise_check, "[1,2,3,4,5]")
 
     def test_invalid_rescaling_imf(self):
         """Test if invalid rescaling imf return AssertionError."""
@@ -112,7 +111,7 @@ class TestCase(unittest.TestCase):
 
     def test_empty_input_imf(self):
         """Test if empty IMF input return AssertionError."""
-        T1 = np.array([[],[]])
+        T1 = np.array([[], []])
         T2 = np.array([])
         self.assertRaises(AssertionError, whitenoise_check, T2)
         self.assertRaises(AssertionError, whitenoise_check, T2)
