@@ -100,9 +100,9 @@ class TestCase(unittest.TestCase):
         """Test if invalid input type return AssertionError."""
         S = [np.full(100, np.NaN) for i in range(5, 0, -1)]
         self.assertRaises(AssertionError, whitenoise_check, S)
-        self.assertRaises(AssertionError, whitenoise_check, S)
-        self.assertRaises(AssertionError, whitenoise_check, S)
-        self.assertRaises(AssertionError, whitenoise_check, S)
+        self.assertRaises(AssertionError, whitenoise_check, 1)
+        self.assertRaises(AssertionError, whitenoise_check, 1.2)
+        self.assertRaises(AssertionError, whitenoise_check, '[1,2,3,4,5]')
 
     def test_invalid_rescaling_imf(self):
         """Test if invalid rescaling imf return AssertionError."""
