@@ -63,7 +63,7 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
     Dictionary with keys as ith IMF,
     Values: 0, indicates IMF is not significant and has noise
             1, indicates IMF is significant and has some information
-            None, if input IMFs have NaN, check is skipped
+            None, if input IMFs have NaN/empty, check is skipped
 
     Examples
     --------
@@ -77,22 +77,28 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
     >>> type(significant_imfs)
     <class 'dict'>
     """
+    assert isinstance(IMFs, np.ndarray), "Invalid Data type, Pass a numpy.ndarray containing IMFs"
+    # check if IMFs are empty or not
+    if len(IMFs) == 0:
+        logging.getLogger("PyEMD").warning("Detected empty input. Skipping check.")
+        return None
+    if len(IMFs[0]) == 0:
+        logging.getLogger("PyEMD").warning("Detected empty input. Skipping check.")
+        return None
+
     assert isinstance(alpha, float), "Invalid Data type for alpha, pass a float value between (0,1)"
     assert 0 < alpha < 1, "alpha value should be in between (0,1)"
     assert test == "apriori" or test == "aposteriori", "Invalid test type"
-    assert isinstance(IMFs, np.ndarray), "Invalid Data type, Pass a numpy.ndarray containing IMFs"
-    assert rescaling_imf > 0 and rescaling_imf <= len(IMFs), "Invalid rescaling IMF"
+    assert isinstance(rescaling_imf, int), "Invalid data type for rescaling_imf, pass a int value"
+    assert 0 < rescaling_imf <= len(IMFs), "Invalid rescaling IMF"
 
-    N = len(IMFs[0])
-    output = {}
-    if N == 0 or len(IMFs) == 0:
-        logging.getLogger("PyEMD").warning("Detected empty input. Skipping check.")
-        return {}
     if np.isnan(np.sum(IMFs)):
         # Return NaN if input has NaN
         logging.getLogger("PyEMD").warning("Detected NaN values during whitenoise check. Skipping check.")
         return None
 
+    N = len(IMFs[0])
+    output = {}
     if test == "apriori":
         for idx, imf in enumerate(IMFs):
             log_T = math.log(mean_period(imf))

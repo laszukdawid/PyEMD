@@ -108,13 +108,16 @@ class TestCase(unittest.TestCase):
         T = [np.linspace(0, i, 200) for i in range(5, 0, -1)]
         S = np.array([list(np.sin(2 * 2 * np.pi * i)) for i in T])
         self.assertRaises(AssertionError, whitenoise_check, S, rescaling_imf=10)
+        self.assertRaises(AssertionError, whitenoise_check, S, rescaling_imf=1.2)
 
     def test_empty_input_imf(self):
         """Test if empty IMF input return AssertionError."""
         T1 = np.array([[], []])
         T2 = np.array([])
-        self.assertRaises(AssertionError, whitenoise_check, T1)
-        self.assertRaises(AssertionError, whitenoise_check, T2)
+        res1 = whitenoise_check(T1)
+        res2 = whitenoise_check(T2)
+        self.assertEqual(res1, None, "Empty input returns None")
+        self.assertEqual(res2, None, "Empty input returns None")
 
 
 if __name__ == "__main__":
