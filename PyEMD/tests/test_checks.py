@@ -80,6 +80,43 @@ class TestCase(unittest.TestCase):
         res = whitenoise_check(S)
         self.assertEqual(res, None, "Input NaN returns None")
 
+    def test_invalid_alpha(self):
+        """Test if invalid alpha return AssertionError."""
+        S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
+        self.assertRaises(AssertionError, whitenoise_check, S, alpha=1)
+        self.assertRaises(AssertionError, whitenoise_check, S, alpha=0)
+        self.assertRaises(AssertionError, whitenoise_check, S, alpha=-10)
+        self.assertRaises(AssertionError, whitenoise_check, S, alpha=2)
+        self.assertRaises(AssertionError, whitenoise_check, S, alpha='0.5')
+
+
+    def test_invalid_test(self):
+        """Test if invalid test return AssertionError."""
+        S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
+        self.assertRaises(AssertionError, whitenoise_check, S, test='apri')
+        self.assertRaises(AssertionError, whitenoise_check, S, test='apost')
+
+    def test_invalid_input_type(self):
+        """Test if invalid input type return AssertionError."""
+        S = [np.full(100, np.NaN) for i in range(5, 0, -1)]
+        self.assertRaises(AssertionError, whitenoise_check, S)
+        self.assertRaises(AssertionError, whitenoise_check, S)
+        self.assertRaises(AssertionError, whitenoise_check, S)
+        self.assertRaises(AssertionError, whitenoise_check, S)
+
+    def test_invalid_rescaling_imf(self):
+        """Test if invalid rescaling imf return AssertionError."""
+        T = [np.linspace(0, i, 200) for i in range(5, 0, -1)]
+        S = np.array([list(np.sin(2 * 2 * np.pi * i)) for i in T])
+        self.assertRaises(AssertionError, whitenoise_check, S, rescaling_imf=10)
+
+    def test_empty_input_imf(self):
+        """Test if empty IMF input return AssertionError."""
+        T1 = np.array([[],[]])
+        T2 = np.array([])
+        self.assertRaises(AssertionError, whitenoise_check, T2)
+        self.assertRaises(AssertionError, whitenoise_check, T2)
+
 
 if __name__ == "__main__":
     unittest.main()

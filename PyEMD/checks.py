@@ -77,6 +77,7 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
     >>> type(significant_imfs)
     <class 'dict'>
     """
+    assert isinstance(alpha, float), "Invalid Data type for alpha, pass a float value between (0,1)"
     assert 0 < alpha < 1, "alpha value should be in between (0,1)"
     assert test == "apriori" or test == "aposteriori", "Invalid test type"
     assert isinstance(IMFs, np.ndarray), "Invalid Data type, Pass a numpy.ndarray containing IMFs"
@@ -84,7 +85,8 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
 
     N = len(IMFs[0])
     output = {}
-    if N == 0:
+    if N == 0 or len(IMFs) == 0:
+        logging.getLogger("PyEMD").warning("Detected empty input. Skipping check.")
         return {}
     if np.isnan(np.sum(IMFs)):
         # Return NaN if input has NaN
