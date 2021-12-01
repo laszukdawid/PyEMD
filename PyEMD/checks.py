@@ -1,4 +1,5 @@
 """Calculate the statistical Significance of IMFs."""
+import logging
 import math
 
 import numpy as np
@@ -62,6 +63,7 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
     Dictionary with keys as ith IMF,
     Values: 0, indicates IMF is not significant and has noise
             1, indicates IMF is significant and has some information
+            None, if input IMFs have NaN, check is skipped
 
     Examples
     --------
@@ -84,15 +86,16 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
     output = {}
     if N == 0:
         return {}
-    if np.isnan(np.sum(IMFs)) is True:
+    if np.isnan(np.sum(IMFs)):
         # Return NaN if input has NaN
+        logging.getLogger("PyEMD").warning("Detected NaN values during whitenoise check. Skipping check.")
         return None
 
     if test == "apriori":
         for idx, imf in enumerate(IMFs):
-            T = math.log(mean_period(imf))
+            log_T = math.log(mean_period(imf))
             energy_density = math.log(energy(imf) / N)
-            sig_priori = significance_apriori(energy_density, T, N, alpha)
+            sig_priori = significance_apriori(energy_density, log_T, N, alpha)
 
             output[idx + 1] = int(sig_priori)
 
@@ -106,10 +109,10 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
         scaling_factor = up_limit - scaling_imf_energy_density
 
         for idx, imf in enumerate(IMFs):
-            T = math.log(mean_period(imf))
+            log_T = math.log(mean_period(imf))
             energy_density = math.log(energy(imf) / N)
             scaled_energy_density = energy_density + scaling_factor
-            sig_aposteriori = significance_aposteriori(scaled_energy_density, T, N, alpha)
+            sig_aposteriori = significance_aposteriori(scaled_energy_density, log_T, N, alpha)
 
             output[idx + 1] = int(sig_aposteriori)
 

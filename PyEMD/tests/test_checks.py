@@ -78,7 +78,7 @@ class TestCase(unittest.TestCase):
         """whitenoise check with nan in IMF."""
         S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
         res = whitenoise_check(S)
-        self.assertEqual(res, None, "Input NaN return None")
+        self.assertEqual(res, None, "Input NaN returns None")
 
 
 if __name__ == "__main__":
