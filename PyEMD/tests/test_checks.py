@@ -113,7 +113,7 @@ class TestCase(unittest.TestCase):
         """Test if empty IMF input return AssertionError."""
         T1 = np.array([[], []])
         T2 = np.array([])
-        self.assertRaises(AssertionError, whitenoise_check, T2)
+        self.assertRaises(AssertionError, whitenoise_check, T1)
         self.assertRaises(AssertionError, whitenoise_check, T2)
 
 
