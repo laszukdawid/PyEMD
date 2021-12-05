@@ -18,6 +18,7 @@ me through contact page.
    eemd
    ceemdan
    visualisation
+   check
    Experimental <experimental>
    contact
 

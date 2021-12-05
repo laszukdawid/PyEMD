@@ -38,68 +38,71 @@ def significance_aposteriori(scaled_energy_density, T, N, alpha):
     return not (scaled_energy_density <= upper_limit)
 
 
-def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf: int = 1, alpha: float = 0.95):
+def whitenoise_check(IMFs: np.ndarray, test_name: str = "aposteriori", rescaling_imf: int = 1, alpha: float = 0.95):
     """Whitenoise statistical significance test.
+
+    Performs whitenoise test as described by Wu & Huang [Wu2004]_.
 
     References
     ----------
-    -- Zhaohua Wu, and Norden E. Huang. “A Study of the Characteristics of White Noise Using the
-       Empirical Mode Decomposition Method.” Proceedings: Mathematical, Physical and Engineering
+    .. [Wu2004] Zhaohua Wu, and Norden E. Huang. "A Study of the Characteristics of White Noise Using the
+       Empirical Mode Decomposition Method." Proceedings: Mathematical, Physical and Engineering
        Sciences, vol. 460, no. 2046, The Royal Society, 2004, pp. 1597–611, http://www.jstor.org/stable/4143111.
 
     Parameters
     ----------
     IMFs: np.ndarray
         (Required) numpy array containing IMFs computed from a normalized signal
-    test: str
-        (Optional) It can be used to select other test types like 'apriori'. (default 'aposteriori')
+    test_name: str
+        (Optional) Test type. Supported values: 'apriori', 'aposteriori'. (default 'aposteriori')
     rescaling_imf: int
         (Optional) ith IMF of the signal used in rescaling for 'a posteriori' test. (default 1)
-    alpha:
+    alpha: float
         (Optional) The percentiles at which the test is to be performed; 0 < alpha < 1; (default 0.95)
 
     Returns
     -------
-    Dictionary with keys as ith IMF,
-    Values: 0, indicates IMF is not significant and has noise
-            1, indicates IMF is significant and has some information
-            None, if input IMFs have NaN/empty, check is skipped
+    Optional dictionary
+        Returns dictionary with keys and values as IMFs' number and test result, respetively,
+        Test results can be either 0 (fail) or 1 (pass).
+        In case of problems with the input imfs, e.g. NaN values or no imfs, we return None.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from PyEMD.significancetest import whitenoisecheck
+    >>> from PyEMD import EMD
+    >>> from PyEMD.checks import whitenoise_check
     >>> T = np.linspace(0, 1, 100)
     >>> S = np.sin(2*2*np.pi*T)
-    >>> significant_imfs = whitenoisecheck(S, test='apriori')
+    >>> emd = EMD()
+    >>> imfs = emd(S)
+    >>> significant_imfs = whitenoise_check(imfs, test_name='apriori')
     >>> significant_imfs
-    {1: 0, 2: 1}
+    {1: 1, 2: 1}
     >>> type(significant_imfs)
     <class 'dict'>
+
     """
     assert isinstance(IMFs, np.ndarray), "Invalid Data type, Pass a numpy.ndarray containing IMFs"
     # check if IMFs are empty or not
-    if len(IMFs) == 0:
-        logging.getLogger("PyEMD").warning("Detected empty input. Skipping check.")
-        return None
-    if len(IMFs[0]) == 0:
+    if len(IMFs) == 0 or len(IMFs[0]) == 0:
         logging.getLogger("PyEMD").warning("Detected empty input. Skipping check.")
         return None
 
     assert isinstance(alpha, float), "Invalid Data type for alpha, pass a float value between (0,1)"
     assert 0 < alpha < 1, "alpha value should be in between (0,1)"
-    assert test == "apriori" or test == "aposteriori", "Invalid test type"
+    assert test_name in ("apriori", "aposteriori"), "Invalid test type"
     assert isinstance(rescaling_imf, int), "Invalid data type for rescaling_imf, pass a int value"
     assert 0 < rescaling_imf <= len(IMFs), "Invalid rescaling IMF"
 
-    if np.isnan(np.sum(IMFs)):
-        # Return NaN if input has NaN
+    if np.any(np.isnan(IMFs)):
+        # Return None if input has NaN
         logging.getLogger("PyEMD").warning("Detected NaN values during whitenoise check. Skipping check.")
         return None
 
     N = len(IMFs[0])
     output = {}
-    if test == "apriori":
+    if test_name == "apriori":
         for idx, imf in enumerate(IMFs):
             log_T = math.log(mean_period(imf))
             energy_density = math.log(energy(imf) / N)
@@ -107,7 +110,7 @@ def whitenoise_check(IMFs: np.ndarray, test: str = "aposteriori", rescaling_imf:
 
             output[idx + 1] = int(sig_priori)
 
-    elif test == "aposteriori":
+    elif test_name == "aposteriori":
         scaling_imf_mean_period = math.log(mean_period(IMFs[rescaling_imf - 1]))
         scaling_imf_energy_density = math.log(energy(IMFs[rescaling_imf - 1]) / N)
 

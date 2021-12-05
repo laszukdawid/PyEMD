@@ -50,14 +50,14 @@ class TestCase(unittest.TestCase):
         """a priori whitenoise_check."""
         T = [np.linspace(0, i, 200) for i in range(5, 0, -1)]
         S = np.array([list(np.sin(2 * 2 * np.pi * i)) for i in T])
-        res = whitenoise_check(S, test="apriori")
+        res = whitenoise_check(S, test_name="apriori")
         self.assertEqual(type(res), dict or None, "Default data type is dict")
 
     def test_whitenoise_check_apriori_alpha(self):
         """a priori whitenoise_check with custom alpha."""
         T = [np.linspace(0, i, 200) for i in range(5, 0, -1)]
         S = np.array([list(np.sin(2 * 2 * np.pi * i)) for i in T])
-        res = whitenoise_check(S, test="apriori", alpha=0.99)
+        res = whitenoise_check(S, test_name="apriori", alpha=0.99)
         self.assertEqual(type(res), dict or None, "Default data type is dict")
 
     def test_whitenoise_check_alpha(self):
@@ -89,11 +89,12 @@ class TestCase(unittest.TestCase):
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=2)
         self.assertRaises(AssertionError, whitenoise_check, S, alpha="0.5")
 
-    def test_invalid_test(self):
+    def test_invalid_test_name(self):
         """Test if invalid test return AssertionError."""
-        S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
-        self.assertRaises(AssertionError, whitenoise_check, S, test="apri")
-        self.assertRaises(AssertionError, whitenoise_check, S, test="apost")
+        S = np.random.random((5, 100))
+        self.assertRaises(AssertionError, whitenoise_check, S, test_name="apri")
+        self.assertRaises(AssertionError, whitenoise_check, S, test_name="apost")
+        self.assertRaises(AssertionError, whitenoise_check, S, test_name=None)
 
     def test_invalid_input_type(self):
         """Test if invalid input type return AssertionError."""

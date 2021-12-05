@@ -2,7 +2,6 @@ os: linux
 dist: xenial
 language: python
 python:
-  - 3.5
   - 3.6
   - 3.7
   - 3.8
@@ -14,7 +13,7 @@ install:
   - pip install -r requirements.txt
   - pip install -r requirements-extra.txt
   - pip install codecov
-script: 
+script:
   - python -m PyEMD.tests.test_all
   - coverage run PyEMD/tests/test_all.py
 after_success:
