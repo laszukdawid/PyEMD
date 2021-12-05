@@ -1,0 +1,20 @@
+# Required
+version: 2
+
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.8"
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+  configuration: docs/conf.py
+
+# Installing deps with: pip install -e .[doc]
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - doc
