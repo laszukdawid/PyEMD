@@ -24,7 +24,7 @@ Using `pip` to install is the quickest way to try and play. The package has had 
 and at this point there aren't that many changes, especially nothing breaking. In the end, the basic EMD
 is the same as it was published in 1998.
 
-The easiest way is to either add `EMD-signal`_ to your `requirements.txt` file, or use the command line: ::
+The easiest way is to install `EMD-signal`_ from the PyPi, for example using
 
     $ pip install EMD-signal
 
