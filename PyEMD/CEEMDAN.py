@@ -12,7 +12,7 @@
 import itertools
 import logging
 from multiprocessing import Pool
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -86,7 +86,8 @@ class CEEMDAN:
         the `range_thr` then the decomposition is finished.
     total_power_thr : float (default: 0.05)
         Signal's power threshold. Finishes decomposition if sum(abs(r)) < thr.
-
+    beta_progress : bool (default: True)
+        Flag whether to scale all noise IMFs by their 1st IMF's standard deviation.
 
     References
     ----------
@@ -109,13 +110,12 @@ class CEEMDAN:
         # Ensemble constants
         self.trials = trials
         self.epsilon = epsilon
-        self.all_noise_std = np.zeros(self.trials)
         self.noise_scale = float(kwargs.get("noise_scale", 1.0))
         self.range_thr = float(kwargs.get("range_thr", 0.01))
         self.total_power_thr = float(kwargs.get("total_power_thr", 0.05))
 
-        self.beta_progress = True  # Scale noise by std
-        self.random = np.random.RandomState()
+        self.beta_progress = bool(kwargs.get("beta_progress", True))  # Scale noise by std
+        self.random = np.random.RandomState(seed=kwargs.get("seed"))
         self.noise_kind = kwargs.get("noise_kind", "normal")
         self.parallel = parallel
         self.processes = kwargs.get("processes")  # Optional[int]
@@ -208,13 +208,7 @@ class CEEMDAN:
 
         # Decompose all noise and remember 1st's std
         self.logger.debug("Decomposing all noises")
-        for trial, noise in enumerate(self.all_noises):
-            _imfs = self.emd(noise, T, max_imf=-1)
-
-            # If beta_progress then scale all IMFs with 1st std
-            if self.beta_progress:
-                _imfs = _imfs / np.std(_imfs[0])
-            self.all_noise_EMD.append(_imfs)
+        self.all_noise_EMD = self._decompose_noise()
 
         # Create first IMF
         last_imf = self._eemd(S, T, 1)[0]
@@ -311,6 +305,21 @@ class CEEMDAN:
             return True
 
         return False
+
+    def _decompose_noise(self) -> List[np.ndarray]:
+        if self.parallel:
+            pool = Pool(processes=self.processes)
+            all_noise_EMD = pool.map(self.emd, self.all_noises)
+            pool.close()
+        else:
+            all_noise_EMD = [self.emd(noise, max_imf=-1) for noise in self.all_noises]
+
+        # Normalize w/ respect to 1st IMF's std
+        if self.beta_progress:
+            all_stds = [np.std(imfs[0]) for imfs in all_noise_EMD]
+            all_noise_EMD = [imfs / imfs_std for (imfs, imfs_std) in zip(all_noise_EMD, all_stds)]
+
+        return all_noise_EMD
 
     def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         if T is None:
