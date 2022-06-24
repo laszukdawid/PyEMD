@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
 ### CEEMDAN
 
-As with previous methods, there is also simple way to use `CEEMDAN`.
+As with previous methods, also there is a simple way to use `CEEMDAN`.
 
 **Windows**: Please don't skip the `if __name__ == "__main__"` section. 
 
