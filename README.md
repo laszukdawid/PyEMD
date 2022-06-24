@@ -15,7 +15,7 @@
 ## Introduction
 
 This is yet another Python implementation of Empirical Mode
-Decomposition (EMD). The package contains many EMD variations and
+Decomposition (EMD). The package contains multiple EMD variations and
 intends to deliver more in time.
 
 ### EMD variations
@@ -25,8 +25,8 @@ intends to deliver more in time.
 -  different settings and configurations of vanilla EMD.
 -  Image decomposition (EMD2D & BEMD) (experimental, no support)
 
-*PyEMD* allows to use different splines for envelopes, stopping criteria
-and extrema interpolation.
+*PyEMD* allows you to use different splines for envelopes, stopping criteria
+and extrema interpolations.
 
 ### Available splines
 
@@ -56,8 +56,8 @@ The quickest way to install package is through `pip`.
 
 ### From source
 
-In case you only want to *use* EMD and its variation, the best way to install PyEMD is through `pip`.
-However, if you are want to modify the code anyhow you might want to download the code and build package yourself.
+In case, if you only want to *use* EMD and its variations, the best way to install PyEMD is through `pip`.
+However, if you want to modify the code, anyhow you might want to download the code and build package yourself.
 The source is publicaly available and hosted on [GitHub](https://github.com/laszukdawid/PyEMD).
 To download the code you can either go to the source code page and click `Code -> Download ZIP`, or use **git** command line
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
 ### Visualisation
 
-The package contain a simple visualisation helper that can help, e.g., with time series and instantaneous frequencies.
+The package contains a simple visualisation helper that can help, e.g., with time series and instantaneous frequencies.
 
 ```python
 import numpy as np
