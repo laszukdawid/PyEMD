@@ -203,6 +203,8 @@ class EMDTest(unittest.TestCase):
         all_imfs = emd(S, max_imf=3)
 
         imfs, residue = emd.get_imfs_and_residue()
+
+        assert len(imfs) == 3
         self.assertEqual(all_imfs.shape[0], imfs.shape[0] + 1, "Compare number of components")
         self.assertTrue(np.array_equal(all_imfs[:-1], imfs), "Shouldn't matter where imfs are from")
         self.assertTrue(np.array_equal(all_imfs[-1], residue), "Residue, if any, is the last row")
