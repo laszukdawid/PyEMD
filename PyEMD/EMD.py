@@ -908,7 +908,7 @@ class EMD:
             IMF = np.vstack((IMF, imf.copy()))
             imfNo += 1
 
-            if self.end_condition(S, IMF) or imfNo == max_imf:
+            if self.end_condition(S, IMF) or imfNo == max_imf - 1:
                 finished = True
                 break
 
