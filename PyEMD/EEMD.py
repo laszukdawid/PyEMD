@@ -11,13 +11,12 @@
 
 import logging
 from collections import defaultdict
-from datetime import timedelta
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from tqdm import tqdm
 
-from PyEMD.thread import TimedJob
 from PyEMD.utils import get_timeline
 
 
@@ -172,18 +171,6 @@ class EEMD:
             these do not have to be, and most likely will not be, same as IMFs
             produced using EMD.
         """
-        job = None
-        if progress:
-            job = TimedJob(interval=timedelta(seconds=1), execute=lambda: print(".", end=""))
-            job.start()
-
-        try:
-            return self._eemd(S=S, T=T, max_imf=max_imf)
-        finally:
-            if job is not None:
-                job.stop()
-
-    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         if T is None:
             T = get_timeline(len(S), S.dtype)
 
@@ -197,15 +184,17 @@ class EEMD:
         # For trial number of iterations perform EMD on a signal
         # with added white noise
         if self.parallel:
-            pool = Pool(processes=self.processes)
-            all_IMFs = pool.map(self._trial_update, range(self.trials))
-            pool.close()
+            map_pool = Pool(processes=self.processes)
+        else:
+            map_pool = map
+        all_IMFs = map_pool(self._trial_update, range(self.trials))
 
-        else:  # Not parallel
-            all_IMFs = map(self._trial_update, range(self.trials))
+        if self.parallel:
+            map_pool.close()
 
         self._all_imfs = defaultdict(list)
-        for (imfs, trend) in all_IMFs:
+        it = iter if not progress else lambda x: tqdm(x, desc="EEMD", total=self.trials)
+        for (imfs, trend) in it(all_IMFs):
 
             # A bit of explanation here.
             # If the `trend` is not None, that means it was intentionally separated in the decomp process.
