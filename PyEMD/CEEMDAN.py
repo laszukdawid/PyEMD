@@ -11,10 +11,13 @@
 
 import itertools
 import logging
+from datetime import timedelta
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+
+from PyEMD.thread import TimedJob
 
 
 class CEEMDAN:
@@ -133,8 +136,10 @@ class CEEMDAN:
         self.C_IMF = None  # Optional[np.ndarray]
         self.residue = None  # Optional[np.ndarray]
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
-        return self.ceemdan(S, T=T, max_imf=max_imf)
+    def __call__(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
+        return self.ceemdan(S, T=T, max_imf=max_imf, progress=progress)
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
@@ -182,7 +187,9 @@ class CEEMDAN:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def ceemdan(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
+    def ceemdan(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
         """Perform CEEMDAN decomposition.
 
         Parameters
@@ -193,13 +200,26 @@ class CEEMDAN:
             Time (x) values for the signal. If not passed, i.e. `T = None`, then assumes equidistant values.
         max_imf : int (default: -1)
             Maximum number of components to extract.
+        progress : bool (default: False)
+            Whether to print out '.' every 1s to indicate progress.
 
         Returns
         -------
         components : np.ndarray
             CEEMDAN components.
         """
+        job = None
+        if progress:
+            job = TimedJob(interval=timedelta(seconds=1), execute=lambda: print(".", end=""))
+            job.start()
 
+        try:
+            return self._ceemdan(S=S, T=T, max_imf=max_imf)
+        finally:
+            if job is not None:
+                job.stop()
+
+    def _ceemdan(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         scale_s = np.std(S)
         S = S / scale_s
 

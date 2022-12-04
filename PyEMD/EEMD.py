@@ -11,11 +11,13 @@
 
 import logging
 from collections import defaultdict
+from datetime import timedelta
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
+from PyEMD.thread import TimedJob
 from PyEMD.utils import get_timeline
 
 
@@ -96,8 +98,10 @@ class EEMD:
         self.residue = None  # Optional[np.ndarray]
         self._all_imfs = {}
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
-        return self.eemd(S, T=T, max_imf=max_imf)
+    def __call__(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
+        return self.eemd(S, T=T, max_imf=max_imf, progress=progress)
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
@@ -141,7 +145,9 @@ class EEMD:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
+    def eemd(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
         """
         Performs EEMD on provided signal.
 
@@ -166,6 +172,18 @@ class EEMD:
             these do not have to be, and most likely will not be, same as IMFs
             produced using EMD.
         """
+        job = None
+        if progress:
+            job = TimedJob(interval=timedelta(seconds=1), execute=lambda: print(".", end=""))
+            job.start()
+
+        try:
+            return self._eemd(S=S, T=T, max_imf=max_imf)
+        finally:
+            if job is not None:
+                job.stop()
+
+    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
         if T is None:
             T = get_timeline(len(S), S.dtype)
 
