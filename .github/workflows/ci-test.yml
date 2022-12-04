@@ -8,7 +8,7 @@ on:
       - 'PyEMD/**.py'
 
 jobs:
-  build-n-test-3.6:
+  build-n-test-36:
     name: Linux 3.6
     runs-on: ubuntu-20.04
     steps:
