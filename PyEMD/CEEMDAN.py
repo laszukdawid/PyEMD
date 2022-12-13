@@ -9,12 +9,12 @@
 .. currentmodule:: CEEMDAN
 """
 
-import itertools
 import logging
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from tqdm import tqdm
 
 
 class CEEMDAN:
@@ -117,6 +117,8 @@ class CEEMDAN:
         self.beta_progress = bool(kwargs.get("beta_progress", True))  # Scale noise by std
         self.random = np.random.RandomState(seed=kwargs.get("seed"))
         self.noise_kind = kwargs.get("noise_kind", "normal")
+
+        self._max_imf = int(kwargs.get("max_imf", 100))
         self.parallel = parallel
         self.processes = kwargs.get("processes")  # Optional[int]
         if self.processes is not None and not self.parallel:
@@ -133,8 +135,10 @@ class CEEMDAN:
         self.C_IMF = None  # Optional[np.ndarray]
         self.residue = None  # Optional[np.ndarray]
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
-        return self.ceemdan(S, T=T, max_imf=max_imf)
+    def __call__(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
+        return self.ceemdan(S, T=T, max_imf=max_imf, progress=progress)
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
@@ -182,7 +186,9 @@ class CEEMDAN:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def ceemdan(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
+    def ceemdan(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
         """Perform CEEMDAN decomposition.
 
         Parameters
@@ -193,13 +199,14 @@ class CEEMDAN:
             Time (x) values for the signal. If not passed, i.e. `T = None`, then assumes equidistant values.
         max_imf : int (default: -1)
             Maximum number of components to extract.
+        progress : bool (default: False)
+            Whether to print out '.' every 1s to indicate progress.
 
         Returns
         -------
         components : np.ndarray
             CEEMDAN components.
         """
-
         scale_s = np.std(S)
         S = S / scale_s
 
@@ -211,14 +218,16 @@ class CEEMDAN:
         self.all_noise_EMD = self._decompose_noise()
 
         # Create first IMF
-        last_imf = self._eemd(S, T, 1)[0]
+        last_imf = self._eemd(S, T, 1, progress)[0]
         res = np.empty(S.size)
 
         all_cimfs = last_imf.reshape((-1, last_imf.size))
         prev_res = S - last_imf
 
         self.logger.debug("Starting CEEMDAN")
-        while True:
+        total = (max_imf - 1) if max_imf != -1 else None
+        it = iter if not progress else lambda x: tqdm(x, desc="cIMF decomposition", total=total)
+        for _ in it(range(self._max_imf)):
             # Check end condition in the beginning because we've already have 1 IMF
             if self.end_condition(S, all_cimfs, max_imf):
                 self.logger.debug("End Condition - Pass")
@@ -321,7 +330,7 @@ class CEEMDAN:
 
         return all_noise_EMD
 
-    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
+    def _eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress=True) -> np.ndarray:
         if T is None:
             T = np.arange(len(S), dtype=S.dtype)
 
@@ -334,19 +343,21 @@ class CEEMDAN:
         # with added white noise
         if self.parallel:
             pool = Pool(processes=self.processes)
-            all_IMFs = pool.map(self._trial_update, range(self.trials))
-            pool.close()
-
+            map_pool = pool.imap_unordered
         else:  # Not parallel
-            all_IMFs = map(self._trial_update, range(self.trials))
+            map_pool = map
 
-        all_IMFs_1, all_IMFs_2 = itertools.tee(all_IMFs, 2)
+        self.E_IMF = np.zeros((1, N))
+        it = iter if not progress else lambda x: tqdm(x, desc="Decomposing noise", total=self.trials)
 
-        max_imfNo = max([IMFs.shape[0] for IMFs in all_IMFs_1])
-
-        self.E_IMF = np.zeros((max_imfNo, N))
-        for IMFs in all_IMFs_2:
+        for IMFs in it(map_pool(self._trial_update, range(self.trials))):
+            if self.E_IMF.shape[0] < IMFs.shape[0]:
+                num_new_layers = IMFs.shape[0] - self.E_IMF.shape[0]
+                self.E_IMF = np.vstack((self.E_IMF, np.zeros(shape=(num_new_layers, N))))
             self.E_IMF[: IMFs.shape[0]] += IMFs
+
+        if self.parallel:
+            pool.close()
 
         return self.E_IMF / self.trials
 

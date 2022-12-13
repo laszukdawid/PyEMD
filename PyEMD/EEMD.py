@@ -15,6 +15,7 @@ from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from tqdm import tqdm
 
 from PyEMD.utils import get_timeline
 
@@ -96,8 +97,10 @@ class EEMD:
         self.residue = None  # Optional[np.ndarray]
         self._all_imfs = {}
 
-    def __call__(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
-        return self.eemd(S, T=T, max_imf=max_imf)
+    def __call__(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
+        return self.eemd(S, T=T, max_imf=max_imf, progress=progress)
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
@@ -141,7 +144,9 @@ class EEMD:
         """Set seed for noise generation."""
         self.random.seed(seed)
 
-    def eemd(self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1) -> np.ndarray:
+    def eemd(
+        self, S: np.ndarray, T: Optional[np.ndarray] = None, max_imf: int = -1, progress: bool = False
+    ) -> np.ndarray:
         """
         Performs EEMD on provided signal.
 
@@ -179,15 +184,17 @@ class EEMD:
         # For trial number of iterations perform EMD on a signal
         # with added white noise
         if self.parallel:
-            pool = Pool(processes=self.processes)
-            all_IMFs = pool.map(self._trial_update, range(self.trials))
-            pool.close()
+            map_pool = Pool(processes=self.processes)
+        else:
+            map_pool = map
+        all_IMFs = map_pool(self._trial_update, range(self.trials))
 
-        else:  # Not parallel
-            all_IMFs = map(self._trial_update, range(self.trials))
+        if self.parallel:
+            map_pool.close()
 
         self._all_imfs = defaultdict(list)
-        for (imfs, trend) in all_IMFs:
+        it = iter if not progress else lambda x: tqdm(x, desc="EEMD", total=self.trials)
+        for (imfs, trend) in it(all_IMFs):
 
             # A bit of explanation here.
             # If the `trend` is not None, that means it was intentionally separated in the decomp process.

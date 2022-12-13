@@ -8,17 +8,35 @@ on:
       - 'PyEMD/**.py'
 
 jobs:
+  build-n-test-36:
+    name: Linux 3.6
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Running Python 3.6
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.6
+        architecture: x64
+    - name: Install test dependencies
+      run: |
+        pip install --only-binary=numpy,scipy numpy scipy
+        pip install -e .[test]
+    - name: Run tests
+      run: |
+        python -m PyEMD.tests.test_all
+
   build-n-test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Running Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
