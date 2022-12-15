@@ -781,7 +781,7 @@ class EMD:
         """
         Performs Empirical Mode Decomposition on signal S.
         The decomposition is limited to *max_imf* imfs.
-        Returns IMF functions in numpy array format.
+        Returns IMF functions and residue in a single numpy array format.
 
         Parameters
         ----------
@@ -796,8 +796,9 @@ class EMD:
 
         Returns
         -------
-        IMF : numpy array
-            Set of IMFs produced from input signal.
+        IMFs and residue : numpy array
+            A numpy array which cointains both the IMFs and residual, if any, appended as
+            the last slice.
         """
         if T is not None and len(S) != len(T):
             raise ValueError("Time series have different sizes: len(S) -> {} != {} <- len(T)".format(len(S), len(T)))
