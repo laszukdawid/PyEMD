@@ -33,6 +33,7 @@ FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.nda
 #     "MAX_ITERATION": 1000,
 # }
 
+
 class EmdConfig:
     def __init__(self):
         self.nbsym: int = 2
@@ -44,6 +45,32 @@ class EmdConfig:
         self.FIXE: int = 0
         self.FIXE_H: int = 0
         self.MAX_ITERATION: int = 1000
+
+
+class FastEmd:
+    def __init__(self, config):
+        self.config = config
+        self.imfs = None
+        self.imfs = None
+        self.residue = None
+
+    def get_imfs_and_trend(self):
+        return (self.imfs, self.residue)
+
+    def emd(self, s, t, max_imf=-1):
+        spline_kind = "cubic"
+        extrema_detection = "simple"
+        imfs = emd(
+            s,
+            t,
+            config=self.config,
+            max_imf=max_imf,
+            spline_kind=spline_kind,
+            extrema_detection=extrema_detection,
+        )
+        self.imfs = imfs[:-1,:]
+        self.residue = imfs[-1:,:]
+        return imfs
 
 
 @nb.jit(float64[:](float64[:], int64, float64[:]), nopython=True)
@@ -855,9 +882,7 @@ def emd(
                     if imf_old is np.nan:
                         continue
 
-                    f1 = check_imf(
-                        imf, imf_old, eMax, eMin, config.svar_thr, config.std_thr, config.energy_ratio_thr
-                    )
+                    f1 = check_imf(imf, imf_old, eMax, eMin, config.svar_thr, config.std_thr, config.energy_ratio_thr)
                     f2 = abs(extNo - nzm) < 2
 
                     # STOP
@@ -906,6 +931,7 @@ def emd(
 #     if self.imfs is None or self.residue is None:
 #         raise ValueError("No IMF found. Please, run EMD method or its variant first.")
 #     return self.imfs, self.residue
+
 
 def get_imfs_and_trend(self) -> Tuple[np.ndarray, np.ndarray]:
     """

@@ -218,7 +218,7 @@ class CEEMDAN:
         self.all_noise_EMD = self._decompose_noise()
 
         # Create first IMF
-        last_imf = self._eemd(S, T, 1, progress)[0]
+        last_imf = self._eemd(S, T, max_imf=1, progress=progress)[0]
         res = np.empty(S.size)
 
         all_cimfs = last_imf.reshape((-1, last_imf.size))
@@ -245,7 +245,7 @@ class CEEMDAN:
                     res += beta * noise_imf[imfNo]
 
                 # Extract local mean, which is at 2nd position
-                imfs = self.emd(res, T, 1)
+                imfs = self.emd(res, T, max_imf=1)
                 local_mean += imfs[-1] / self.trials
 
             last_imf = prev_res - local_mean
@@ -373,7 +373,7 @@ class CEEMDAN:
         Provides emd evaluation from provided EMD class.
         For reference please see :class:`PyEMD.EMD`.
         """
-        return self.EMD.emd(S, T, max_imf)
+        return self.EMD.emd(S, T, max_imf=max_imf)
 
     def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
