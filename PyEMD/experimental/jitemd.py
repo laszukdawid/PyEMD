@@ -74,7 +74,7 @@ class JitEMD:
         self.imfs = imfs[:-1, :]
         self.residue = imfs[-1:, :]
         return imfs
-    
+
     def __call__(self, s, t, max_imf=-1):
         return self.emd(s, t, max_imf=max_imf)
 
@@ -635,9 +635,7 @@ def spline_points(T: np.ndarray, extrema: np.ndarray, spline_kind: str) -> Tuple
 
 
 @nb.jit(
-    nb.types.UniTuple(float64[:, :], 2)(
-        float64[:], float64[:], int64, unicode_type
-    ),
+    nb.types.UniTuple(float64[:, :], 2)(float64[:], float64[:], int64, unicode_type),
     nopython=True,
 )
 def extract_max_min_extrema(
@@ -784,7 +782,12 @@ def _normalize_time(t: np.ndarray) -> np.ndarray:
 
 @nb.jit(
     float64[:, :](
-        float64[:], float64[:], nb.optional(int64), nb.optional(unicode_type), nb.optional(unicode_type), nb.optional(nb.typeof(default_emd_config))
+        float64[:],
+        float64[:],
+        nb.optional(int64),
+        nb.optional(unicode_type),
+        nb.optional(unicode_type),
+        nb.optional(nb.typeof(default_emd_config)),
     ),
     nopython=False,
     forceobj=True,

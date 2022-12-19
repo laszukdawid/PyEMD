@@ -1,7 +1,4 @@
-from __future__ import division
-
 import numpy as np
-from numba import jit
 from scipy.interpolate import Akima1DInterpolator
 
 
@@ -273,4 +270,4 @@ def akima(X, Y, x):
 #     if dydx is not None:
 #         dydx = np.moveaxis(dydx, axis, 0)
 
-#     return x, dx, y, axis, 
+#     return x, dx, y, axis,
