@@ -24,6 +24,7 @@ intends to deliver more in time.
 -  "Complete Ensemble EMD" (CEEMDAN)
 -  different settings and configurations of vanilla EMD.
 -  Image decomposition (EMD2D & BEMD) (experimental, no support)
+-  Just-in-time compiled EMD (JitEMD)
 
 *PyEMD* allows you to use different splines for envelopes, stopping criteria
 and extrema interpolations.
@@ -155,7 +156,27 @@ vis.plot_instant_freq(t, imfs=imfs)
 vis.show()
 ```
 
-### EMD2D/BEMD
+## Experimental
+
+### JitEMD
+
+Just-in-time (JIT) compiled EMD is a version of EMD which exceed on very large signals
+or reusing the same instance multiple times. It's strongly sugested to be used in
+Jupyter notebooks when experimenting by modifyig input rather than the method itself.
+
+The problem with JIT is that the compilation happens on the first execution and it can be
+quite costly. With small signals, or performing decomposition just once, the extra time
+for compilation will be significantly larger than the decomposition, making it less performant.
+
+Please see documentation for more information or [examples](./example/) for how to use the code.
+This is experimental as it's value is still questionable, and the author (me) isn't proficient
+in JIT optimization so mistakes could've been made.
+
+Any feedback is welcomed. Happy to improve if there's intrest. Please open tickets with questions
+and suggestions.
+
+
+###  EMD2D/BEMD
 
 *Unfortunately, this is Experimental and we can't guarantee that the output is meaningful.*
 The simplest use is to pass image as monochromatic numpy 2D array. Sample as

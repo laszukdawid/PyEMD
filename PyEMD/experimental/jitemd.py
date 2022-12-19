@@ -2,80 +2,99 @@
 # coding: UTF-8
 #
 # Author:   Dawid Laszuk
-# Contact:  https://github.com/laszukdawid/PyEMD/issues
-#
-# Feel free to contact for any information.
+# Issues:  https://github.com/laszukdawid/PyEMD/issues
+"""
+Uses Numba (https://numba.pydata.org/) as a Just-in-Time (JIT)
+compiler for Python, mostly Numpy. Just-in-time compilation means that
+the code is compiled (machine code) during execution, and thus shows
+benefit when there's plenty of repeated code or same code used a lot.
+
+This EMD implementation is experimental as it only provides value
+when there's significant amount of computation required, e.g. when
+analyzing HUGE time series with a lot of internal complexity,
+or reuses the instance/method many times, e.g. in a script,
+iPython REPL or jupyter notebook.
+
+Additional reason for this being experimental is that the author (me)
+isn't well veristile in Numba optimization. There's definitely a lot
+that can be improved. It's being added as maybe it'll be helpful or
+an inspiration for others to learn something and contribute to the PyEMD.
+
+"""
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 import numba as nb
 import numpy as np
-from numba.types import float64, int64
+from numba.types import float64, int64, unicode_type
 from scipy.interpolate import Akima1DInterpolator, interp1d
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
 
-# logger = logging.getLogger(__name__)
-
-# emd_config = {
-#     # "spline_kind": "cubic",
-#     "nbsym": 2,
-#     "energy_ratio_thr": 0.2,
-#     "std_thr": 0.2,
-#     "svar_thr": 0.001,
-#     "total_power_thr": 0.005,
-#     "range_thr": 0.001,
-#     # "extrema_detection": "simple",
-#     "FIXE": 0,
-#     "FIXE_H": 0,
-#     "MAX_ITERATION": 1000,
-# }
+default_emd_config = nb.typed.Dict.empty(
+    key_type=unicode_type,
+    value_type=float64,
+)
+default_emd_config["nbsym"] = 2.0
+default_emd_config["energy_ratio_thr"] = 0.2
+default_emd_config["std_thr"] = 0.2
+default_emd_config["svar_thr"] = 0.001
+default_emd_config["total_power_thr"] = 0.005
+default_emd_config["range_thr"] = 0.001
+default_emd_config["FIXE"] = 0.0
+default_emd_config["FIXE_H"] = 0.0
+default_emd_config["MAX_ITERATION"] = 1000.0
 
 
-class EmdConfig:
-    def __init__(self):
-        self.nbsym: int = 2
-        self.energy_ratio_thr: float = 0.2
-        self.std_thr: float = 0.2
-        self.svar_thr: float = 0.001
-        self.total_power_thr: float = 0.005
-        self.range_thr: float = 0.001
-        self.FIXE: int = 0
-        self.FIXE_H: int = 0
-        self.MAX_ITERATION: int = 1000
-
-
-class FastEmd:
-    def __init__(self, config):
-        self.config = config
+class JitEMD:
+    def __init__(self, config=None, spline_kind="cubic", extrema_detection="simple"):
+        self.config = config or default_emd_config
+        self.spline_kind = spline_kind
+        self.extrema_detection = extrema_detection
         self.imfs = None
         self.imfs = None
         self.residue = None
 
     def get_imfs_and_trend(self):
-        return (self.imfs, self.residue)
+        if np.allclose(self.residue, 0):
+            return self.imfs[:-1].copy(), self.imfs[-1].copy()
+        return self.imfs, self.residue
 
     def emd(self, s, t, max_imf=-1):
-        spline_kind = "cubic"
-        extrema_detection = "simple"
         imfs = emd(
             s,
             t,
-            config=self.config,
             max_imf=max_imf,
-            spline_kind=spline_kind,
-            extrema_detection=extrema_detection,
+            spline_kind=self.spline_kind,
+            extrema_detection=self.extrema_detection,
+            config=self.config,
         )
-        self.imfs = imfs[:-1,:]
-        self.residue = imfs[-1:,:]
+        self.imfs = imfs[:-1, :]
+        self.residue = imfs[-1:, :]
         return imfs
+    
+    def __call__(self, s, t, max_imf=-1):
+        return self.emd(s, t, max_imf=max_imf)
 
 
 @nb.jit(float64[:](float64[:], int64, float64[:]), nopython=True)
 def np_round(x, decimals, out):
     return np.round_(x, decimals, out)
+
+
+@nb.njit
+def _not_duplicate(S: np.ndarray) -> np.ndarray:
+    dup = np.logical_and(S[1:-1] == S[0:-2], S[1:-1] == S[2:])
+    not_dup_idx = np.arange(1, len(S) - 1)[~dup]
+
+    idx = np.empty(len(not_dup_idx) + 2, dtype=np.int64)
+    idx[0] = 0
+    idx[-1] = len(S) - 1
+    idx[1:-1] = not_dup_idx
+
+    return idx
 
 
 @nb.jit
@@ -120,23 +139,30 @@ def cubic_spline_3pts(x, y, T):
     return t, q
 
 
-@nb.jit
+@nb.jit(nopython=False, forceobj=True)
 def akima(X, Y, x):
     spl = Akima1DInterpolator(X, Y)
     return spl(x)
 
 
-@nb.jit
-def _find_extrema_simple(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
+@nb.njit
+def nb_diff(s):
+    return s[1:] - s[:-1]
 
+
+@nb.jit(
+    nb.types.UniTuple(float64[:], 5)(float64[:], float64[:]),
+    nopython=True,
+)
+def _find_extrema_simple(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
     # Finds indexes of zero-crossings
     S1, S2 = S[:-1], S[1:]
     indzer = np.nonzero(S1 * S2 < 0)[0]
     if np.any(S == 0):
         indz = np.nonzero(S == 0)[0]
-        if np.any(np.diff(indz) == 1):
+        if np.any(nb_diff(indz) == 1):
             zer = S == 0
-            dz = np.diff(np.append(np.append(0, zer), 0))
+            dz = nb_diff(np.append(np.append(0, zer), 0))
             debz = np.nonzero(dz == 1)[0].astype(np.float64)
             finz = (np.nonzero(dz == -1)[0] - 1).astype(np.float64)
             # indz = np.round((debz + finz) / 2)
@@ -147,7 +173,7 @@ def _find_extrema_simple(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
         indzer = np.sort(np.append(indzer, indz))
 
     # Finds local extrema
-    d = np.diff(S)
+    d = S2 - S1
     d1, d2 = d[:-1], d[1:]
     indmin = np.nonzero(np.logical_and(d1 * d2 < 0, d1 < 0))[0] + 1
     indmax = np.nonzero(np.logical_and(d1 * d2 < 0, d1 > 0))[0] + 1
@@ -155,72 +181,116 @@ def _find_extrema_simple(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
     indmax = indmax.astype(np.int64)
 
     # When two or more points have the same value
-    # if np.any(d == 0):
+    if np.any(d == 0):
+        imax, imin = [], []
 
-    #     imax, imin = [], []
+        same_values = d == 0
+        dd = nb_diff(np.append(np.append(0, same_values), 0))
+        _left_idx = np.nonzero(dd == 1)[0]
+        _right_idx = np.nonzero(dd == -1)[0]
+        if _left_idx[0] == 1:
+            _left_idx = _left_idx[1:]
+            _right_idx = _right_idx[1:]
 
-    #     bad = d == 0
-    #     dd = np.diff(np.append(np.append(0, bad), 0))
-    #     debs = np.nonzero(dd == 1)[0]
-    #     fins = np.nonzero(dd == -1)[0]
-    #     if debs[0] == 1:
-    #         if len(debs) > 1:
-    #             debs, fins = debs[:-1], fins[:-1]
-    #         else:
-    #             debs = np.array([[]], np.int_)
-    #             fins = np.array([[]], np.int_)
+        if len(_left_idx) > 0:
+            if _right_idx[-1] == len(S) - 1:
+                _left_idx = _left_idx[:-1]
+                _right_idx = _right_idx[:-1]
 
-    #     if len(debs) > 0:
-    #         if fins[-1] == len(S) - 1:
-    #             if len(debs) > 1:
-    #                 debs, fins = debs[:-1], fins[:-1]
-    #             else:
-    #                 debs = np.array([], np.int_)
-    #                 fins = np.array([], np.int_)
+        for k in range(len(_left_idx)):
+            _left_value = d[_left_idx[k] - 1]
+            _right_value = d[_right_idx[k]]
+            _mid_value = round((_left_idx[k] + _right_idx[k]) / 2.0)
+            if _left_value > 0 and _right_value < 0:
+                imax.append(_mid_value)
+            elif _left_value < 0 and _right_value > 0:
+                imin.append(_mid_value)
 
-    #     if len(debs) > 0:
-    #         for k in range(len(debs)):
-    #             if d[debs[k] - 1] > 0:
-    #                 if d[fins[k]] < 0:
-    #                     imax.append(np.round((fins[k] + debs[k]) / 2.0))
-    #             else:
-    #                 if d[fins[k]] > 0:
-    #                     imin.append(np.round((fins[k] + debs[k]) / 2.0))
+        if len(imax) > 0:
+            indmax = np.append(indmax, np.array(imax)).astype(np.int64)
+            indmax.sort()
 
-    #     if len(imax) > 0:
-    #         indmax = np.append(indmax, np.array(imax)).astype(np.int64)
-    #         # indmax = indmax.tolist()
-    #         # for x in imax:
-    #         #     indmax.append(int(x))
-    #         indmax.sort()
+        if len(imin) > 0:
+            indmin = np.append(indmin, np.array(imin)).astype(np.int64)
+            indmin.sort()
 
-    #     if len(imin) > 0:
-    #         indmin = np.append(indmin, np.array(imin)).astype(np.int64)
-    #         indmin.sort()
-    #         # indmin = indmin.tolist()
-    #         # for x in imin:
-    #         #     indmin.append(int(x))
-    #         # indmin.sort()
+    local_max_pos = T[indmax].astype(S.dtype)
+    local_max_val = S[indmax].astype(S.dtype)
+    local_min_pos = T[indmin].astype(S.dtype)
+    local_min_val = S[indmin].astype(S.dtype)
 
-    local_max_pos = T[indmax]
-    local_max_val = S[indmax]
-    local_min_pos = T[indmin]
-    local_min_val = S[indmin]
-
-    return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer
+    return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer.astype(S.dtype)
 
 
-@nb.jit
-def extract_max_min_spline(
-    T: np.ndarray,
-    S: np.ndarray,
-    config: EmdConfig,
-    extrema_detection,
-    spline_kind,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+@nb.jit(
+    nb.types.Tuple((float64[:], float64[:], float64[:], float64[:], float64[:]))(float64[:], float64[:]),
+    nopython=True,
+)
+def _find_extrema_parabol(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
+    # Finds indexes of zero-crossings
+    S1, S2 = S[:-1], S[1:]
+    indzer = np.nonzero(S1 * S2 < 0)[0]
+    if np.any(S == 0):
+        indz = np.nonzero(S == 0)[0]
+        if np.any(nb_diff(indz) == 1):
+            zer = S == 0
+            dz = nb_diff(np.append(np.append(0, zer), 0))
+            debz = (np.nonzero(dz == 1)[0]).astype(np.float64)
+            finz = (np.nonzero(dz == -1)[0] - 1).astype(np.float64)
+            y = np.empty_like(debz)
+            np_round((debz + finz) / 2, 0, y)
+            indz = y.astype(np.int64)
+
+        indzer = np.sort(np.append(indzer, indz))
+
+    dt = float(T[1] - T[0])
+    scale = 2.0 * dt * dt
+
+    idx = _not_duplicate(S)
+    T = T[idx]
+    S = S[idx]
+
+    # p - previous
+    # 0 - current
+    # n - next
+    Tp, T0, Tn = T[:-2], T[1:-1], T[2:]
+    Sp, S0, Sn = S[:-2], S[1:-1], S[2:]
+    # a = Sn + Sp - 2*S0
+    # b = 2*(Tn+Tp)*S0 - ((Tn+T0)*Sp+(T0+Tp)*Sn)
+    # c = Sp*T0*Tn -2*Tp*S0*Tn + Tp*T0*Sn
+    TnTp, T0Tn, TpT0 = Tn - Tp, T0 - Tn, Tp - T0
+    scale = Tp * Tn * Tn + Tp * Tp * T0 + T0 * T0 * Tn - Tp * Tp * Tn - Tp * T0 * T0 - T0 * Tn * Tn
+
+    a = T0Tn * Sp + TnTp * S0 + TpT0 * Sn
+    b = (S0 - Sn) * Tp ** 2 + (Sn - Sp) * T0 ** 2 + (Sp - S0) * Tn ** 2
+    c = T0 * Tn * T0Tn * Sp + Tn * Tp * TnTp * S0 + Tp * T0 * TpT0 * Sn
+
+    a = a / scale
+    b = b / scale
+    c = c / scale
+    a[a == 0] = 1e-14
+    tVertex = -0.5 * b / a
+    idx = np.logical_and(tVertex < T0 + 0.5 * (Tn - T0), tVertex >= T0 - 0.5 * (T0 - Tp))
+
+    a, b, c = a[idx], b[idx], c[idx]
+    tVertex = tVertex[idx]
+    sVertex = a * tVertex * tVertex + b * tVertex + c
+
+    local_max_pos, local_max_val = tVertex[a < 0], sVertex[a < 0]
+    local_min_pos, local_min_val = tVertex[a > 0], sVertex[a > 0]
+
+    return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer.astype(local_max_val.dtype)
+
+
+@nb.jit(
+    nb.types.Tuple((float64[:], float64[:], float64[:], float64[:], float64[:]))(float64[:], float64[:], unicode_type),
+    nopython=True,
+)
+def find_extrema(T: np.ndarray, S: np.ndarray, extrema_detection: str) -> FindExtremaOutput:
     """
-    Extracts top and bottom envelopes based on the signal,
-    which are constructed based on maxima and minima, respectively.
+    Returns extrema (minima and maxima) for given signal S.
+    Detection and definition of the extrema depends on
+    ``extrema_detection`` variable, set on initiation of EMD.
 
     Parameters
     ----------
@@ -231,35 +301,25 @@ def extract_max_min_spline(
 
     Returns
     -------
-    max_spline : numpy array
-        Spline spanned on S maxima.
-    min_spline : numpy array
-        Spline spanned on S minima.
-    max_extrema : numpy array
-        Points indicating local maxima.
-    min_extrema : numpy array
-        Points indicating local minima.
+    local_max_pos : numpy array
+        Position of local maxima.
+    local_max_val : numpy array
+        Values of local maxima.
+    local_min_pos : numpy array
+        Position of local minima.
+    local_min_val : numpy array
+        Values of local minima.
     """
-
-    # Get indexes of extrema
-    ext_res = find_extrema(T, S, extrema_detection)
-    max_pos, max_val = ext_res[0], ext_res[1]
-    min_pos, min_val = ext_res[2], ext_res[3]
-
-    if len(max_pos) + len(min_pos) < 3:
-        return [-1] * 4  # TODO: Fix this. Doesn't match the signature.
-
-    #########################################
-    # Extrapolation of signal (over boundaries)
-    nbsym = config.nbsym
-    max_extrema, min_extrema = prepare_points(T, S, max_pos, max_val, min_pos, min_val, extrema_detection, nbsym)
-    _, max_spline = spline_points(T, max_extrema, spline_kind)
-    _, min_spline = spline_points(T, min_extrema, spline_kind)
-
-    return max_spline, min_spline, max_extrema, min_extrema
+    # return _find_extrema_simple(T, S)
+    if extrema_detection == "parabol":
+        return _find_extrema_parabol(T, S)
+    elif extrema_detection == "simple":
+        return _find_extrema_simple(T, S)
+    else:
+        raise ValueError("Incorrect extrema detection type. Please try: 'simple' or 'parabol'.")
 
 
-@nb.jit
+@nb.jit(nopython=True)
 def prepare_points(
     T: np.ndarray,
     S: np.ndarray,
@@ -306,7 +366,7 @@ def prepare_points(
         raise ValueError(msg)
 
 
-@nb.jit
+@nb.jit(nopython=True)
 def _prepare_points_parabol(T, S, max_pos, max_val, min_pos, min_val, nbsym) -> Tuple[np.ndarray, np.ndarray]:
     # Need at least two extrema to perform mirroring
     DTYPE = S.dtype
@@ -548,7 +608,7 @@ def _prepare_points_simple(
     return max_extrema, min_extrema
 
 
-@nb.jit(nopython=False)
+@nb.jit(nopython=False, forceobj=True)
 def spline_points(T: np.ndarray, extrema: np.ndarray, spline_kind: str) -> Tuple[np.ndarray, np.ndarray]:
     dtype = extrema.dtype
     kind = spline_kind.lower()
@@ -559,36 +619,36 @@ def spline_points(T: np.ndarray, extrema: np.ndarray, spline_kind: str) -> Tuple
 
     elif kind == "cubic":
         if extrema.shape[1] > 3:
-            return t, interp1d(extrema[0], extrema[1], kind=kind)(t)
+            interpolation = interp1d(extrema[0], extrema[1], kind=kind)
+            interpolated: np.ndarray = interpolation(t)
+            return t, interpolated.astype(dtype)
         else:
             return cubic_spline_3pts(extrema[0], extrema[1], t)
 
     elif kind in ["slinear", "quadratic", "linear"]:
-        return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(dtype)
+        interpolation = interp1d(extrema[0], extrema[1], kind=kind)
+        interpolated: np.ndarray = interpolation(t)
+        return T, interpolated.astype(dtype)
 
     else:
         raise ValueError("No such interpolation method!")
 
 
-@nb.jit
-def _not_duplicate(S: np.ndarray) -> np.ndarray:
-    dup = np.logical_and(S[1:-1] == S[0:-2], S[1:-1] == S[2:])
-    not_dup_idx = np.arange(1, len(S) - 1)[~dup]
-
-    idx = np.empty(len(not_dup_idx) + 2, dtype=np.int64)
-    idx[0] = 0
-    idx[-1] = len(S) - 1
-    idx[1:-1] = not_dup_idx
-
-    return idx
-
-
-@nb.jit
-def find_extrema(T: np.ndarray, S: np.ndarray, extrema_detection: str) -> FindExtremaOutput:
+@nb.jit(
+    nb.types.UniTuple(float64[:, :], 2)(
+        float64[:], float64[:], int64, unicode_type
+    ),
+    nopython=True,
+)
+def extract_max_min_extrema(
+    T: np.ndarray,
+    S: np.ndarray,
+    nbsym: int,
+    extrema_detection: str,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Returns extrema (minima and maxima) for given signal S.
-    Detection and definition of the extrema depends on
-    ``extrema_detection`` variable, set on initiation of EMD.
+    Extracts top and bottom envelopes based on the signal,
+    which are constructed based on maxima and minima, respectively.
 
     Parameters
     ----------
@@ -599,83 +659,32 @@ def find_extrema(T: np.ndarray, S: np.ndarray, extrema_detection: str) -> FindEx
 
     Returns
     -------
-    local_max_pos : numpy array
-        Position of local maxima.
-    local_max_val : numpy array
-        Values of local maxima.
-    local_min_pos : numpy array
-        Position of local minima.
-    local_min_val : numpy array
-        Values of local minima.
+    max_spline : numpy array
+        Spline spanned on S maxima.
+    min_spline : numpy array
+        Spline spanned on S minima.
+    max_extrema : numpy array
+        Points indicating local maxima.
+    min_extrema : numpy array
+        Points indicating local minima.
     """
-    return _find_extrema_simple(T, S)
-    # if extrema_detection == "parabol":
-    #     return _find_extrema_parabol(T, S)
-    # elif extrema_detection == "simple":
-    #     return _find_extrema_simple(T, S)
-    # else:
-    #     raise ValueError("Incorrect extrema detection type. Please try: 'simple' or 'parabol'.")
+
+    # Get indexes of extrema
+    ext_res = find_extrema(T, S, extrema_detection)
+    max_pos, max_val = ext_res[0], ext_res[1]
+    min_pos, min_val = ext_res[2], ext_res[3]
+
+    if len(max_pos) + len(min_pos) < 3:
+        minus_one = -1 * np.ones((1, 1), dtype=S.dtype)
+        return minus_one.copy(), minus_one.copy()
+
+    #########################################
+    # Extrapolation of signal (over boundaries)
+    max_extrema, min_extrema = prepare_points(T, S, max_pos, max_val, min_pos, min_val, extrema_detection, nbsym)
+    return max_extrema, min_extrema
 
 
-@nb.jit
-def _find_extrema_parabol(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
-    # Finds indexes of zero-crossings
-    S1, S2 = S[:-1], S[1:]
-    indzer = np.nonzero(S1 * S2 < 0)[0]
-    if np.any(S == 0):
-        indz = np.nonzero(S == 0)[0]
-        if np.any(np.diff(indz) == 1):
-            zer = S == 0
-            dz = np.diff(np.append(np.append(0, zer), 0))
-            debz = np.nonzero(dz == 1)[0]
-            finz = np.nonzero(dz == -1)[0] - 1
-            # indz = np_round((debz + finz) / 2.0, 0, )
-            y = np.empty_like(debz)
-            np_round((debz + finz) / 2, 0, y)
-            indz = y.astype(np.int64)
-
-        indzer = np.sort(np.append(indzer, indz))
-
-    dt = float(T[1] - T[0])
-    scale = 2.0 * dt * dt
-
-    idx = _not_duplicate(S)
-    T = T[idx]
-    S = S[idx]
-
-    # p - previous
-    # 0 - current
-    # n - next
-    Tp, T0, Tn = T[:-2], T[1:-1], T[2:]
-    Sp, S0, Sn = S[:-2], S[1:-1], S[2:]
-    # a = Sn + Sp - 2*S0
-    # b = 2*(Tn+Tp)*S0 - ((Tn+T0)*Sp+(T0+Tp)*Sn)
-    # c = Sp*T0*Tn -2*Tp*S0*Tn + Tp*T0*Sn
-    TnTp, T0Tn, TpT0 = Tn - Tp, T0 - Tn, Tp - T0
-    scale = Tp * Tn * Tn + Tp * Tp * T0 + T0 * T0 * Tn - Tp * Tp * Tn - Tp * T0 * T0 - T0 * Tn * Tn
-
-    a = T0Tn * Sp + TnTp * S0 + TpT0 * Sn
-    b = (S0 - Sn) * Tp ** 2 + (Sn - Sp) * T0 ** 2 + (Sp - S0) * Tn ** 2
-    c = T0 * Tn * T0Tn * Sp + Tn * Tp * TnTp * S0 + Tp * T0 * TpT0 * Sn
-
-    a = a / scale
-    b = b / scale
-    c = c / scale
-    a[a == 0] = 1e-14
-    tVertex = -0.5 * b / a
-    idx = np.logical_and(tVertex < T0 + 0.5 * (Tn - T0), tVertex >= T0 - 0.5 * (T0 - Tp))
-
-    a, b, c = a[idx], b[idx], c[idx]
-    tVertex = tVertex[idx]
-    sVertex = a * tVertex * tVertex + b * tVertex + c
-
-    local_max_pos, local_max_val = tVertex[a < 0], sVertex[a < 0]
-    local_min_pos, local_min_val = tVertex[a > 0], sVertex[a > 0]
-
-    return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer
-
-
-@nb.jit
+@nb.njit
 def end_condition(S: np.ndarray, IMF: np.ndarray, range_thr: float, total_power_thr: float) -> bool:
     """Tests for end condition of whole EMD. The procedure will stop if:
 
@@ -698,11 +707,9 @@ def end_condition(S: np.ndarray, IMF: np.ndarray, range_thr: float, total_power_
     tmp = S - np.sum(IMF, axis=0)
 
     if np.max(tmp) - np.min(tmp) < range_thr:
-        # logger.debug("FINISHED -- RANGE")
         return True
 
     if np.sum(np.abs(tmp)) < total_power_thr:
-        # logger.debug("FINISHED -- SUM POWER")
         return True
 
     return False
@@ -739,18 +746,15 @@ def check_imf(
     # Scaled variance test
     svar = imf_diff_sqrd_sum / (max(imf_old) - min(imf_old))
     if svar < svar_thr:
-        # logger.debug("Scaled variance -- PASSED")
         return True
 
     # Standard deviation test
     std = np.sum((imf_diff / imf_new) ** 2)
     if std < std_thr:
-        # logger.debug("Standard deviation -- PASSED")
         return True
 
     energy_ratio = imf_diff_sqrd_sum / np.sum(imf_old * imf_old)
     if energy_ratio < energy_ratio_thr:
-        # logger.debug("Energy ratio -- PASSED")
         return True
 
     return False
@@ -773,19 +777,25 @@ def _normalize_time(t: np.ndarray) -> np.ndarray:
     Normalize time array so that it doesn't explode on tiny values.
     Returned array starts with 0 and the smallest increase is by 1.
     """
-    d = np.diff(t)
+    d = nb_diff(t)
     assert np.all(d != 0), "All time domain values needs to be unique"
     return (t - t[0]) / np.min(d)
 
 
-@nb.jit
+@nb.jit(
+    float64[:, :](
+        float64[:], float64[:], nb.optional(int64), nb.optional(unicode_type), nb.optional(unicode_type), nb.optional(nb.typeof(default_emd_config))
+    ),
+    nopython=False,
+    forceobj=True,
+)
 def emd(
     S: np.ndarray,
     T: np.ndarray,
-    config: EmdConfig = EmdConfig(),
     max_imf: int = -1,
     spline_kind: str = "cubic",
     extrema_detection: str = "simple",
+    config=default_emd_config,
 ) -> np.ndarray:
     # if T is not None and len(S) != len(T):
     #     raise ValueError("Time series have different sizes: len(S) -> {} != {} <- len(T)".format(len(S), len(T)))
@@ -799,6 +809,13 @@ def emd(
 
     # Make sure same types are dealt
     # S, T = _common_dtype(S, T)
+    MAX_ITERATION = config["MAX_ITERATION"]
+    FIXE = config["FIXE"]
+    FIXE_H = config["FIXE_H"]
+    nbsym = config["nbsym"]
+    svar_thr, std_thr, energy_ratio_thr = config["svar_thr"], config["std_thr"], config["energy_ratio_thr"]
+    range_thr, total_power_thr = config["range_thr"], config["total_power_thr"]
+
     DTYPE = S.dtype
     N = len(S)
 
@@ -816,8 +833,6 @@ def emd(
     finished = False
 
     while not finished:
-        # logger.debug("IMF -- %s", imfNo)
-
         residue[:] = S - np.sum(IMF[:imfNo], axis=0)
         imf = residue.copy()
         mean = np.zeros(len(S), dtype=DTYPE)
@@ -828,8 +843,7 @@ def emd(
 
         while True:
             n += 1
-            if n >= config.MAX_ITERATION:
-                # logger.info("Max iterations reached for IMF. Continuing with another IMF.")
+            if n >= MAX_ITERATION:
                 break
 
             ext_res = find_extrema(T, imf, extrema_detection)
@@ -839,26 +853,23 @@ def emd(
 
             if extNo > 2:
 
-                max_env, min_env, eMax, eMin = extract_max_min_spline(T, imf, config, extrema_detection, spline_kind)
-                mean[:] = 0.5 * (max_env + min_env)
+                max_extrema, min_extrema = extract_max_min_extrema(T, imf, nbsym, extrema_detection)
+                _, max_env = spline_points(T, max_extrema, spline_kind)
+                _, min_env = spline_points(T, min_extrema, spline_kind)
+                mean = 0.5 * (max_env + min_env)
 
                 imf_old = imf.copy()
-                imf[:] = imf - mean
+                imf = imf - mean
 
                 # Fix number of iterations
-                if config.FIXE:
-                    if n >= config.FIXE:
+                if FIXE:
+                    if n >= FIXE:
                         break
 
                 # Fix number of iterations after number of zero-crossings
                 # and extrema differ at most by one.
-                elif config.FIXE_H:
-                    tmp_residue = find_extrema(T, imf, extrema_detection)
-                    max_pos, min_pos, ind_zer = (
-                        tmp_residue[0],
-                        tmp_residue[2],
-                        tmp_residue[4],
-                    )
+                elif FIXE_H:
+                    max_pos, _, min_pos, _, ind_zer = find_extrema(T, imf, extrema_detection)
                     extNo = len(max_pos) + len(min_pos)
                     nzm = len(ind_zer)
 
@@ -869,7 +880,7 @@ def emd(
                     n_h = n_h + 1 if abs(extNo - nzm) < 2 else 0
 
                     # STOP
-                    if n_h >= config.FIXE_H:
+                    if n_h >= FIXE_H:
                         break
 
                 # Stops after default stopping criteria are met
@@ -882,7 +893,7 @@ def emd(
                     if imf_old is np.nan:
                         continue
 
-                    f1 = check_imf(imf, imf_old, eMax, eMin, config.svar_thr, config.std_thr, config.energy_ratio_thr)
+                    f1 = check_imf(imf, imf_old, max_extrema, min_extrema, svar_thr, std_thr, energy_ratio_thr)
                     f2 = abs(extNo - nzm) < 2
 
                     # STOP
@@ -897,7 +908,7 @@ def emd(
         IMF = np.vstack((IMF, imf.copy()))
         imfNo += 1
 
-        if end_condition(S, IMF, config.range_thr, config.total_power_thr) or imfNo == max_imf:
+        if end_condition(S, IMF, range_thr, total_power_thr) or imfNo == max_imf:
             finished = True
             break
 
@@ -914,48 +925,6 @@ def emd(
         IMF = np.vstack((IMF, residue))
 
     return IMF
-
-
-# def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
-#     """
-#     Provides access to separated imfs and residue from recently analysed signal.
-
-#     Returns
-#     -------
-#     imfs : np.ndarray
-#         Obtained IMFs
-#     residue : np.ndarray
-#         Residue.
-
-#     """
-#     if self.imfs is None or self.residue is None:
-#         raise ValueError("No IMF found. Please, run EMD method or its variant first.")
-#     return self.imfs, self.residue
-
-
-def get_imfs_and_trend(self) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Provides access to separated imfs and trend from recently analysed signal.
-    Note that this may differ from the `get_imfs_and_residue` as the trend isn't
-    necessarily the residue. Residue is a point-wise difference between input signal
-    and all obtained components, whereas trend is the slowest component (can be zero).
-
-    Returns
-    -------
-    imfs : np.ndarray
-        Obtained IMFs
-    trend : np.ndarray
-        The main trend.
-
-    """
-    if self.imfs is None or self.residue is None:
-        raise ValueError("No IMF found. Please, run EMD method or its variant first.")
-
-    imfs, residue = get_imfs_and_residue()
-    if np.allclose(residue, 0):
-        return imfs[:-1].copy(), imfs[-1].copy()
-    else:
-        return imfs, residue
 
 
 def get_timeline(range_max: int, dtype: Optional[np.dtype] = None) -> np.ndarray:
