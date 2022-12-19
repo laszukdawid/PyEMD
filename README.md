@@ -175,6 +175,9 @@ in JIT optimization so mistakes could've been made.
 Any feedback is welcomed. Happy to improve if there's intrest. Please open tickets with questions
 and suggestions.
 
+To enable JIT in your PyEMD, please install with `jit` option, i.e.
+
+> \$ pip install EMD-signal[jit]
 
 ###  EMD2D/BEMD
 

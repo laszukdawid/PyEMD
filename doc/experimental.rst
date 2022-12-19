@@ -11,6 +11,14 @@ Seriously though, mode decomposition in 2D and multi-dim is an interesting topic
 
 JIT EMD
 -------
+.. note::
+
+    To use JitEMD you need to install PyEMD wiht ``jit`` option.
+    If you're using ``pip`` then use this command
+
+    .. code:: shell
+
+        pip install EMD-signal[jit]
 
 Uses Numba (https://numba.pydata.org/) as a Just-in-Time (JIT)
 compiler for Python, mostly Numpy. Just-in-time compilation means that
