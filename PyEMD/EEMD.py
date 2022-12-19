@@ -240,7 +240,7 @@ class EEMD:
         Provides emd evaluation from provided EMD class.
         For reference please see :class:`PyEMD.EMD`.
         """
-        return self.EMD.emd(S, T, max_imf)
+        return self.EMD.emd(S, T, max_imf=max_imf)
 
     def get_imfs_and_residue(self) -> Tuple[np.ndarray, np.ndarray]:
         """
