@@ -117,12 +117,15 @@ def whitenoise_check(IMFs: np.ndarray, test_name: str = "aposteriori", rescaling
         k = abs(stats.norm.ppf((1 - alpha) / 2))
         up_limit = -scaling_imf_mean_period + (k * math.sqrt(2 / N) * math.exp(scaling_imf_mean_period) / 2)
 
-        scaling_factor = up_limit - scaling_imf_energy_density
+        scaling_factor = math.exp(up_limit)
 
         for idx, imf in enumerate(IMFs):
             log_T = math.log(mean_period(imf))
-            energy_density = math.log(energy(imf) / N)
-            scaled_energy_density = energy_density + scaling_factor
+            if idx != rescaling_imf - 1:
+                scaled_energy_density = math.log((energy(imf) / N) / scaling_factor) 
+            else:
+                scaled_energy_density = math.log(scaling_factor)
+
             sig_aposteriori = significance_aposteriori(scaled_energy_density, log_T, N, alpha)
 
             output[idx + 1] = int(sig_aposteriori)
