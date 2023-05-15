@@ -12,17 +12,28 @@ from PyEMD.utils import get_timeline
 
 def test_spline(X,T,s_kind):
     """
-    test the fitting with the ginven spline
-    require:
-     X: the signal, 1D numpy array
-     T: time array. 1D numpy array of the same length of X
-     s_kind: spline kind, string. can be one of the following splines:
-     'akima', 'cubic', 'pchip'
-    return:
-     max_env: max spline envelope, 1D numpy array
-     min_env: min spline envelope, 1D numpy array
-     eMax: max extrema of the spline envelope
-     eMin: min extrema of the spline envelope
+    Test the fitting with the given spline.
+
+    Parameters
+    ----------
+    X : 1D numpy array
+        the signal
+    T : 1D numpy array
+        Position or time array. It has the same length as X
+    s_kind : string
+        spline kind. can be one of the following splines:
+        'akima', 'cubic', 'pchip', 'cubic_hermite'
+
+    Returns
+    -------
+    max_env : 1D numpy array
+        max spline envelope
+    min_env : 1D numpy array
+        min spline envelope
+    eMax : numpy array
+        max extrema of the signal
+    eMin : numpy array
+        min extrema of the signal
     """
 
     emd = EMD()
@@ -33,15 +44,23 @@ def test_spline(X,T,s_kind):
 
 def test_akima(X,T,ax):
     """
-    test the fitting with akima spline
-     require:
-     X: the signal, 1D numpy array
-     T: time array. 1D numpy array of the same length of X
-     ax: matplotlib axis
-    return:
+    test the fitting with akima spline.
+
+    Parameters
+    ----------
+    X : 1D numpy array
+        the signal
+    T : 1D numpy array
+        Position or time array. It has the same length as X
+    ax : matplotlib axis
+        the axis used for plotting
+    Returns
+    -------
+    eMax : numpy array
+        max extrema of the signal
+    eMin : numpy array
+        min extrema of the signal
      the plot of the spline envelope
-     eMax: max extrema of the spline envelope
-     eMin: min extrema of the spline envelope
     """
 
     max_env, min_env, eMax, eMin = test_spline(X, T, "akima")
@@ -54,14 +73,14 @@ def test_akima(X,T,ax):
 def test_cubic(X,T,ax):
     """
     test the fitting with cubic spline
-     require:
-     X: the signal, 1D numpy array
-     T: time array. 1D numpy array of the same length of X
-     ax: matplotlib axis
-    return:
-     the plot of the spline envelope
-     eMax: max extrema of the spline envelope
-     eMin: min extrema of the spline envelope
+    
+    Parameters
+    ----------
+    see 'test_akima'
+
+    Returns
+    -------
+    see 'test_akima'
     """
 
     max_env, min_env, eMax, eMin = test_spline(X, T, "cubic")
@@ -75,14 +94,14 @@ def test_pchip(X,T,ax):
     """
     test the fitting with pchip spline 
     'Piecewise Cubic Hermite Interpolating Polynomial'
-     require:
-     X: the signal, 1D numpy array
-     T: time array. 1D numpy array of the same length of X
-     ax: matplotlib axis
-    return:
-     the plot of the spline envelope
-     eMax: max extrema of the spline envelope
-     eMin: min extrema of the spline envelope
+
+    Parameters
+    ----------
+    see 'test_akima'
+
+    Returns
+    -------
+    see 'test_akima'
     """
 
     max_env, min_env, eMax, eMin = test_spline(X, T, "pchip")
@@ -95,14 +114,14 @@ def test_pchip(X,T,ax):
 def test_cubic_hermite(X,T,ax):
     """
     test the fitting with cubic_hermite spline 
-     require:
-     X: the signal, 1D numpy array
-     T: time array. 1D numpy array of the same length of X
-     ax: matplotlib axis
-    return:
-     the plot of the spline envelope
-     eMax: max extrema of the spline envelope
-     eMin: min extrema of the spline envelope
+
+    Parameters
+    ----------
+    see 'test_akima'
+
+    Returns
+    -------
+    see 'test_akima'
     """
 
     max_env, min_env, eMax, eMin = test_spline(X, T, "cubic_hermite")
