@@ -48,13 +48,10 @@ def akima(X, Y, x):
     spl = Akima1DInterpolator(X, Y)
     return spl(x)
 
-
-#to be fixed
 def cubic_hermite(X,Y,x):
     dydx = np.gradient(Y,X)
     spl = CubicHermiteSpline(X, Y, dydx)
     return spl(x)
-#---------------------------------
 
 def cubic(X,Y,x):
     spl = CubicSpline(X, Y)

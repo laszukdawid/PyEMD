@@ -489,7 +489,7 @@ class EMD:
             return t, pchip(extrema[0], extrema[1], t)
 
         elif kind == "cubic_hermite":
-            return t, cubic_hermite(extrema[0],extrema[1], t)
+            return t, cubic_hermite(extrema[0], extrema[1], t)
 
         elif kind in ["slinear", "quadratic", "linear"]:
             return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
