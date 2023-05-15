@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 import numpy as np
 from scipy.interpolate import interp1d
 
-from PyEMD.splines import akima, cubic_spline_3pts, cubic, pchip #cubic_hermite
+from PyEMD.splines import akima, cubic_spline_3pts, cubic, pchip, cubic_hermite
 from PyEMD.utils import get_timeline
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
@@ -489,8 +489,7 @@ class EMD:
             return t, pchip(extrema[0], extrema[1], t)
 
         elif kind == "cubic_hermite":
-            raise ValueError("spline not implemented yet")
-        #    return t, cubic_hermite(extrema[0], extrema[1], t)
+            return t, cubic_hermite(extrema[0],extrema[1], t)
 
         elif kind in ["slinear", "quadratic", "linear"]:
             return T, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)

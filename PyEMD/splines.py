@@ -50,9 +50,10 @@ def akima(X, Y, x):
 
 
 #to be fixed
-#def cubic_hermite(X,Y,x):
-#    spl = CubicHermiteSpline(X, Y, dydx)
-#    return spl(x)
+def cubic_hermite(X,Y,x):
+    dydx = np.gradient(Y,X)
+    spl = CubicHermiteSpline(X, Y, dydx)
+    return spl(x)
 #---------------------------------
 
 def cubic(X,Y,x):
