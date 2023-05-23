@@ -112,7 +112,6 @@ class CEEMDANTest(unittest.TestCase):
             ceemdan.generate_noise(1.0, 100)
 
     def test_ceemdan_passingCustomEMD(self):
-
         spline_kind = "linear"
         params = {"spline_kind": spline_kind}
 
@@ -134,7 +133,7 @@ class CEEMDANTest(unittest.TestCase):
 
     def test_ceemdan_noiseSeed(self):
         T = np.linspace(0, 1, 100)
-        S = np.sin(2 * np.pi * T + 4 ** T) + np.cos((T - 0.4) ** 2)
+        S = np.sin(2 * np.pi * T + 4**T) + np.cos((T - 0.4) ** 2)
 
         # Compare up to machine epsilon
         def cmpMachEps(x, y):
@@ -164,7 +163,7 @@ class CEEMDANTest(unittest.TestCase):
 
     def test_ceemdan_originalSignal(self):
         T = np.linspace(0, 1, 100)
-        S = 2 * np.cos(3 * np.pi * T) + np.cos(2 * np.pi * T + 4 ** T)
+        S = 2 * np.cos(3 * np.pi * T) + np.cos(2 * np.pi * T + 4**T)
 
         # Make a copy of S for comparsion
         Scopy = np.copy(S)

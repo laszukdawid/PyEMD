@@ -86,7 +86,6 @@ class EEMDTest(unittest.TestCase):
             eemd.generate_noise(1.0, 100)
 
     def test_eemd_passingCustomEMD(self):
-
         spline_kind = "linear"
         params = {"spline_kind": spline_kind}
 
@@ -102,7 +101,7 @@ class EEMDTest(unittest.TestCase):
 
     def test_eemd_noiseSeed(self):
         T = np.linspace(0, 1, 100)
-        S = np.sin(2 * np.pi * T + 4 ** T) + np.cos((T - 0.4) ** 2)
+        S = np.sin(2 * np.pi * T + 4**T) + np.cos((T - 0.4) ** 2)
 
         # Compare up to machine epsilon
         def cmpMachEps(x, y):

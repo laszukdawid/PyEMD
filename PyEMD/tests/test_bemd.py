@@ -92,7 +92,6 @@ class BEMDTest(unittest.TestCase):
         self.assertTrue(IMFs.shape[0] == 7, "Depending on spline, there should be an IMF and possibly trend")
 
     def test_bemd_limitImfNo(self):
-
         # Create image
         rows, cols = 64, 64
         linear_background = 0.2 * self._generate_linear_image(rows, cols)

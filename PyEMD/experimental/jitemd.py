@@ -262,7 +262,7 @@ def _find_extrema_parabol(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
     scale = Tp * Tn * Tn + Tp * Tp * T0 + T0 * T0 * Tn - Tp * Tp * Tn - Tp * T0 * T0 - T0 * Tn * Tn
 
     a = T0Tn * Sp + TnTp * S0 + TpT0 * Sn
-    b = (S0 - Sn) * Tp ** 2 + (Sn - Sp) * T0 ** 2 + (Sp - S0) * Tn ** 2
+    b = (S0 - Sn) * Tp**2 + (Sn - Sp) * T0**2 + (Sp - S0) * Tn**2
     c = T0 * Tn * T0Tn * Sp + Tn * Tp * TnTp * S0 + Tp * T0 * TpT0 * Sn
 
     a = a / scale
@@ -734,7 +734,7 @@ def check_imf(
         return False
 
     # Convergence
-    if np.sum(imf_new ** 2) < 1e-10:
+    if np.sum(imf_new**2) < 1e-10:
         return False
 
     # Precompute values
@@ -855,7 +855,6 @@ def emd(
             nzm = len(indzer)
 
             if extNo > 2:
-
                 max_extrema, min_extrema = extract_max_min_extrema(T, imf, nbsym, extrema_detection)
                 _, max_env = spline_points(T, max_extrema, spline_kind)
                 _, min_env = spline_points(T, min_extrema, spline_kind)
@@ -997,7 +996,7 @@ if __name__ == "__main__":
     tMin, tMax = 0, 2 * np.pi
     T = np.linspace(tMin, tMax, N, dtype=DTYPE)
 
-    S = np.sin(20 * T * (1 + 0.2 * T)) + T ** 2 + np.sin(13 * T)
+    S = np.sin(20 * T * (1 + 0.2 * T)) + T**2 + np.sin(13 * T)
     S = S.astype(DTYPE)
     print("Input S.dtype: " + str(S.dtype))
 

@@ -106,7 +106,6 @@ class CEEMDAN:
     noise_kinds_all = ["normal", "uniform"]
 
     def __init__(self, trials: int = 100, epsilon: float = 0.005, ext_EMD=None, parallel: bool = False, **kwargs):
-
         # Ensemble constants
         self.trials = trials
         self.epsilon = epsilon

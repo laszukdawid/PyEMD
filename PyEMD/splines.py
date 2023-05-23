@@ -25,7 +25,6 @@ def cubic_spline_3pts(x, y, T):
     M = np.array([[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]])
     v = np.array([v1, v2, v3]).T
     k = np.linalg.inv(M).dot(v)
-    # k = np.array(tmp)
 
     a1 = k[0] * x1x0 - y1y0
     b1 = -k[1] * x1x0 + y1y0
@@ -48,15 +47,18 @@ def akima(X, Y, x):
     spl = Akima1DInterpolator(X, Y)
     return spl(x)
 
-def cubic_hermite(X,Y,x):
-    dydx = np.gradient(Y,X)
+
+def cubic_hermite(X, Y, x):
+    dydx = np.gradient(Y, X)
     spl = CubicHermiteSpline(X, Y, dydx)
     return spl(x)
 
-def cubic(X,Y,x):
+
+def cubic(X, Y, x):
     spl = CubicSpline(X, Y)
     return spl(x)
 
-def pchip(X,Y,x):
+
+def pchip(X, Y, x):
     spl = PchipInterpolator(X, Y)
     return spl(x)

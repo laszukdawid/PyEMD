@@ -73,7 +73,6 @@ class EEMD:
     noise_kinds_all = ["normal", "uniform"]
 
     def __init__(self, trials: int = 100, noise_width: float = 0.05, ext_EMD=None, parallel: bool = False, **kwargs):
-
         # Ensemble constants
         self.trials = trials
         self.noise_width = noise_width
@@ -194,8 +193,7 @@ class EEMD:
 
         self._all_imfs = defaultdict(list)
         it = iter if not progress else lambda x: tqdm(x, desc="EEMD", total=self.trials)
-        for (imfs, trend) in it(all_IMFs):
-
+        for imfs, trend in it(all_IMFs):
             # A bit of explanation here.
             # If the `trend` is not None, that means it was intentionally separated in the decomp process.
             # This might due to `separate_trends` flag which means that trends are summed up separately
@@ -277,7 +275,6 @@ class EEMD:
 ###################################################
 # Beginning of program
 if __name__ == "__main__":
-
     import pylab as plt
 
     E_imfNo = np.zeros(50, dtype=np.int)

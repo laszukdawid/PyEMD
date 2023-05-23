@@ -42,7 +42,6 @@ class EMD:
     logger = logging.getLogger(__name__)
 
     def __init__(self):
-
         self.splineKind = "cubic"
 
         self.nbsym = 2
@@ -346,7 +345,6 @@ class EMD:
 
         # When two or more points have the same value
         if np.any(d == 0):
-
             imax, imin = [], []
 
             bad = d == 0
@@ -431,7 +429,6 @@ class EMD:
 
     @staticmethod
     def _common_dtype(x, y):
-
         dtype = np.find_common_type([x.dtype, y.dtype], [])
         if x.dtype != dtype:
             x = x.astype(dtype)
@@ -532,7 +529,6 @@ class EMD:
                 nzm = len(indzer)
 
                 if extNo > 2:
-
                     # Plotting. Either into file, or on-screen display.
                     imfOld = imf.copy()
                     imf = imf - self.reduceScale * mean
@@ -568,7 +564,6 @@ class EMD:
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
-
                         ext_res = self.findExtrema(T, imf)
                         mP, MP, indzer = ext_res[0], ext_res[2], ext_res[4]
                         extNo = len(mP) + len(MP)
@@ -587,7 +582,6 @@ class EMD:
 
                     # Stops after default stopping criteria are meet.
                     else:
-
                         mP, _, MP, _, indzer = self.findExtrema(T, imf)
                         extNo = len(mP) + len(MP)
                         nzm = len(indzer)
@@ -631,7 +625,6 @@ class EMD:
 # Beginning of program
 
 if __name__ == "__main__":
-
     import pylab as plt
 
     # Logging options
@@ -646,7 +639,7 @@ if __name__ == "__main__":
     tMin, tMax = 0, 1
     T = np.linspace(tMin, tMax, N, dtype=DTYPE)
 
-    S = 6 * T + np.cos(8 * np.pi ** T) + 0.5 * np.cos(40 * np.pi * T)
+    S = 6 * T + np.cos(8 * np.pi**T) + 0.5 * np.cos(40 * np.pi * T)
     S = S.astype(DTYPE)
 
     # Prepare and run EMD

@@ -19,7 +19,6 @@ class CompactTest(unittest.TestCase):
         return 0.1 * np.cos(2.0 * np.pi * t)
 
     def test_TDMA(self):
-
         diags = np.array([0.5 * np.ones(10), 1.0 * np.ones(10), 0.5 * np.ones(10)])
         positions = [-1, 0, 1]
         tridiag = sp.sparse.spdiags(diags, positions, 10, 10).todense()

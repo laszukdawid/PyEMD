@@ -14,7 +14,7 @@
 
 ## Introduction
 
-This is yet another Python implementation of Empirical Mode
+Python implementation of the Empirical Mode
 Decomposition (EMD). The package contains multiple EMD variations and
 intends to deliver more in time.
 
@@ -33,7 +33,9 @@ and extrema interpolations.
 
 -  Natural cubic (**default**)
 -  Pointwise cubic
+-  Hermite cubic
 -  Akima
+-  PChip
 -  Linear
 
 ### Available stopping criteria

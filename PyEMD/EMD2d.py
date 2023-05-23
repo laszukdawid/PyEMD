@@ -325,7 +325,6 @@ class EMD2D:
 
                 self.logger.debug("min_peaks = %i  |  max_peaks = %i", len(min_peaks[0]), len(max_peaks[0]))
                 if len(min_peaks[0]) > 4 and len(max_peaks[0]) > 4:
-
                     imf_old = imf.copy()
                     imf = imf - mean_env
 
@@ -344,7 +343,6 @@ class EMD2D:
                     # Fix number of iterations after number of zero-crossings
                     # and extrema differ at most by one.
                     elif self.FIXE_H:
-
                         if n == 1:
                             continue
                         if self.check_proto_imf(imf, imf_old, mean_env):
@@ -358,7 +356,6 @@ class EMD2D:
 
                     # Stops after default stopping criteria are met
                     else:
-
                         if self.check_proto_imf(imf, imf_old, mean_env):
                             stop_sifting = True
 

@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
     # Simple signal example
     t = np.arange(0, 3, 0.01)
-    S = np.sin(13 * t + 0.2 * t ** 1.4) - np.cos(3 * t)
+    S = np.sin(13 * t + 0.2 * t**1.4) - np.cos(3 * t)
 
     emd = EMD()
     emd.emd(S)

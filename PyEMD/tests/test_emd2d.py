@@ -285,7 +285,6 @@ class ImageEMDTest(unittest.TestCase):
         self.assertTrue(np.allclose(IMFs[1], linear_background, atol=1.0))
 
     def test_emd2d_passArgsViaDict(self):
-
         FIXE = 10
         params = {"FIXE": FIXE}
         emd2D = EMD2D(**params)
@@ -293,7 +292,6 @@ class ImageEMDTest(unittest.TestCase):
         self.assertTrue(emd2D.FIXE == FIXE, "Received {}, Expceted {}".format(emd2D.FIXE, FIXE))
 
     def test_emd2d_limitImfNo(self):
-
         # Create image
         rows, cols = 128, 128
         linear_background = 0.2 * self._generate_linear_image(rows, cols)

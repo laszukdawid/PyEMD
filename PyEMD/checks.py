@@ -122,7 +122,7 @@ def whitenoise_check(IMFs: np.ndarray, test_name: str = "aposteriori", rescaling
         for idx, imf in enumerate(IMFs):
             log_T = math.log(mean_period(imf))
             if idx != rescaling_imf - 1:
-                scaled_energy_density = math.log((energy(imf) / N) / scaling_factor) 
+                scaled_energy_density = math.log((energy(imf) / N) / scaling_factor)
             else:
                 scaled_energy_density = math.log(scaling_factor)
 

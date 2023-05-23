@@ -1,6 +1,6 @@
 import logging
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 logger = logging.getLogger("pyemd")
 
 from PyEMD.CEEMDAN import CEEMDAN  # noqa
