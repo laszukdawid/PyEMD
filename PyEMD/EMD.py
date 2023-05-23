@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 import numpy as np
 from scipy.interpolate import interp1d
 
-from PyEMD.splines import akima, cubic_spline_3pts, cubic, pchip, cubic_hermite
+from PyEMD.splines import akima, cubic, cubic_hermite, cubic_spline_3pts, pchip
 from PyEMD.utils import get_timeline
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]

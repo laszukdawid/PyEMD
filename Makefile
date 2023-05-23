@@ -11,3 +11,7 @@ doc:
 
 format:
 	black PyEMD
+
+lint-check:
+	python -m isort --check PyEMD
+	python -m black --check PyEMD
