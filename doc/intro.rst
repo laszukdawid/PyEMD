@@ -12,7 +12,7 @@ All these methods theoretically should decompose a signal into the same set of c
 there are plenty of nuances and different ways to handle noise. Regardless of the method, obtained
 components are often called *Intrinsic Mode Functions* (IMF) to highlight that they contain an intrinsic (self)
 property which is a specific oscillation (mode). These are generic oscillations; their frequency and 
-amplitude can change, however, no they are distinct within analyzed signal.
+amplitude can change, however, know they are distinct within analyzed signal.
 
 Installation
 ------------
