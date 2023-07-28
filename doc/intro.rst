@@ -48,7 +48,7 @@ In case you like using command line and want a copy-paste line ::
     $ git clone https://github.com/laszukdawid/PyEMD
 
 
-Once the code is download, enter package's directory and execute ::
+Once the code is downloaded, enter package's directory and execute ::
 
     $ python setup.py install
 
