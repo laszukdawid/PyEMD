@@ -12,7 +12,7 @@ All these methods theoretically should decompose a signal into the same set of c
 there are plenty of nuances and different ways to handle noise. Regardless of the method, obtained
 components are often called *Intrinsic Mode Functions* (IMF) to highlight that they contain an intrinsic (self)
 property which is a specific oscillation (mode). These are generic oscillations; their frequency and 
-amplitude can change, however, no they are distinct within analyzed signal.
+amplitude can change, however, they are distinct within analyzed signal.
 
 Installation
 ------------
@@ -48,7 +48,7 @@ In case you like using command line and want a copy-paste line ::
     $ git clone https://github.com/laszukdawid/PyEMD
 
 
-Once the code is download, enter package's directory and execute ::
+Once the code is downloaded, enter package's directory and execute ::
 
     $ python setup.py install
 
