@@ -103,8 +103,6 @@ class EEMD:
 
     def __getstate__(self) -> Dict:
         self_dict = self.__dict__.copy()
-        if "pool" in self_dict:
-            del self_dict["pool"]
         return self_dict
 
     def generate_noise(self, scale: float, size: Union[int, Sequence[int]]) -> np.ndarray:
@@ -183,13 +181,14 @@ class EEMD:
         # For trial number of iterations perform EMD on a signal
         # with added white noise
         if self.parallel:
-            map_pool = Pool(processes=self.processes)
+            pool = Pool(processes=self.processes)
+            map_pool = pool.map
         else:
             map_pool = map
         all_IMFs = map_pool(self._trial_update, range(self.trials))
 
         if self.parallel:
-            map_pool.close()
+            pool.close()
 
         self._all_imfs = defaultdict(list)
         it = iter if not progress else lambda x: tqdm(x, desc="EEMD", total=self.trials)

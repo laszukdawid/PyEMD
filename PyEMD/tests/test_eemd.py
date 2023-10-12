@@ -139,7 +139,16 @@ class EEMDTest(unittest.TestCase):
 
         self.assertTrue(eIMFs.shape[0] > 0)
         self.assertTrue(eIMFs.shape[1], len(S))
-        self.assertFalse("pool" in eemd.__dict__)
+
+    def test_eemd_yesParallel(self):
+        S = np.random.random(100)
+
+        eemd = EEMD(trials=5, max_imf=2, parallel=True)
+        eemd.EMD.FIXE_H = 2
+        eIMFs = eemd.eemd(S)
+
+        self.assertTrue(eIMFs.shape[0] > 0)
+        self.assertTrue(eIMFs.shape[1], len(S))
 
     def test_imfs_and_residue_accessor(self):
         S = np.random.random(100)
