@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  push:
+    branches-ignore:
+      - $default-branch
+  pull_request:
+    paths:
+      - 'PyEMD/**.py'
+
+jobs:
+
+  build-n-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Running Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test dependencies
+        run: |
+          pip install --only-binary=numpy,scipy numpy scipy
+          pip install -e .[test]
+      - name: Run tests
+        run: |
+          python -m PyEMD.tests.test_all
