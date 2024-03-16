@@ -10,8 +10,8 @@ doc:
 	cd doc && make html
 
 format:
-	black PyEMD
+	python -m black PyEMD doc
 
 lint-check:
 	python -m isort --check PyEMD
-	python -m black --check PyEMD
+	python -m black --check PyEMD doc

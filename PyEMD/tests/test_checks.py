@@ -1,4 +1,5 @@
 """Tests for checks.py."""
+
 import unittest
 
 import numpy as np
