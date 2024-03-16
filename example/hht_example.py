@@ -21,7 +21,7 @@ S = 3 * sin(18, 0.2) * (t - 0.2) ** 2
 S += 5 * sin(11, 2.7)
 S += 3 * sin(14, 1.6)
 S += 1 * np.sin(4 * 2 * np.pi * (t - 0.8) ** 2)
-S += t ** 2.1 - t
+S += t**2.1 - t
 
 # Compute IMFs with EMD
 emd = EMD()
