@@ -2,8 +2,6 @@ name: Upload Python Package
 
 on:
   push:
-    paths:
-      - PyEMD/__init__.py
     branches:
       - master
 
@@ -13,7 +11,12 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+        python-version: 
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
 
     steps:
       - uses: actions/checkout@v4

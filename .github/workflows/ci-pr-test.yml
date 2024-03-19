@@ -1,9 +1,6 @@
 name: Test
 
 on:
-  push:
-    branches-ignore:
-      - $default-branch
   pull_request:
     paths:
       - 'PyEMD/**.py'
