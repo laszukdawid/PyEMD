@@ -5,7 +5,7 @@ on:
     paths:
       - PyEMD/__init__.py
     branches:
-      - $default-branch
+      - master
 
 jobs:
   build-n-test:
