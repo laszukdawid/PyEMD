@@ -38,6 +38,7 @@ jobs:
     outputs:
       pyemd_version: ${{ steps.version.outputs.pyemd_version }}
     steps:
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: version
         with:
