@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - ci-test
 
 jobs:
   build-n-test:
@@ -32,9 +33,28 @@ jobs:
         run: |
           python -m PyEMD.tests.test_all
 
+  version-updated:
+    runs-on: ubuntu-latest
+    outputs:
+      pyemd_version: ${{ steps.version.outputs.pyemd_version }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: version
+        with:
+          filters: |
+            pyemd_version:
+              - 'PyEMD/__init__.py'
+      - name: Check if version is updated
+        if: ${{ steps.version.outputs.pyemd_version ==  'true'}}
+        run: echo "PyEMD version is updated"
+      - name: Check if version is not updated
+        if: ${{ steps.version.outputs.pyemd_version ==  'false'}}
+        run: echo "PyEMD version is not updated"
+
   deploy:
     # Run 'deploy' job only if `PyEMD/__init__.py` is modified
-    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'PyEMD/__init__.py')
+    if: needs.version-updated.outputs.pyemd_version == 'false'
+    needs: version-updated
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
