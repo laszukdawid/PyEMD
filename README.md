@@ -56,12 +56,12 @@ The quickest way to install package is through `pip`.
 
 > \$ pip install EMD-signal
 
-In this way you install the old version of PyEMD hosted on PyPi
+In this way you install the latest stable release of PyEMD hosted on PyPi
 
 ### From source
 
 In case, if you only want to *use* EMD and its variations, the best way to install PyEMD is through `pip`.
-However, if you want to modify the code, anyhow you might want to download the code and build package yourself.
+However, if you want the latest version of PyEMD, anyhow you might want to download the code and build package yourself.
 The source is publicaly available and hosted on [GitHub](https://github.com/laszukdawid/PyEMD).
 To download the code you can either go to the source code page and click `Code -> Download ZIP`, or use **git** command line
 
@@ -78,7 +78,7 @@ A quicker way to install PyEMD from source is done using `pip` and `git` in the 
 >\$ python3 -m pip install git+https://github.com/laszukdawid/PyEMD.git
 
 **Note**, however, that this will install it in your current environment. If you are working on many projects, or sharing reources with others, we suggest using [virtual environments](https://docs.python.org/3/library/venv.html).
-
+If you want to make your installation editable use the `-e` flag for [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/)
 ## Example
 
 More detailed examples are included in the
