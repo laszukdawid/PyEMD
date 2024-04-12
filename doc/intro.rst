@@ -50,7 +50,11 @@ In case you like using command line and want a copy-paste line ::
 
 Once the code is downloaded, enter package's directory and execute ::
 
-    $ python setup.py install
+    $ python -m pip install .
+
+Or you can do  it at once with ::
+
+    $ python -m pip install git+https://github.com/laszukdawid/PyEMD.git
 
 This will download all required dependencies and will install PyEMD in your environment.
 Once it's done do a sanity check with quick import and version print: ::
