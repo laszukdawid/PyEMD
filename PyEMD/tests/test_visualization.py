@@ -19,8 +19,8 @@ class VisTest(unittest.TestCase):
         emd.emd(S, t)
         imfs, res = emd.get_imfs_and_residue()
         vis = Visualisation(emd)
-        self.assertTrue(np.alltrue(vis.imfs == imfs))
-        self.assertTrue(np.alltrue(vis.residue == res))
+        self.assertTrue(np.all(vis.imfs == imfs))
+        self.assertTrue(np.all(vis.residue == res))
 
     def test_check_imfs(self):
         vis = Visualisation()
@@ -40,7 +40,7 @@ class VisTest(unittest.TestCase):
 
         out_imfs, out_res = vis._check_imfs(imfs, None, False)
 
-        self.assertTrue(np.alltrue(imfs == out_imfs))
+        self.assertTrue(np.all(imfs == out_imfs))
         self.assertIsNone(out_res)
 
     def test_check_imfs4(self):
@@ -57,8 +57,8 @@ class VisTest(unittest.TestCase):
         imfs, res = emd.get_imfs_and_residue()
         vis = Visualisation(emd)
         imfs2, res2 = vis._check_imfs(imfs, res, False)
-        self.assertTrue(np.alltrue(imfs == imfs2))
-        self.assertTrue(np.alltrue(res == res2))
+        self.assertTrue(np.all(imfs == imfs2))
+        self.assertTrue(np.all(res == res2))
 
     def test_plot_imfs(self):
         vis = Visualisation()

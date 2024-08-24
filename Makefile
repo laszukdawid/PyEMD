@@ -1,5 +1,11 @@
 LINT_TARGET_DIRS := PyEMD doc example
 
+init:
+	python -m venv .venv
+	.venv/bin/pip install -r requirements.txt
+	.venv/bin/pip install -e .[dev]
+	@echo "Run 'source .venv/bin/activate' to activate the virtual environment"
+
 test:
 	python -m PyEMD.tests.test_all
 
@@ -12,6 +18,7 @@ doc:
 
 format:
 	python -m black $(LINT_TARGET_DIRS)
+	python -m isort PyEMD
 
 lint-check:
 	python -m isort --check PyEMD

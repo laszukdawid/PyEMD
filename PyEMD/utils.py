@@ -1,6 +1,12 @@
+import sys
 from typing import Optional
 
 import numpy as np
+
+if sys.version_info >= (3, 9):
+    from functools import cache
+else:
+    from functools import lru_cache as cache
 
 
 def get_timeline(range_max: int, dtype: Optional[np.dtype] = None) -> np.ndarray:
@@ -50,3 +56,14 @@ def smallest_inclusive_dtype(ref_dtype: np.dtype, ref_value) -> np.dtype:
         raise ValueError("Requested too large integer range. Exceeds max( float64 ) == '{}.".format(max_val))
 
     raise ValueError("Unsupported dtype '{}'. Only intX and floatX are supported.".format(ref_dtype))
+
+
+@cache
+def deduce_common_type(xtype: np.dtype, ytype: np.dtype) -> np.dtype:
+    if xtype == ytype:
+        return xtype
+    if np.version.version[0] == "1":
+        dtype = np.find_common_type([xtype, ytype], [])
+    else:
+        dtype = np.promote_types(xtype, ytype)
+    return dtype

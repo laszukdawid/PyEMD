@@ -77,13 +77,13 @@ class TestCase(unittest.TestCase):
 
     def test_whitenoise_check_nan_values(self):
         """whitenoise check with nan in IMF."""
-        S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
+        S = np.array([np.full(100, np.nan) for i in range(5, 0, -1)])
         res = whitenoise_check(S)
-        self.assertEqual(res, None, "Input NaN returns None")
+        self.assertEqual(res, None, "Input nan returns None")
 
     def test_invalid_alpha(self):
         """Test if invalid alpha return AssertionError."""
-        S = np.array([np.full(100, np.NaN) for i in range(5, 0, -1)])
+        S = np.array([np.full(100, np.nan) for i in range(5, 0, -1)])
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=1)
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=0)
         self.assertRaises(AssertionError, whitenoise_check, S, alpha=-10)
@@ -99,7 +99,7 @@ class TestCase(unittest.TestCase):
 
     def test_invalid_input_type(self):
         """Test if invalid input type return AssertionError."""
-        S = [np.full(100, np.NaN) for i in range(5, 0, -1)]
+        S = [np.full(100, np.nan) for i in range(5, 0, -1)]
         self.assertRaises(AssertionError, whitenoise_check, S)
         self.assertRaises(AssertionError, whitenoise_check, 1)
         self.assertRaises(AssertionError, whitenoise_check, 1.2)
