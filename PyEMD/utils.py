@@ -1,7 +1,12 @@
-from functools import cache
+import sys
 from typing import Optional
 
 import numpy as np
+
+if sys.version_info >= (3, 9):
+    from functools import cache
+else:
+    from functools import lru_cache as cache
 
 
 def get_timeline(range_max: int, dtype: Optional[np.dtype] = None) -> np.ndarray:
