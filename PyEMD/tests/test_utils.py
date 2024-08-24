@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from PyEMD.utils import get_timeline, deduce_common_type
+from PyEMD.utils import deduce_common_type, get_timeline
 
 
 class MyTestCase(unittest.TestCase):
@@ -36,6 +36,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(deduce_common_type(np.int32, np.int16), np.int32)
         self.assertEqual(deduce_common_type(np.int32, np.int32), np.int32)
         self.assertEqual(deduce_common_type(np.float32, np.float64), np.float64)
+
 
 if __name__ == "__main__":
     unittest.main()

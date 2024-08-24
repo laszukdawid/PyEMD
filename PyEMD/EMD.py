@@ -13,7 +13,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from PyEMD.splines import akima, cubic, cubic_hermite, cubic_spline_3pts, pchip
-from PyEMD.utils import get_timeline, deduce_common_type
+from PyEMD.utils import deduce_common_type, get_timeline
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
@@ -199,14 +199,14 @@ class EMD:
             Position (1st row) and values (2nd row) of maxima.
         """
         if self.extrema_detection == "parabol":
-            return self._prepare_points_parabol(T, S, max_pos, max_val, min_pos, min_val)
+            return self.prepare_points_parabol(T, S, max_pos, max_val, min_pos, min_val)
         elif self.extrema_detection == "simple":
-            return self._prepare_points_simple(T, S, max_pos, max_val, min_pos, min_val)
+            return self.prepare_points_simple(T, S, max_pos, max_val, min_pos, min_val)
         else:
             msg = "Incorrect extrema detection type. Please try: 'simple' or 'parabol'."
             raise ValueError(msg)
 
-    def _prepare_points_parabol(self, T, S, max_pos, max_val, min_pos, min_val) -> Tuple[np.ndarray, np.ndarray]:
+    def prepare_points_parabol(self, T, S, max_pos, max_val, min_pos, min_val) -> Tuple[np.ndarray, np.ndarray]:
         """
         Performs mirroring on signal which extrema do not necessarily
         belong on the position array.
@@ -324,7 +324,7 @@ class EMD:
 
         return max_extrema, min_extrema
 
-    def _prepare_points_simple(
+    def prepare_points_simple(
         self,
         T: np.ndarray,
         S: np.ndarray,

@@ -1,5 +1,5 @@
-from typing import Optional
 from functools import cache
+from typing import Optional
 
 import numpy as np
 
@@ -52,13 +52,13 @@ def smallest_inclusive_dtype(ref_dtype: np.dtype, ref_value) -> np.dtype:
 
     raise ValueError("Unsupported dtype '{}'. Only intX and floatX are supported.".format(ref_dtype))
 
+
 @cache
 def deduce_common_type(xtype: np.dtype, ytype: np.dtype) -> np.dtype:
     if xtype == ytype:
         return xtype
-    if np.version.version[0] == '1':
+    if np.version.version[0] == "1":
         dtype = np.find_common_type([xtype, ytype], [])
     else:
         dtype = np.promote_types(xtype, ytype)
     return dtype
-    
