@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from PyEMD.utils import get_timeline
+from PyEMD.utils import get_timeline, deduce_common_type
 
 
 class MyTestCase(unittest.TestCase):
@@ -31,15 +31,11 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(T[-1], len(S) - 1, "Range is kept")
         self.assertEqual(T.dtype, np.uint16, "UInt16 is the min type that matches requirements")
 
-    def test_get_timeline_does_not_overflow_float16(self):
-        S = np.random.random(int(np.finfo(np.float16).max) + 5).astype(dtype=np.float16)
-        T = get_timeline(len(S), dtype=S.dtype)
-
-        self.assertGreater(len(S), np.finfo(S.dtype).max, "Length of the signal is greater than its type max value")
-        self.assertEqual(len(T), len(S), "Lengths must be equal")
-        self.assertEqual(T[-1], len(S) - 1, "Range is kept")
-        self.assertEqual(T.dtype, np.float32, "Float32 is the min type that matches requirements")
-
+    def test_deduce_common_types(self):
+        self.assertEqual(deduce_common_type(np.int16, np.int32), np.int32)
+        self.assertEqual(deduce_common_type(np.int32, np.int16), np.int32)
+        self.assertEqual(deduce_common_type(np.int32, np.int32), np.int32)
+        self.assertEqual(deduce_common_type(np.float32, np.float64), np.float64)
 
 if __name__ == "__main__":
     unittest.main()

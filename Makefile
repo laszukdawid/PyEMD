@@ -1,5 +1,10 @@
 LINT_TARGET_DIRS := PyEMD doc example
 
+init:
+	python -m venv .venv
+	.venv/bin/pip install -r requirements.txt
+	@echo "Run 'source .venv/bin/activate' to activate the virtual environment"
+
 test:
 	python -m PyEMD.tests.test_all
 

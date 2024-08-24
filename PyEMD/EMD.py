@@ -13,7 +13,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from PyEMD.splines import akima, cubic, cubic_hermite, cubic_spline_3pts, pchip
-from PyEMD.utils import get_timeline
+from PyEMD.utils import get_timeline, deduce_common_type
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
@@ -765,7 +765,7 @@ class EMD:
     @staticmethod
     def _common_dtype(x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Casts inputs (x, y) into a common numpy DTYPE."""
-        dtype = np.find_common_type([x.dtype, y.dtype], [])
+        dtype = deduce_common_type(x.dtype, y.dtype)
         if x.dtype != dtype:
             x = x.astype(dtype)
         if y.dtype != dtype:
