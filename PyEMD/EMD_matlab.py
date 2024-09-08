@@ -15,6 +15,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from PyEMD.splines import akima
+from PyEMD.utils import deduce_common_type
 
 
 class EMD:
@@ -429,7 +430,7 @@ class EMD:
 
     @staticmethod
     def _common_dtype(x, y):
-        dtype = np.find_common_type([x.dtype, y.dtype], [])
+        dtype = deduce_common_type([x.dtype, y.dtype], [])
         if x.dtype != dtype:
             x = x.astype(dtype)
         if y.dtype != dtype:
