@@ -84,9 +84,7 @@ class EMD:
             return [-1] * 4
 
         # Extrapolation of signal (ober boundaries)
-        maxExtrema, minExtrema = self.preparePoints(
-            S, T, maxPos, maxVal, minPos, minVal
-        )
+        maxExtrema, minExtrema = self.preparePoints(S, T, maxPos, maxVal, minPos, minVal)
 
         _, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
         _, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
@@ -220,12 +218,8 @@ class EMD:
         minExtrema = np.array([tmin, zmin], dtype=self.DTYPE)
 
         # Make double sure, that each extremum is significant
-        maxExtrema = np.delete(
-            maxExtrema, np.where(maxExtrema[0, 1:] == maxExtrema[0, :-1]), axis=1
-        )
-        minExtrema = np.delete(
-            minExtrema, np.where(minExtrema[0, 1:] == minExtrema[0, :-1]), axis=1
-        )
+        maxExtrema = np.delete(maxExtrema, np.where(maxExtrema[0, 1:] == maxExtrema[0, :-1]), axis=1)
+        minExtrema = np.delete(minExtrema, np.where(minExtrema[0, 1:] == minExtrema[0, :-1]), axis=1)
 
         return maxExtrema, minExtrema
 
@@ -257,9 +251,7 @@ class EMD:
 
         elif kind == "cubic":
             if extrema.shape[1] > 3:
-                return t, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(
-                    self.DTYPE
-                )
+                return t, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
             else:
                 return self.cubicSpline_3points(T, extrema)
 
