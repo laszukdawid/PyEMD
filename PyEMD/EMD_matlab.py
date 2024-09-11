@@ -435,8 +435,18 @@ class EMD:
         The decomposition is limited to maxImf imf. No limitation as default.
         Returns IMF functions in dic format. IMF = {0:imf0, 1:imf1...}.
 
+        *Note*: First argument `self` should be an instance of EMD class.
+        It should be resolved in future versions.
+
+        For example:
+        ```
+        emd = EMD()
+        emd.emd(emd, S, T, maxImf)
+        ```
+
         Input:
         ---------
+            self: Instance of EMD class.
             S: Signal.
             T: Positions of signal. If none passed numpy arange is created.
             maxImf: IMF number to which decomposition should be performed.
@@ -457,7 +467,7 @@ class EMD:
             maxImf = -1
 
         # Make sure same types are dealt
-        S, T = unify_type(S, T)
+        S, T = unify_types(S, T)
         self.DTYPE = S.dtype
 
         Res = S.astype(self.DTYPE)
@@ -479,7 +489,7 @@ class EMD:
 
         if S.shape != T.shape:
             info = "Time array should be the same size as signal."
-            raise Exception(info)
+            raise ValueError(info)
 
         # Create arrays
         IMF = {}  # Dic for imfs signals
