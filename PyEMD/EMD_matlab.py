@@ -84,7 +84,9 @@ class EMD:
             return [-1] * 4
 
         # Extrapolation of signal (ober boundaries)
-        maxExtrema, minExtrema = self.preparePoints(S, T, maxPos, maxVal, minPos, minVal)
+        maxExtrema, minExtrema = self.preparePoints(
+            S, T, maxPos, maxVal, minPos, minVal
+        )
 
         _, maxSpline = self.splinePoints(T, maxExtrema, self.splineKind)
         _, minSpline = self.splinePoints(T, minExtrema, self.splineKind)
@@ -218,8 +220,12 @@ class EMD:
         minExtrema = np.array([tmin, zmin], dtype=self.DTYPE)
 
         # Make double sure, that each extremum is significant
-        maxExtrema = np.delete(maxExtrema, np.where(maxExtrema[0, 1:] == maxExtrema[0, :-1]), axis=1)
-        minExtrema = np.delete(minExtrema, np.where(minExtrema[0, 1:] == minExtrema[0, :-1]), axis=1)
+        maxExtrema = np.delete(
+            maxExtrema, np.where(maxExtrema[0, 1:] == maxExtrema[0, :-1]), axis=1
+        )
+        minExtrema = np.delete(
+            minExtrema, np.where(minExtrema[0, 1:] == minExtrema[0, :-1]), axis=1
+        )
 
         return maxExtrema, minExtrema
 
@@ -251,7 +257,9 @@ class EMD:
 
         elif kind == "cubic":
             if extrema.shape[1] > 3:
-                return t, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(self.DTYPE)
+                return t, interp1d(extrema[0], extrema[1], kind=kind)(t).astype(
+                    self.DTYPE
+                )
             else:
                 return self.cubicSpline_3points(T, extrema)
 
@@ -435,8 +443,18 @@ class EMD:
         The decomposition is limited to maxImf imf. No limitation as default.
         Returns IMF functions in dic format. IMF = {0:imf0, 1:imf1...}.
 
+        *Note*: First argument `self` should be an instance of EMD class.
+        It should be resolved in future versions.
+
+        For example:
+        ```
+        emd = EMD()
+        emd.emd(emd, S, T, maxImf)
+        ```
+
         Input:
         ---------
+            self: Instance of EMD class.
             S: Signal.
             T: Positions of signal. If none passed numpy arange is created.
             maxImf: IMF number to which decomposition should be performed.
@@ -457,7 +475,7 @@ class EMD:
             maxImf = -1
 
         # Make sure same types are dealt
-        S, T = unify_type(S, T)
+        S, T = unify_types(S, T)
         self.DTYPE = S.dtype
 
         Res = S.astype(self.DTYPE)
@@ -479,7 +497,7 @@ class EMD:
 
         if S.shape != T.shape:
             info = "Time array should be the same size as signal."
-            raise Exception(info)
+            raise ValueError(info)
 
         # Create arrays
         IMF = {}  # Dic for imfs signals
