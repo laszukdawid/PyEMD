@@ -36,7 +36,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(deduce_common_type(np.int32, np.int16), np.int32)
         self.assertEqual(deduce_common_type(np.int32, np.int32), np.int32)
         self.assertEqual(deduce_common_type(np.float32, np.float64), np.float64)
-    
+
     def test_unify_types(self):
         x = np.array([1, 2, 3], dtype=np.int16)
         y = np.array([1.1, 2.2, 3.3], dtype=np.float32)
