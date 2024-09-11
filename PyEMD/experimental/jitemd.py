@@ -30,7 +30,7 @@ import numpy as np
 from numba.types import float64, int64, unicode_type
 from scipy.interpolate import Akima1DInterpolator, interp1d
 
-from PyEMD.utils import deduce_common_type
+# from PyEMD.utils import unify_types
 
 FindExtremaOutput = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
@@ -802,7 +802,7 @@ def emd(
     # T = _normalize_time(T)
 
     # Make sure same types are dealt
-    # S, T = deduce_common_Types(S, T)
+    # S, T = unify_types(S, T)
     MAX_ITERATION = config["MAX_ITERATION"]
     FIXE = config["FIXE"]
     FIXE_H = config["FIXE_H"]
@@ -992,7 +992,7 @@ if __name__ == "__main__":
     print("Input S.dtype: " + str(S.dtype))
 
     # Prepare and run EMD
-    config = EmdConfig()
+    config = default_emd_config
     imfs = emd(config, S, T, max_imf)
     imfNo = imfs.shape[0]
 

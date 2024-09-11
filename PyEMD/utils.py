@@ -1,5 +1,5 @@
 import sys
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -67,3 +67,12 @@ def deduce_common_type(xtype: np.dtype, ytype: np.dtype) -> np.dtype:
     else:
         dtype = np.promote_types(xtype, ytype)
     return dtype
+
+def unify_types(x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    dtype = deduce_common_type(x.dtype, y.dtype)
+    if x.dtype != dtype:
+        x = x.astype(dtype)
+    if y.dtype != dtype:
+        y = y.astype(dtype)
+
+    return x, y

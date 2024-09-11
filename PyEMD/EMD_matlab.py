@@ -15,7 +15,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from PyEMD.splines import akima
-from PyEMD.utils import deduce_common_type
+from PyEMD.utils import unify_types
 
 
 class EMD:
@@ -429,15 +429,6 @@ class EMD:
             return False
 
     @staticmethod
-    def _common_dtype(x, y):
-        dtype = deduce_common_type([x.dtype, y.dtype], [])
-        if x.dtype != dtype:
-            x = x.astype(dtype)
-        if y.dtype != dtype:
-            y = y.astype(dtype)
-
-        return x, y
-
     def emd(self, S, T=None, maxImf=None):
         """
         Performs Empirical Mode Decomposition on signal S.
@@ -466,7 +457,7 @@ class EMD:
             maxImf = -1
 
         # Make sure same types are dealt
-        S, T = self._common_dtype(S, T)
+        S, T = unify_type(S, T)
         self.DTYPE = S.dtype
 
         Res = S.astype(self.DTYPE)
