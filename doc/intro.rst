@@ -32,6 +32,15 @@ Once the package is installed it should be accessible in your Python as `PyEMD`,
 
     >>> from PyEMD import EMD
 
+Conda
+`````
+
+If you are using `conda` and prefer to install packages from `conda-forge` channel, you can do so with ::
+
+    $ conda install -c conda-forge emd-signal
+
+This will install the package and all dependencies from the `conda-forge` channel.
+
 Research (github)
 `````````````````
 

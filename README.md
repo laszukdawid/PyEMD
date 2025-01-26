@@ -2,6 +2,7 @@
 [![DocStatus](https://readthedocs.org/projects/pyemd/badge/?version=latest)](https://pyemd.readthedocs.io/)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f56b6fc3f855476dbaebd3c02ae88f3e)](https://www.codacy.com/gh/laszukdawid/PyEMD/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=laszukdawid/PyEMD&amp;utm_campaign=Badge_Grade)
 [![DOI](https://zenodo.org/badge/65324353.svg)](https://zenodo.org/badge/latestdoi/65324353)
+[![Conda](https://anaconda.org/conda-forge/emd-signal/badges/version.svg)](https://anaconda.org/conda-forge/emd-signal/badges/version.svg)
 
 # PyEMD
 
@@ -50,13 +51,35 @@ and extrema interpolations.
 
 ## Installation
 
+**Note**: Downloadable package is called `emd-signal`.
+
 ### PyPi (recommended)
 
 The quickest way to install package is through `pip`.
 
-> \$ pip install EMD-signal
+```sh
+pip install EMD-signal
+```
 
-In this way you install the latest stable release of PyEMD hosted on PyPi
+or with [uv]() you can do
+
+```sh
+uv add emd-signal
+#or
+# uv pip install EMD-signal
+```
+
+In this way you install the latest stable release of PyEMD hosted on [PyPi](https://pypi.org/project/emd/).
+
+### Conda
+
+PyEMD (as `emd-signal`) is available for Conda via conda-forge channel 
+
+```sh
+conda install -c conda-forge emd-signal
+```
+
+Source: [https://anaconda.org/conda-forge/emd-signal](https://anaconda.org/conda-forge/emd-signal)
 
 ### From source
 
@@ -65,20 +88,27 @@ However, if you want the latest version of PyEMD, anyhow you might want to downl
 The source is publicaly available and hosted on [GitHub](https://github.com/laszukdawid/PyEMD).
 To download the code you can either go to the source code page and click `Code -> Download ZIP`, or use **git** command line
 
-> \$ git clone <https://github.com/laszukdawid/PyEMD>
+```sh
+git clone https://github.com/laszukdawid/PyEMD
+```
 
 Installing package from source is done using command line:
 
-> \$ python3 -m pip install .
+```sh
+python3 -m pip install .
+```
 
 after entering the PyEM directory created by `git`.
 
 A quicker way to install PyEMD from source is done using `pip` and `git` in the same command:
 
->\$ python3 -m pip install git+https://github.com/laszukdawid/PyEMD.git
+```sh
+python3 -m pip install git+https://github.com/laszukdawid/PyEMD.git
+```
 
 **Note**, however, that this will install it in your current environment. If you are working on many projects, or sharing reources with others, we suggest using [virtual environments](https://docs.python.org/3/library/venv.html).
 If you want to make your installation editable use the `-e` flag for [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/)
+
 ## Example
 
 More detailed examples are included in the
@@ -186,7 +216,9 @@ and suggestions.
 
 To enable JIT in your PyEMD, please install with `jit` option, i.e.
 
-> \$ pip install EMD-signal[jit]
+```sh
+pip install EMD-signal[jit]
+```
 
 ###  EMD2D/BEMD
 
@@ -208,6 +240,7 @@ IMFs_2D = emd2d(img)
 ## F.A.Q
 
 ### Why is EEMD/CEEMDAN so slow?
+
 Unfortunately, that's their nature. They execute EMD multiple times every time with slightly modified version. Added noise can cause a creation of many extrema which will decrease performance of the natural cubic spline. For some tweaks on how to deal with that please see [Speedup tricks](https://pyemd.readthedocs.io/en/latest/speedup.html) in the documentation.
 
 ## Contact
