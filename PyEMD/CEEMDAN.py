@@ -59,8 +59,8 @@ class CEEMDAN:
     trials : int (default: 100)
         Number of trials or EMD performance with added noise.
     epsilon : float (default: 0.005)
-        Scale for added noise (:math:`\epsilon`) which multiply std :math:`\sigma`:
-        :math:`\\beta = \epsilon \cdot \sigma`
+        Scale for added noise (:math:`\\epsilon`) which multiply std :math:`\\sigma`:
+        :math:`\\\\beta = \\epsilon \\cdot \\sigma`
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none

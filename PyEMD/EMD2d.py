@@ -14,12 +14,12 @@ import numpy as np
 
 try:
     from scipy.interpolate import SmoothBivariateSpline as SBS
-    from scipy.ndimage.filters import maximum_filter
-    from scipy.ndimage.morphology import binary_erosion, generate_binary_structure
+    from scipy.ndimage import maximum_filter
+    from scipy.ndimage import binary_erosion, generate_binary_structure
 except ImportError:
     raise ImportError(
         "EMD2D and BEMD are not supported. Feel free to play around and improve them. "
-        + "Required depdenecies are in `requriements-extra`."
+        + "Required dependencies are in `requirements-extra`."
     )
 
 

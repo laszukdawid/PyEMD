@@ -37,10 +37,10 @@ class EEMD:
     trials : int (default: 100)
         Number of trials or EMD performance with added noise.
     noise_width : float (default: 0.05)
-        Standard deviation of Gaussian noise (:math:`\hat\sigma`).
+        Standard deviation of Gaussian noise (:math:`\\hat\\sigma`).
         It's relative to absolute amplitude of the signal, i.e.
-        :math:`\hat\sigma = \sigma\cdot|\max(S)-\min(S)|`, where
-        :math:`\sigma` is noise_width.
+        :math:`\\hat\\sigma = \\sigma\\cdot|\\max(S)-\\min(S)|`, where
+        :math:`\\sigma` is noise_width.
     ext_EMD : EMD (default: None)
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
