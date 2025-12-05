@@ -15,3 +15,6 @@ __pycache__
 *.swp
 *.pyc
 *.ipynb
+
+# Performance test results (timestamped, machine-specific)
+perf_test/results/
