@@ -625,7 +625,8 @@ class EMD:
             indz = np.nonzero(S == 0)[0]
             if np.any(np.diff(indz) == 1):
                 zer = S == 0
-                dz = np.diff(np.append(np.append(0, zer), 0))
+                # Optimized: use concatenate instead of nested append
+                dz = np.diff(np.concatenate(([0], zer, [0])))
                 debz = np.nonzero(dz == 1)[0]
                 finz = np.nonzero(dz == -1)[0] - 1
                 indz = np.round((debz + finz) / 2.0)
@@ -635,51 +636,52 @@ class EMD:
         # Finds local extrema
         d = np.diff(S)
         d1, d2 = d[:-1], d[1:]
-        indmin = np.nonzero(np.r_[d1 * d2 < 0] & np.r_[d1 < 0])[0] + 1
-        indmax = np.nonzero(np.r_[d1 * d2 < 0] & np.r_[d1 > 0])[0] + 1
+        # Optimized: direct boolean operations without np.r_[]
+        sign_change = d1 * d2 < 0
+        indmin = np.nonzero(sign_change & (d1 < 0))[0] + 1
+        indmax = np.nonzero(sign_change & (d1 > 0))[0] + 1
 
-        # When two or more points have the same value
+        # When two or more points have the same value (flat plateaus)
         if np.any(d == 0):
-            imax, imin = [], []
-
             bad = d == 0
-            dd = np.diff(np.append(np.append(0, bad), 0))
+            # Optimized: use concatenate instead of nested append
+            dd = np.diff(np.concatenate(([0], bad, [0])))
             debs = np.nonzero(dd == 1)[0]
             fins = np.nonzero(dd == -1)[0]
-            if debs[0] == 1:
+
+            if len(debs) > 0 and debs[0] == 1:
                 if len(debs) > 1:
                     debs, fins = debs[1:], fins[1:]
                 else:
-                    debs, fins = [], []
+                    debs, fins = (
+                        np.array([], dtype=np.intp),
+                        np.array([], dtype=np.intp),
+                    )
+
+            if len(debs) > 0 and fins[-1] == len(S) - 1:
+                if len(debs) > 1:
+                    debs, fins = debs[:-1], fins[:-1]
+                else:
+                    debs, fins = (
+                        np.array([], dtype=np.intp),
+                        np.array([], dtype=np.intp),
+                    )
 
             if len(debs) > 0:
-                if fins[-1] == len(S) - 1:
-                    if len(debs) > 1:
-                        debs, fins = debs[:-1], fins[:-1]
-                    else:
-                        debs, fins = [], []
+                # Optimized: vectorized plateau classification
+                d_before = d[debs - 1]
+                d_after = d[fins]
+                midpoints = np.round((fins + debs) / 2.0).astype(np.intp)
 
-            lc = len(debs)
-            if lc > 0:
-                for k in range(lc):
-                    if d[debs[k] - 1] > 0:
-                        if d[fins[k]] < 0:
-                            imax.append(np.round((fins[k] + debs[k]) / 2.0))
-                    else:
-                        if d[fins[k]] > 0:
-                            imin.append(np.round((fins[k] + debs[k]) / 2.0))
+                # Maxima: rising before plateau, falling after
+                max_mask = (d_before > 0) & (d_after < 0)
+                # Minima: falling before plateau, rising after
+                min_mask = (d_before < 0) & (d_after > 0)
 
-            if len(imax) > 0:
-                indmax = indmax.tolist()
-                for x in imax:
-                    indmax.append(int(x))
-                indmax.sort()
-
-            if len(imin) > 0:
-                indmin = indmin.tolist()
-                for x in imin:
-                    indmin.append(int(x))
-                indmin.sort()
+                if np.any(max_mask):
+                    indmax = np.sort(np.concatenate([indmax, midpoints[max_mask]]))
+                if np.any(min_mask):
+                    indmin = np.sort(np.concatenate([indmin, midpoints[min_mask]]))
 
         local_max_pos = T[indmax]
         local_max_val = S[indmax]
