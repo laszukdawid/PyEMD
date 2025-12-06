@@ -438,10 +438,10 @@ class EMD:
         zrmax = S[rmax]
         zrmin = S[rmin]
 
-        tmin = np.append(tlmin, np.append(T[ind_min], trmin))
-        tmax = np.append(tlmax, np.append(T[ind_max], trmax))
-        zmin = np.append(zlmin, np.append(S[ind_min], zrmin))
-        zmax = np.append(zlmax, np.append(S[ind_max], zrmax))
+        tmin = np.concatenate((tlmin, T[ind_min], trmin))
+        tmax = np.concatenate((tlmax, T[ind_max], trmax))
+        zmin = np.concatenate((zlmin, S[ind_min], zrmin))
+        zmax = np.concatenate((zlmax, S[ind_max], zrmax))
 
         max_extrema = np.array([tmax, zmax])
         min_extrema = np.array([tmin, zmin])
@@ -474,7 +474,7 @@ class EMD:
         """
 
         kind = self.spline_kind.lower()
-        t = T[np.r_[T >= extrema[0, 0]] & np.r_[T <= extrema[0, -1]]]
+        t = T[(T >= extrema[0, 0]) & (T <= extrema[0, -1])]
 
         if kind == "akima":
             return t, akima(extrema[0], extrema[1], t)
@@ -508,7 +508,7 @@ class EMD:
         >>> idx = self._not_duplicate(S)
         [0, 1, 3, 4, 5]
         """
-        dup = np.r_[S[1:-1] == S[0:-2]] & np.r_[S[1:-1] == S[2:]]
+        dup = (S[1:-1] == S[0:-2]) & (S[1:-1] == S[2:])
         not_dup_idx = np.arange(1, len(S) - 1)[~dup]
 
         idx = np.empty(len(not_dup_idx) + 2, dtype=np.int64)
@@ -598,7 +598,7 @@ class EMD:
         c = c / scale
         a[a == 0] = 1e-14
         tVertex = -0.5 * b / a
-        idx = np.r_[tVertex < T0 + 0.5 * (Tn - T0)] & np.r_[tVertex >= T0 - 0.5 * (T0 - Tp)]
+        idx = (tVertex < T0 + 0.5 * (Tn - T0)) & (tVertex >= T0 - 0.5 * (T0 - Tp))
 
         a, b, c = a[idx], b[idx], c[idx]
         tVertex = tVertex[idx]
@@ -625,7 +625,6 @@ class EMD:
             indz = np.nonzero(S == 0)[0]
             if np.any(np.diff(indz) == 1):
                 zer = S == 0
-                # Optimized: use concatenate instead of nested append
                 dz = np.diff(np.concatenate(([0], zer, [0])))
                 debz = np.nonzero(dz == 1)[0]
                 finz = np.nonzero(dz == -1)[0] - 1
@@ -636,7 +635,6 @@ class EMD:
         # Finds local extrema
         d = np.diff(S)
         d1, d2 = d[:-1], d[1:]
-        # Optimized: direct boolean operations without np.r_[]
         sign_change = d1 * d2 < 0
         indmin = np.nonzero(sign_change & (d1 < 0))[0] + 1
         indmax = np.nonzero(sign_change & (d1 > 0))[0] + 1
@@ -644,7 +642,6 @@ class EMD:
         # When two or more points have the same value (flat plateaus)
         if np.any(d == 0):
             bad = d == 0
-            # Optimized: use concatenate instead of nested append
             dd = np.diff(np.concatenate(([0], bad, [0])))
             debs = np.nonzero(dd == 1)[0]
             fins = np.nonzero(dd == -1)[0]
@@ -668,7 +665,6 @@ class EMD:
                     )
 
             if len(debs) > 0:
-                # Optimized: vectorized plateau classification
                 d_before = d[debs - 1]
                 d_after = d[fins]
                 midpoints = np.round((fins + debs) / 2.0).astype(np.intp)
