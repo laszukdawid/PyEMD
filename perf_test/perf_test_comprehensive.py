@@ -783,6 +783,8 @@ Examples:
   python perf_test_comprehensive.py --quick            # Quick test suite
   python perf_test_comprehensive.py --test scaling     # Single test
   python perf_test_comprehensive.py --no-save          # Don't save results
+  python perf_test_comprehensive.py --profile --quick  # Profile quick suite
+  python perf_test_comprehensive.py --profile --test scaling  # Profile single test
 
 Results are saved to: perf_test/results/<timestamp>_<prefix>/
         """,
@@ -810,7 +812,7 @@ Results are saved to: perf_test/results/<timestamp>_<prefix>/
         "--no-save", action="store_true", help="Don't save results to disk"
     )
     parser.add_argument(
-        "--profile", action="store_true", help="Run with cProfile profiling (single EMD call)"
+        "--profile", action="store_true", help="Run test suite with cProfile profiling"
     )
     parser.add_argument(
         "--stats", action="store_true", help="Show detailed timing statistics for EMD"
@@ -866,25 +868,35 @@ Results are saved to: perf_test/results/<timestamp>_<prefix>/
         import cProfile
         import pstats
 
-        print("Running profiled EMD decomposition...")
-        reset_random_state()
-        signal = generate_test_signal(2000, "medium")
-        emd = EMD()
+        if args.test == "all":
+            test_desc = "quick test suite" if args.quick else "full test suite"
+        else:
+            test_desc = f"'{args.test}' test"
+        print(f"Running profiled {test_desc}...")
+        print("=" * 70)
 
         profiler = cProfile.Profile()
         profiler.enable()
-        for _ in range(10):
-            emd.emd(signal)
+
+        if args.test == "all":
+            run_all_tests(quick=args.quick, save=save)
+        else:
+            run_single_test(args.test, save=save)
+
         profiler.disable()
 
-        print("\nTop 20 functions by cumulative time:")
+        print("\n" + "=" * 70)
+        print(" PROFILING RESULTS")
         print("=" * 70)
-        stats = pstats.Stats(profiler)
-        stats.strip_dirs().sort_stats("cumulative").print_stats(20)
 
-        print("\nTop 20 functions by total time:")
-        print("=" * 70)
-        stats.strip_dirs().sort_stats("tottime").print_stats(20)
+        print("\nTop 30 functions by cumulative time:")
+        print("-" * 70)
+        stats = pstats.Stats(profiler)
+        stats.strip_dirs().sort_stats("cumulative").print_stats(30)
+
+        print("\nTop 30 functions by total time:")
+        print("-" * 70)
+        stats.strip_dirs().sort_stats("tottime").print_stats(30)
     elif args.test == "all":
         run_all_tests(quick=args.quick, save=save)
     else:
