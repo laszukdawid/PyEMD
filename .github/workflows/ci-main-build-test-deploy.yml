@@ -75,3 +75,31 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.EMD_PYPI_API_TOKEN }}
+
+  create-release:
+    # Create GitHub release when version is updated
+    if: needs.version-updated.outputs.pyemd_version == 'true'
+    needs: [version-updated, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$(grep -oP '__version__ = "\K[^"]+' PyEMD/__init__.py)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
+          body: |
+            ## PyEMD v${{ steps.get_version.outputs.version }}
+
+            Install via pip:
+            ```bash
+            pip install EMD-signal==${{ steps.get_version.outputs.version }}
+            ```
+          generate_release_notes: true
