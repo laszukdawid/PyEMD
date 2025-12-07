@@ -7,10 +7,45 @@ Since the EMD is the basis for other methods like EEMD and CEEMDAN these will al
 
 Sections below describe a tweaks one can do to improve performance of the EMD. In short, these changes are:
 
+- `Parallel execution`_ (enabled by default for EEMD/CEEMDAN)
 - `Change data type`_ (downscale)
 - `Change spline method`_ to piecewise
 - `Decrease number of trials`_
 - `Limit numer of output IMFs`_
+
+
+Parallel execution
+------------------
+
+**This is enabled by default since version 1.8.0.**
+
+EEMD and CEEMDAN can take advantage of multiple CPU cores to speed up computation significantly. Both methods run multiple independent EMD decompositions on noise-perturbed signals, making them well-suited for parallel execution.
+
+As of version 1.8.0, both EEMD and CEEMDAN have ``parallel=True`` by default and will automatically use all available CPU cores. This typically provides near-linear speedup with the number of cores.
+
+To explicitly control parallelization::
+
+    from PyEMD import EEMD, CEEMDAN
+
+    # Use all available CPUs (default behavior)
+    eemd = EEMD(trials=100)
+
+    # Use specific number of processes
+    eemd = EEMD(trials=100, processes=4)
+
+    # Disable parallelization (for reproducibility with seeds or debugging)
+    eemd = EEMD(trials=100, parallel=False)
+
+.. note::
+    When using ``noise_seed()`` for reproducible results, you must set ``parallel=False``.
+    Parallel execution does not guarantee deterministic ordering of results.
+
+**When to disable parallelization:**
+
+- When you need reproducible results using ``noise_seed()``
+- For very short signals (< 100 samples) where multiprocessing overhead exceeds the benefit
+- For very few trials (< 4) where overhead isn't amortized
+- When debugging or profiling
 
 
 Change data type

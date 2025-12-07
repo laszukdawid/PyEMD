@@ -107,8 +107,8 @@ class EEMDTest(unittest.TestCase):
         def cmpMachEps(x, y):
             return np.abs(x - y) <= 2 * np.finfo(x.dtype).eps
 
-        config = {"processes": 1}
-        eemd = EEMD(trials=10, **config)
+        # parallel=False required for reproducible seed behavior
+        eemd = EEMD(trials=10, parallel=False)
 
         # First run random seed
         eIMF1 = eemd(S)

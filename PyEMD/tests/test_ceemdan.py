@@ -139,7 +139,8 @@ class CEEMDANTest(unittest.TestCase):
         def cmpMachEps(x, y):
             return np.abs(x - y) <= 2 * np.finfo(x.dtype).eps
 
-        ceemdan = CEEMDAN(trials=10)
+        # parallel=False required for reproducible seed behavior
+        ceemdan = CEEMDAN(trials=10, parallel=False)
 
         # First run random seed
         cIMF1 = ceemdan(S)

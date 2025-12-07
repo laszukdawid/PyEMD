@@ -10,6 +10,7 @@
 """
 
 import logging
+import os
 from collections import defaultdict
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
@@ -45,21 +46,28 @@ class EEMD:
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
         is passed then EMD with default options is used.
-    parallel : bool (default: False)
+    parallel : bool (default: True)
         Flag whether to use multiprocessing in EEMD execution.
-        Since each EMD(s+noise) is independent this should improve execution
-        speed considerably.
-        *Note* that it's disabled by default because it's the most common
-        problem when EEMD takes too long time to finish.
-        If you set the flag to True, make also sure to set `processes` to
-        some reasonable value.
-    processes : int or None (optional)
+        Since each EMD(s+noise) is independent this improves execution
+        speed considerably. Enabled by default as EEMD's embarrassingly
+        parallel nature makes it almost always beneficial.
+    processes : int or None (default: None)
         Number of processes harness when executing in parallel mode.
+        If None, defaults to the number of CPUs available on the system.
         The value should be between 1 and max that depends on your hardware.
     separate_trends : bool (default: False)
         Flag whether to isolate trends from each EMD decomposition into a separate component.
         If `true`, the resulting EEMD will contain ensemble only from IMFs and
         the mean residue will be stacked as the last element.
+
+    Performance Notes
+    -----------------
+    EEMD runs multiple independent EMD decompositions on noise-perturbed signals,
+    making it embarrassingly parallel. With ``parallel=True`` (default), each trial
+    runs in a separate process, typically achieving near-linear speedup with CPU count.
+
+    For very short signals (< 100 samples) or few trials (< 4), the multiprocessing
+    overhead may exceed the benefit. In such cases, set ``parallel=False``.
 
     References
     ----------
@@ -72,7 +80,7 @@ class EEMD:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int = 100, noise_width: float = 0.05, ext_EMD=None, parallel: bool = False, **kwargs):
+    def __init__(self, trials: int = 100, noise_width: float = 0.05, ext_EMD=None, parallel: bool = True, **kwargs):
         # Ensemble constants
         self.trials = trials
         self.noise_width = noise_width
@@ -82,6 +90,9 @@ class EEMD:
         self.noise_kind = kwargs.get("noise_kind", "normal")
         self.parallel = parallel
         self.processes = kwargs.get("processes")  # Optional[int]
+        # Auto-set processes to CPU count if parallel is enabled and processes not specified
+        if self.parallel and self.processes is None:
+            self.processes = os.cpu_count()
         if self.processes is not None and not self.parallel:
             self.logger.warning("Passed value for process has no effect when `parallel` is False.")
 

@@ -44,7 +44,7 @@ def smallest_inclusive_dtype(ref_dtype: np.dtype, ref_value) -> np.dtype:
         for dtype in [np.uint16, np.uint32, np.uint64]:
             if ref_value < np.iinfo(dtype).max:
                 return dtype
-        max_val = np.iinfo(np.uint32).max
+        max_val = np.iinfo(np.uint64).max
         raise ValueError("Requested too large integer range. Exceeds max( uint64 ) == '{}.".format(max_val))
 
     # Float path

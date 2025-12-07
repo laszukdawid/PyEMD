@@ -285,9 +285,7 @@ def generate_test_signal(n: int, complexity: str = "medium") -> np.ndarray:
 # =============================================================================
 
 
-def test_emd_scaling(
-    signal_lengths: List[int] = None, runs: int = 200, warmup: int = 10
-) -> List[PerfResult]:
+def test_emd_scaling(signal_lengths: List[int] = None, runs: int = 200, warmup: int = 10) -> List[PerfResult]:
     """Test how EMD performance scales with signal length."""
     if signal_lengths is None:
         signal_lengths = [500, 1000, 2000, 5000, 10000]
@@ -325,9 +323,7 @@ def test_emd_scaling(
 # =============================================================================
 
 
-def test_spline_methods(
-    signal_length: int = 2000, runs: int = 50, warmup: int = 3
-) -> List[PerfResult]:
+def test_spline_methods(signal_length: int = 2000, runs: int = 50, warmup: int = 3) -> List[PerfResult]:
     """Compare performance of different spline interpolation methods."""
     spline_kinds = ["cubic", "akima", "pchip", "cubic_hermite", "slinear"]
     signal = generate_test_signal(signal_length, "medium")
@@ -361,9 +357,7 @@ def test_spline_methods(
 # =============================================================================
 
 
-def test_extrema_detection(
-    signal_length: int = 2000, runs: int = 5, warmup: int = 3
-) -> List[PerfResult]:
+def test_extrema_detection(signal_length: int = 2000, runs: int = 5, warmup: int = 3) -> List[PerfResult]:
     """Compare 'simple' vs 'parabol' extrema detection methods."""
     methods = ["simple", "parabol"]
     signal = generate_test_signal(signal_length, "medium")
@@ -413,9 +407,7 @@ def test_eemd_parallel(
     # Sequential baseline
     for trials in trial_counts:
         eemd = EEMD(trials=trials, parallel=False)
-        stats = benchmark(
-            eemd.eemd, signal, runs=runs, warmup=warmup, instance_with_seed=eemd
-        )
+        stats = benchmark(eemd.eemd, signal, runs=runs, warmup=warmup, instance_with_seed=eemd)
         results.append(
             PerfResult(
                 name="EEMD_sequential",
@@ -435,9 +427,7 @@ def test_eemd_parallel(
             if processes == 1:
                 continue  # Already tested as sequential
             eemd = EEMD(trials=trials, parallel=True, processes=processes)
-            stats = benchmark(
-                eemd.eemd, signal, runs=runs, warmup=warmup, instance_with_seed=eemd
-            )
+            stats = benchmark(eemd.eemd, signal, runs=runs, warmup=warmup, instance_with_seed=eemd)
             results.append(
                 PerfResult(
                     name="EEMD_parallel",
@@ -516,9 +506,7 @@ def test_ceemdan(
 # =============================================================================
 
 
-def test_signal_complexity(
-    signal_length: int = 2000, runs: int = 5, warmup: int = 3
-) -> List[PerfResult]:
+def test_signal_complexity(signal_length: int = 2000, runs: int = 5, warmup: int = 3) -> List[PerfResult]:
     """Test how signal complexity affects EMD performance."""
     complexities = ["simple", "medium", "complex"]
     results = []
@@ -554,9 +542,7 @@ def test_signal_complexity(
 # =============================================================================
 
 
-def test_sifting_params(
-    signal_length: int = 2000, runs: int = 5, warmup: int = 3
-) -> List[PerfResult]:
+def test_sifting_params(signal_length: int = 2000, runs: int = 5, warmup: int = 3) -> List[PerfResult]:
     """Test impact of sifting parameters on performance."""
     results = []
     signal = generate_test_signal(signal_length, "medium")
@@ -756,9 +742,7 @@ def run_single_test(test_name: str, save: bool = True) -> List[PerfResult]:
     }
 
     if test_name not in test_map:
-        raise ValueError(
-            f"Unknown test: {test_name}. Choose from: {list(test_map.keys())}"
-        )
+        raise ValueError(f"Unknown test: {test_name}. Choose from: {list(test_map.keys())}")
 
     func, title = test_map[test_name]
     results = func()
@@ -789,9 +773,7 @@ Examples:
 Results are saved to: perf_test/results/<timestamp>_<prefix>/
         """,
     )
-    parser.add_argument(
-        "--quick", action="store_true", help="Run quick tests with smaller parameters"
-    )
+    parser.add_argument("--quick", action="store_true", help="Run quick tests with smaller parameters")
     parser.add_argument(
         "--test",
         type=str,
@@ -808,15 +790,9 @@ Results are saved to: perf_test/results/<timestamp>_<prefix>/
         default="all",
         help="Which test to run (default: all)",
     )
-    parser.add_argument(
-        "--no-save", action="store_true", help="Don't save results to disk"
-    )
-    parser.add_argument(
-        "--profile", action="store_true", help="Run test suite with cProfile profiling"
-    )
-    parser.add_argument(
-        "--stats", action="store_true", help="Show detailed timing statistics for EMD"
-    )
+    parser.add_argument("--no-save", action="store_true", help="Don't save results to disk")
+    parser.add_argument("--profile", action="store_true", help="Run test suite with cProfile profiling")
+    parser.add_argument("--stats", action="store_true", help="Show detailed timing statistics for EMD")
 
     args = parser.parse_args()
     save = not args.no_save
@@ -844,25 +820,25 @@ Results are saved to: perf_test/results/<timestamp>_<prefix>/
         cv = (std / mean) * 100
 
         print(f"\nSignal length: 2000, Runs: {runs}")
-        print(f"Mean:   {mean*1000:.3f} ms")
-        print(f"Std:    {std*1000:.3f} ms")
+        print(f"Mean:   {mean * 1000:.3f} ms")
+        print(f"Std:    {std * 1000:.3f} ms")
         print(f"CV:     {cv:.1f}%")
-        print(f"Min:    {np.min(times_arr)*1000:.3f} ms")
-        print(f"Max:    {np.max(times_arr)*1000:.3f} ms")
-        print(f"Median: {np.median(times_arr)*1000:.3f} ms")
+        print(f"Min:    {np.min(times_arr) * 1000:.3f} ms")
+        print(f"Max:    {np.max(times_arr) * 1000:.3f} ms")
+        print(f"Median: {np.median(times_arr) * 1000:.3f} ms")
 
         # Percentiles
         print("\nPercentiles:")
         for p in [5, 25, 50, 75, 95]:
             val = np.percentile(times_arr, p)
-            print(f"  {p:3d}%: {val*1000:.3f} ms")
+            print(f"  {p:3d}%: {val * 1000:.3f} ms")
 
         # Show distribution of times
         print("\nTime distribution (histogram):")
         hist, edges = np.histogram(times_arr * 1000, bins=10)
         for i, count in enumerate(hist):
             bar = "#" * int(count * 40 / max(hist))
-            print(f"  {edges[i]:5.2f}-{edges[i+1]:5.2f} ms: {bar} ({count})")
+            print(f"  {edges[i]:5.2f}-{edges[i + 1]:5.2f} ms: {bar} ({count})")
 
     elif args.profile:
         import cProfile

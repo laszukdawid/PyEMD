@@ -10,6 +10,7 @@
 """
 
 import logging
+import os
 from multiprocessing import Pool
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
@@ -65,16 +66,14 @@ class CEEMDAN:
         One can pass EMD object defined outside, which will be
         used to compute IMF decompositions in each trial. If none
         is passed then EMD with default options is used.
-    parallel : bool (default: False)
-        Flag whether to use multiprocessing in EEMD execution.
-        Since each EMD(s+noise) is independent this should improve execution
-        speed considerably.
-        *Note* that it's disabled by default because it's the most common
-        problem when CEEMDAN takes too long time to finish.
-        If you set the flag to True, make also sure to set `processes` to
-        some reasonable value.
-    processes : int or None (optional)
+    parallel : bool (default: True)
+        Flag whether to use multiprocessing in CEEMDAN execution.
+        Since each trial's EMD(residue+noise) is independent within each IMF
+        extraction step, this improves execution speed considerably.
+        Enabled by default for better performance.
+    processes : int or None (default: None)
         Number of processes harness when executing in parallel mode.
+        If None, defaults to the number of CPUs available on the system.
         The value should be between 1 and max that depends on your hardware.
     noise_scale : float (default: 1)
         Scale (amplitude) of the added noise.
@@ -88,6 +87,15 @@ class CEEMDAN:
         Signal's power threshold. Finishes decomposition if sum(abs(r)) < thr.
     beta_progress : bool (default: True)
         Flag whether to scale all noise IMFs by their 1st IMF's standard deviation.
+
+    Performance Notes
+    -----------------
+    CEEMDAN extracts IMFs iteratively, where each IMF extraction runs multiple
+    independent trials that can be parallelized. With ``parallel=True`` (default),
+    each trial runs in a separate process within each IMF step.
+
+    For very short signals (< 100 samples) or few trials (< 4), the multiprocessing
+    overhead may exceed the benefit. In such cases, set ``parallel=False``.
 
     References
     ----------
@@ -105,7 +113,7 @@ class CEEMDAN:
 
     noise_kinds_all = ["normal", "uniform"]
 
-    def __init__(self, trials: int = 100, epsilon: float = 0.005, ext_EMD=None, parallel: bool = False, **kwargs):
+    def __init__(self, trials: int = 100, epsilon: float = 0.005, ext_EMD=None, parallel: bool = True, **kwargs):
         # Ensemble constants
         self.trials = trials
         self.epsilon = epsilon
@@ -120,6 +128,9 @@ class CEEMDAN:
         self._max_imf = int(kwargs.get("max_imf", 100))
         self.parallel = parallel
         self.processes = kwargs.get("processes")  # Optional[int]
+        # Auto-set processes to CPU count if parallel is enabled and processes not specified
+        if self.parallel and self.processes is None:
+            self.processes = os.cpu_count()
         if self.processes is not None and not self.parallel:
             self.logger.warning("Passed value for process has no effect when `parallel` is False.")
 
