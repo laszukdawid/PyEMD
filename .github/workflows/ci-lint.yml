@@ -8,6 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: psf/black@stable
+        with:
+            options: "--check --verbose"
+            version: "~=25.11"
       - uses: isort/isort-action@v1
         with:
           sort-paths: PyEMD
