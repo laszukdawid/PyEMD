@@ -33,8 +33,8 @@ def welch_ttest(mean1: float, std1: float, n1: int, mean2: float, std2: float, n
         return 0.0, 1.0
 
     # Standard error of difference
-    se1 = (std1 ** 2) / n1 if n1 > 0 else 0
-    se2 = (std2 ** 2) / n2 if n2 > 0 else 0
+    se1 = (std1**2) / n1 if n1 > 0 else 0
+    se2 = (std2**2) / n2 if n2 > 0 else 0
     se_diff = math.sqrt(se1 + se2)
 
     if se_diff == 0:
@@ -48,8 +48,8 @@ def welch_ttest(mean1: float, std1: float, n1: int, mean2: float, std2: float, n
         df = 1
     else:
         num = (se1 + se2) ** 2
-        denom = (se1 ** 2) / (n1 - 1) if n1 > 1 else 0
-        denom += (se2 ** 2) / (n2 - 1) if n2 > 1 else 0
+        denom = (se1**2) / (n1 - 1) if n1 > 1 else 0
+        denom += (se2**2) / (n2 - 1) if n2 > 1 else 0
         df = num / denom if denom > 0 else 1
 
     # Approximate p-value using normal distribution for large df
@@ -63,7 +63,7 @@ def welch_ttest(mean1: float, std1: float, n1: int, mean2: float, std2: float, n
     else:
         # For smaller df, use a conservative estimate
         # This is less accurate but avoids scipy dependency
-        z = abs(t_stat) * math.sqrt(df / (df + t_stat ** 2))
+        z = abs(t_stat) * math.sqrt(df / (df + t_stat**2))
         p_value = 2 * (1 - 0.5 * (1 + math.erf(z / math.sqrt(2))))
 
     return t_stat, p_value
@@ -72,6 +72,7 @@ def welch_ttest(mean1: float, std1: float, n1: int, mean2: float, std2: float, n
 @dataclass
 class ComparisonResult:
     """Result of comparing two benchmark results."""
+
     test_name: str
     params: Dict
     baseline_mean: float
@@ -179,25 +180,27 @@ def compare_results(
         # 2. AND the percentage change exceeds threshold (practically significant)
         is_significant = p_value < alpha and abs(diff_percent) >= threshold_percent
 
-        results.append(ComparisonResult(
-            test_name=base["name"],
-            params=base["params"],
-            baseline_mean=base_mean,
-            comparison_mean=comp_mean,
-            baseline_trimmed_mean=base_trimmed,
-            comparison_trimmed_mean=comp_trimmed,
-            baseline_std=base_std,
-            comparison_std=comp_std,
-            baseline_runs=base_runs,
-            comparison_runs=comp_runs,
-            diff_seconds=diff_seconds,
-            diff_percent=diff_percent,
-            is_faster=diff_seconds < 0,
-            is_significant=is_significant,
-            p_value=p_value,
-            baseline_cv=base_cv,
-            comparison_cv=comp_cv,
-        ))
+        results.append(
+            ComparisonResult(
+                test_name=base["name"],
+                params=base["params"],
+                baseline_mean=base_mean,
+                comparison_mean=comp_mean,
+                baseline_trimmed_mean=base_trimmed,
+                comparison_trimmed_mean=comp_trimmed,
+                baseline_std=base_std,
+                comparison_std=comp_std,
+                baseline_runs=base_runs,
+                comparison_runs=comp_runs,
+                diff_seconds=diff_seconds,
+                diff_percent=diff_percent,
+                is_faster=diff_seconds < 0,
+                is_significant=is_significant,
+                p_value=p_value,
+                baseline_cv=base_cv,
+                comparison_cv=comp_cv,
+            )
+        )
 
     return results
 
@@ -296,10 +299,7 @@ def format_text(
 
 
 def format_markdown(
-    results: List[ComparisonResult],
-    baseline_info: Dict,
-    comparison_info: Dict,
-    threshold: float
+    results: List[ComparisonResult], baseline_info: Dict, comparison_info: Dict, threshold: float
 ) -> str:
     """Format comparison results as markdown."""
     lines = []
@@ -311,9 +311,15 @@ def format_markdown(
     lines.append("")
     lines.append("| | Baseline | Comparison |")
     lines.append("|---|---|---|")
-    lines.append(f"| Timestamp | {baseline_info.get('timestamp', 'unknown')} | {comparison_info.get('timestamp', 'unknown')} |")
-    lines.append(f"| Git commit | `{baseline_info.get('git_commit', 'unknown')[:8]}` | `{comparison_info.get('git_commit', 'unknown')[:8]}` |")
-    lines.append(f"| PyEMD version | {baseline_info.get('pyemd_version', 'unknown')} | {comparison_info.get('pyemd_version', 'unknown')} |")
+    lines.append(
+        f"| Timestamp | {baseline_info.get('timestamp', 'unknown')} | {comparison_info.get('timestamp', 'unknown')} |"
+    )
+    lines.append(
+        f"| Git commit | `{baseline_info.get('git_commit', 'unknown')[:8]}` | `{comparison_info.get('git_commit', 'unknown')[:8]}` |"
+    )
+    lines.append(
+        f"| PyEMD version | {baseline_info.get('pyemd_version', 'unknown')} | {comparison_info.get('pyemd_version', 'unknown')} |"
+    )
     lines.append("")
 
     # Summary
@@ -351,12 +357,7 @@ def format_markdown(
     return "\n".join(lines)
 
 
-def format_json(
-    results: List[ComparisonResult],
-    baseline_info: Dict,
-    comparison_info: Dict,
-    threshold: float
-) -> str:
+def format_json(results: List[ComparisonResult], baseline_info: Dict, comparison_info: Dict, threshold: float) -> str:
     """Format comparison results as JSON."""
     data = {
         "baseline_info": baseline_info,
@@ -400,35 +401,18 @@ Examples:
   python compare_results.py baseline.json comparison.json --threshold 10
   python compare_results.py old/ new/ --format markdown > comparison.md
   python compare_results.py old/ new/ --alpha 0.01  # stricter significance
-        """
+        """,
+    )
+    parser.add_argument("baseline", type=Path, help="Path to baseline results (directory or JSON file)")
+    parser.add_argument("comparison", type=Path, help="Path to comparison results (directory or JSON file)")
+    parser.add_argument(
+        "--threshold", type=float, default=5.0, help="Minimum percentage change to consider significant (default: 5)"
     )
     parser.add_argument(
-        "baseline",
-        type=Path,
-        help="Path to baseline results (directory or JSON file)"
+        "--alpha", type=float, default=0.05, help="Significance level for t-test (default: 0.05 = 95%% confidence)"
     )
     parser.add_argument(
-        "comparison",
-        type=Path,
-        help="Path to comparison results (directory or JSON file)"
-    )
-    parser.add_argument(
-        "--threshold",
-        type=float,
-        default=5.0,
-        help="Minimum percentage change to consider significant (default: 5)"
-    )
-    parser.add_argument(
-        "--alpha",
-        type=float,
-        default=0.05,
-        help="Significance level for t-test (default: 0.05 = 95%% confidence)"
-    )
-    parser.add_argument(
-        "--format",
-        choices=["text", "json", "markdown"],
-        default="text",
-        help="Output format (default: text)"
+        "--format", choices=["text", "json", "markdown"], default="text", help="Output format (default: text)"
     )
 
     args = parser.parse_args()
