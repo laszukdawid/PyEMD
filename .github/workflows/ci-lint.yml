@@ -10,7 +10,7 @@ jobs:
       - uses: psf/black@stable
         with:
             options: "--check --verbose"
-            use_pyproject: true
+            version: "~=25.11"
       - uses: isort/isort-action@v1
         with:
           sort-paths: PyEMD
