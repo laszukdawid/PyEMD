@@ -83,7 +83,8 @@ class JitEMD:
 
 @nb.jit(float64[:](float64[:], int64, float64[:]), nopython=True)
 def np_round(x, decimals, out):
-    return np.round_(x, decimals, out)
+    out[:] = np.round(x, decimals)
+    return out
 
 
 @nb.njit
@@ -216,9 +217,11 @@ def _find_extrema_simple(T: np.ndarray, S: np.ndarray) -> FindExtremaOutput:
             indmin = np.append(indmin, np.array(imin)).astype(np.int64)
             indmin.sort()
 
-    local_max_pos = T[indmax].astype(S.dtype)
+    # Return indices as float64 (for _prepare_points_simple which expects indices)
+    # and the values at those indices
+    local_max_pos = indmax.astype(S.dtype)  # indices, not T values
     local_max_val = S[indmax].astype(S.dtype)
-    local_min_pos = T[indmin].astype(S.dtype)
+    local_min_pos = indmin.astype(S.dtype)  # indices, not T values
     local_min_val = S[indmin].astype(S.dtype)
 
     return local_max_pos, local_max_val, local_min_pos, local_min_val, indzer.astype(S.dtype)
@@ -594,18 +597,19 @@ def _prepare_points_simple(
     max_extrema = np.vstack((tmax, zmax))
     min_extrema = np.vstack((tmin, zmin))
 
-    # For posterity:
-    #  I tried with np.delete and np.vstack([ ]) but both didn't work.
-    #  np.delete works only with 2 args, and vstack had problem with list comphr.
-    max_dup_idx = np.where(max_extrema[0, 1:] == max_extrema[0, :-1])[0]
-    if len(max_dup_idx):
-        for col_idx in max_dup_idx:
-            max_extrema = np.hstack((max_extrema[:, :col_idx], max_extrema[:, col_idx + 1 :]))
+    # Remove duplicates - keep only unique x positions
+    # Use a mask-based approach to handle index shifting correctly
+    max_unique_mask = np.ones(max_extrema.shape[1], dtype=np.bool_)
+    for i in range(1, max_extrema.shape[1]):
+        if max_extrema[0, i] == max_extrema[0, i - 1]:
+            max_unique_mask[i] = False
+    max_extrema = max_extrema[:, max_unique_mask]
 
-    min_dup_idx = np.where(min_extrema[0, 1:] == min_extrema[0, :-1])[0]
-    if len(min_dup_idx):
-        for col_idx in min_dup_idx:
-            min_extrema = np.hstack((min_extrema[:, :col_idx], min_extrema[:, col_idx + 1 :]))
+    min_unique_mask = np.ones(min_extrema.shape[1], dtype=np.bool_)
+    for i in range(1, min_extrema.shape[1]):
+        if min_extrema[0, i] == min_extrema[0, i - 1]:
+            min_unique_mask[i] = False
+    min_extrema = min_extrema[:, min_unique_mask]
 
     return max_extrema, min_extrema
 
