@@ -1,8 +1,59 @@
 [build-system]
-requires = [
-  "setuptools>=58",
-  "wheel",
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "EMD-signal"
+dynamic = ["version"]
+description = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "Dawid Laszuk", email = "pyemd@dawid.lasz.uk" }]
+keywords = ["signal", "decomposition", "data", "analysis"]
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics",
 ]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.12",
+    "scipy>=0.19",
+    "pathos>=0.2.1",
+    "tqdm>=4.64.0,<5.0",
+]
+
+[project.optional-dependencies]
+doc = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "numpydoc",
+]
+jit = [
+    "numba>=0.62.0; python_version>='3.10'",
+]
+dev = [
+    "pycodestyle==2.11.*",
+    "black==25.11.*",
+    "isort==5.12.*",
+    "nox",
+]
+test = [
+    "pytest",
+    "codecov",
+]
+
+[project.urls]
+Homepage = "https://github.com/laszukdawid/PyEMD"
+Repository = "https://github.com/laszukdawid/PyEMD"
+
+[tool.setuptools.dynamic]
+version = { attr = "PyEMD.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["PyEMD*"]
 
 [tool.black]
 line-length = 120
@@ -13,3 +64,7 @@ profile = "black"
 
 [tool.ruff]
 line-length = 120
+
+[tool.pycodestyle]
+max-line-length = 120
+ignore = ["E203", "W503", "W605"]

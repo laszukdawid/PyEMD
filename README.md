@@ -18,6 +18,11 @@ Python implementation of the Empirical Mode
 Decomposition (EMD). The package contains multiple EMD variations and
 intends to deliver more in time.
 
+### Recent changes
+
+- \[2025-11  v1.9\] Migrate to `uv` and `nox` for builds and tests
+- \[2025-11  v1.8\] Performance boost of 18% to the core EMD
+
 ### EMD variations
 
 -  Ensemble EMD (EEMD),
