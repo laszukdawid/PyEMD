@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 
 class CEEMDAN:
-    """
+    r"""
     **"Complete Ensemble Empirical Mode Decomposition with Adaptive Noise"**
 
     "Complete ensemble empirical mode decomposition with adaptive
