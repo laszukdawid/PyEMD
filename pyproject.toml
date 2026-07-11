@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "EMD-signal"
-version = "1.10.1"
+version = "1.10.2"
 description = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 readme = "README.md"
 license = { text = "Apache-2.0" }
