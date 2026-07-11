@@ -40,6 +40,19 @@ This benchmark isolates value extraction in ``BEMD.extract_max_min_spline`` by
 stubbing spline construction. If the optional BEMD dependencies are not
 installed, the benchmark is skipped.
 
+The focused 3-point cubic spline benchmark can be run with::
+
+    python perf_test/perf_test_comprehensive.py --test cubic3pts
+
+It executes ``test_cubic_spline_3pts`` with these default parameters:
+
+* ``runs=2000``
+* ``warmup=100``
+* ``timeline_length=512``
+
+This benchmark isolates the small fallback used when cubic spline envelopes have
+only three extrema points.
+
 Saved benchmark runs can be compared with::
 
     python perf_test/compare_results.py <baseline-results> <comparison-results>
@@ -143,3 +156,55 @@ Interpretation
     This is a narrow optimization in an experimental 2D path. It improves the
     value extraction portion of envelope construction, but full BEMD runtime may
     still be dominated by extrema detection and radial-basis interpolation.
+
+Attempt: use solve instead of explicit inverse for 3-point cubic spline
+-----------------------------------------------------------------------
+
+Date evaluated
+    2026-07-11
+
+Area
+    ``PyEMD.splines.cubic_spline_3pts`` coefficient solve.
+
+Motivation
+    The fallback spline for exactly three extrema points computed coefficients
+    with an explicit matrix inverse followed by a dot product::
+
+        np.linalg.inv(M).dot(v)
+
+    Solving the linear system directly avoids constructing the inverse and is
+    the standard NumPy approach for this operation.
+
+Implementation
+    The inverse/dot expression was replaced with::
+
+        np.linalg.solve(M, v)
+
+Correctness result
+    A direct old-vs-new equivalence check over randomized inputs preserved the
+    output timeline exactly and matched spline values within ``1e-12`` absolute
+    and relative tolerance. The full test suite also passed::
+
+        python -m PyEMD.tests.test_all
+        Ran 116 tests
+        OK (skipped=21)
+
+Performance result
+    Comparing the original baseline with the direct-solve implementation showed
+    a statistically significant improvement in the focused benchmark::
+
+        cubic_spline_3pts ({'timeline_length': 512, 'points': 3}):
+        0.0001s -> 0.0001s (-7.3% faster, p=0.000)
+
+    The benchmark reported high variance and the absolute runtime is very
+    small, so the percentage should be treated as directional rather than a
+    precise end-to-end speedup estimate.
+
+Decision
+    The implementation change was kept because it is both faster in the focused
+    benchmark and numerically preferable to explicitly inverting the matrix.
+
+Interpretation
+    This is a small local improvement. It only affects envelope construction
+    cases with exactly three extrema points, so full EMD runtime impact depends
+    on how often a decomposition reaches that fallback path.
