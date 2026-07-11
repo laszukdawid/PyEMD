@@ -27,6 +27,7 @@ from typing import Callable, Dict, List, Optional
 import numpy as np
 
 from PyEMD import CEEMDAN, EEMD, EMD
+from PyEMD.splines import cubic_spline_3pts
 
 # Results directory
 RESULTS_BASE_DIR = Path(__file__).parent / "results"
@@ -388,6 +389,30 @@ def test_bemd_extrema_value_extraction(
             max=stats.max,
             runs=runs,
             trimmed_mean=stats.trimmed_mean,
+        )
+    ]
+
+
+def test_cubic_spline_3pts(runs: int = 2000, warmup: int = 100) -> List[PerfResult]:
+    """Benchmark the 3-point cubic spline fallback used for sparse extrema."""
+    x = np.array([0.0, 0.37, 1.0])
+    y = np.array([1.0, -0.25, 0.75])
+    T = np.linspace(-0.2, 1.2, 512)
+
+    stats = benchmark(cubic_spline_3pts, x, y, T, runs=runs, warmup=warmup)
+    t, q = cubic_spline_3pts(x, y, T)
+
+    return [
+        PerfResult(
+            name="cubic_spline_3pts",
+            params={"timeline_length": len(T), "points": 3},
+            mean=stats.mean,
+            std=stats.std,
+            min=stats.min,
+            max=stats.max,
+            runs=runs,
+            trimmed_mean=stats.trimmed_mean,
+            extra={"output_length": len(t), "value_checksum": float(np.sum(q))},
         )
     ]
 
@@ -793,8 +818,8 @@ def run_single_test(test_name: str, save: bool = True) -> List[PerfResult]:
     """Run a single test by name.
 
     Args:
-        test_name: One of 'scaling', 'accumulation', 'bemd_values', 'splines',
-                   'extrema', 'eemd', 'ceemdan', 'complexity', 'sifting'
+        test_name: One of 'scaling', 'accumulation', 'bemd_values', 'cubic3pts',
+                   'splines', 'extrema', 'eemd', 'ceemdan', 'complexity', 'sifting'
         save: If True, save results to timestamped directory
 
     Returns:
@@ -809,6 +834,7 @@ def run_single_test(test_name: str, save: bool = True) -> List[PerfResult]:
         "scaling": (test_emd_scaling, "EMD Scaling Test"),
         "accumulation": (test_emd_accumulation, "EMD Accumulation Test"),
         "bemd_values": (test_bemd_extrema_value_extraction, "BEMD Extrema Value Extraction Test"),
+        "cubic3pts": (test_cubic_spline_3pts, "3-point Cubic Spline Test"),
         "splines": (test_spline_methods, "Spline Method Comparison"),
         "extrema": (test_extrema_detection, "Extrema Detection Comparison"),
         "eemd": (test_eemd_parallel, "EEMD Parallel Scaling"),
@@ -844,6 +870,7 @@ Examples:
   python perf_test_comprehensive.py --test scaling     # Single test
   python perf_test_comprehensive.py --test accumulation # EMD accumulation benchmark
   python perf_test_comprehensive.py --test bemd_values # BEMD value extraction benchmark
+  python perf_test_comprehensive.py --test cubic3pts   # 3-point cubic spline benchmark
   python perf_test_comprehensive.py --no-save          # Don't save results
   python perf_test_comprehensive.py --profile --quick  # Profile quick suite
   python perf_test_comprehensive.py --profile --test scaling  # Profile single test
@@ -859,6 +886,7 @@ Results are saved to: perf_test/results/<timestamp>_<prefix>/
             "scaling",
             "accumulation",
             "bemd_values",
+            "cubic3pts",
             "splines",
             "extrema",
             "eemd",
