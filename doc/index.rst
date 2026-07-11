@@ -13,6 +13,7 @@ me through contact page.
    intro
    usage
    speedup
+   performance_history
    examples
    emd
    eemd

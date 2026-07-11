@@ -318,6 +318,80 @@ def test_emd_scaling(signal_lengths: List[int] = None, runs: int = 200, warmup: 
     return results
 
 
+def test_emd_accumulation(signal_length: int = 5000, runs: int = 50, warmup: int = 5) -> List[PerfResult]:
+    """Benchmark EMD component accumulation and residue reconstruction."""
+    reset_random_state()
+    signal = generate_test_signal(signal_length, "complex")
+    emd = EMD()
+
+    stats = benchmark(emd.emd, signal, runs=runs, warmup=warmup)
+    imfs = emd.emd(signal)
+
+    return [
+        PerfResult(
+            name="EMD_accumulation",
+            params={"signal_length": signal_length, "complexity": "complex"},
+            mean=stats.mean,
+            std=stats.std,
+            min=stats.min,
+            max=stats.max,
+            runs=runs,
+            trimmed_mean=stats.trimmed_mean,
+            extra={"n_components": imfs.shape[0]},
+        )
+    ]
+
+
+def test_bemd_extrema_value_extraction(
+    image_size: int = 256, extrema_count: int = 4000, runs: int = 200, warmup: int = 10
+) -> List[PerfResult]:
+    """Benchmark BEMD extrema value extraction inside envelope construction."""
+    try:
+        from PyEMD.BEMD import BEMD
+    except (ImportError, ModuleNotFoundError) as exc:
+        print(f"  BEMD benchmark skipped: {exc}")
+        return []
+
+    reset_random_state()
+    image = np.random.random((image_size, image_size))
+    min_peaks_pos = (
+        np.random.randint(0, image_size, size=extrema_count),
+        np.random.randint(0, image_size, size=extrema_count),
+    )
+    max_peaks_pos = (
+        np.random.randint(0, image_size, size=extrema_count),
+        np.random.randint(0, image_size, size=extrema_count),
+    )
+    bemd = BEMD()
+
+    original_spline_points = bemd.spline_points
+    bemd.spline_points = lambda X, Y, Z, xi, yi: np.zeros_like(xi, dtype=image.dtype)
+    try:
+        stats = benchmark(
+            bemd.extract_max_min_spline,
+            image,
+            min_peaks_pos,
+            max_peaks_pos,
+            runs=runs,
+            warmup=warmup,
+        )
+    finally:
+        bemd.spline_points = original_spline_points
+
+    return [
+        PerfResult(
+            name="BEMD_extrema_value_extraction",
+            params={"image_size": image_size, "extrema_count": extrema_count},
+            mean=stats.mean,
+            std=stats.std,
+            min=stats.min,
+            max=stats.max,
+            runs=runs,
+            trimmed_mean=stats.trimmed_mean,
+        )
+    ]
+
+
 # =============================================================================
 # Test 2: Spline Method Comparison
 # =============================================================================
@@ -719,8 +793,8 @@ def run_single_test(test_name: str, save: bool = True) -> List[PerfResult]:
     """Run a single test by name.
 
     Args:
-        test_name: One of 'scaling', 'splines', 'extrema', 'eemd', 'ceemdan',
-                   'complexity', 'sifting'
+        test_name: One of 'scaling', 'accumulation', 'bemd_values', 'splines',
+                   'extrema', 'eemd', 'ceemdan', 'complexity', 'sifting'
         save: If True, save results to timestamped directory
 
     Returns:
@@ -733,6 +807,8 @@ def run_single_test(test_name: str, save: bool = True) -> List[PerfResult]:
 
     test_map = {
         "scaling": (test_emd_scaling, "EMD Scaling Test"),
+        "accumulation": (test_emd_accumulation, "EMD Accumulation Test"),
+        "bemd_values": (test_bemd_extrema_value_extraction, "BEMD Extrema Value Extraction Test"),
         "splines": (test_spline_methods, "Spline Method Comparison"),
         "extrema": (test_extrema_detection, "Extrema Detection Comparison"),
         "eemd": (test_eemd_parallel, "EEMD Parallel Scaling"),
@@ -766,6 +842,8 @@ Examples:
   python perf_test_comprehensive.py                    # Full test suite
   python perf_test_comprehensive.py --quick            # Quick test suite
   python perf_test_comprehensive.py --test scaling     # Single test
+  python perf_test_comprehensive.py --test accumulation # EMD accumulation benchmark
+  python perf_test_comprehensive.py --test bemd_values # BEMD value extraction benchmark
   python perf_test_comprehensive.py --no-save          # Don't save results
   python perf_test_comprehensive.py --profile --quick  # Profile quick suite
   python perf_test_comprehensive.py --profile --test scaling  # Profile single test
@@ -779,6 +857,8 @@ Results are saved to: perf_test/results/<timestamp>_<prefix>/
         type=str,
         choices=[
             "scaling",
+            "accumulation",
+            "bemd_values",
             "splines",
             "extrema",
             "eemd",

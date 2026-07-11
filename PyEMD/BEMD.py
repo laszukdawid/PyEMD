@@ -71,8 +71,8 @@ class BEMD:
             Top envelope in form of an image.
         """
         xi, yi = np.meshgrid(np.arange(image.shape[0]), np.arange(image.shape[1]))
-        min_val = np.array([image[x, y] for x, y in zip(*min_peaks_pos)])
-        max_val = np.array([image[x, y] for x, y in zip(*max_peaks_pos)])
+        min_val = image[min_peaks_pos]
+        max_val = image[max_peaks_pos]
         min_env = self.spline_points(min_peaks_pos[0], min_peaks_pos[1], min_val, xi, yi)
         max_env = self.spline_points(max_peaks_pos[0], max_peaks_pos[1], max_val, xi, yi)
         return min_env, max_env
