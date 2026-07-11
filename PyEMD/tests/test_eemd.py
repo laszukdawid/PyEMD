@@ -168,6 +168,7 @@ class EEMDTest(unittest.TestCase):
         T = np.linspace(0, 2 * np.pi, 100)
         S = np.sin(T) + 3 * np.sin(3 * T + 0.1) + 0.2 * (T + 0.5) * (T - 2)
         eemd = EEMD(trials=20, separate_trends=True)
+        eemd.noise_seed(32167)
 
         eIMFs = eemd(S)
         for imf in eIMFs[:-1]:
