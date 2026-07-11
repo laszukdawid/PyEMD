@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "EMD-signal"
-dynamic = ["version"]
+version = "1.10.0"
 description = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -48,9 +48,6 @@ test = [
 [project.urls]
 Homepage = "https://github.com/laszukdawid/PyEMD"
 Repository = "https://github.com/laszukdawid/PyEMD"
-
-[tool.setuptools.dynamic]
-version = { attr = "PyEMD.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["PyEMD*"]
