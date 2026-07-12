@@ -22,7 +22,7 @@ from PyEMD.utils import get_timeline
 
 
 class EEMD:
-    """
+    r"""
     **Ensemble Empirical Mode Decomposition**
 
     Ensemble empirical mode decomposition (EEMD) [Wu2009]_
