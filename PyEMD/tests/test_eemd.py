@@ -85,6 +85,23 @@ class EEMDTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             eemd.generate_noise(1.0, 100)
 
+    def test_integer_noise_scale(self):
+        """Signed PCM values produce the same ensemble as their exact float values."""
+        t = np.linspace(0, 1, 128)
+        for dtype in (np.int8, np.int16, np.int32, np.int64):
+            with self.subTest(dtype=dtype):
+                amplitude = 0.9 * np.iinfo(dtype).max
+                signal = (amplitude * np.sin(2 * np.pi * 7 * t)).astype(dtype)
+                expected_scale = 0.05 * (float(signal.max()) - float(signal.min()))
+                eemd = EEMD(trials=4, parallel=False)
+                eemd.noise_seed(42)
+                expected = eemd(signal.astype(float), max_imf=2)
+                eemd.noise_seed(42)
+                with np.errstate(over="raise"):
+                    actual = eemd(signal, max_imf=2)
+                self.assertEqual(eemd._scale, expected_scale)
+                np.testing.assert_array_equal(actual, expected)
+
     def test_eemd_passingCustomEMD(self):
         spline_kind = "linear"
         params = {"spline_kind": spline_kind}

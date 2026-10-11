@@ -182,7 +182,11 @@ class EEMD:
         if T is None:
             T = get_timeline(len(S), S.dtype)
 
-        scale = self.noise_width * np.abs(np.max(S) - np.min(S))
+        maximum, minimum = np.max(S), np.min(S)
+        if np.issubdtype(S.dtype, np.integer):
+            # Widen before subtraction so signed integer recordings do not overflow.
+            maximum, minimum = int(maximum), int(minimum)
+        scale = self.noise_width * np.abs(maximum - minimum)
         self._S = S
         self._T = T
         self._N = len(S)
