@@ -17,10 +17,12 @@ the true result.
 .. note::
     Given the nature of EEMD, each time you decompose a signal you will obtain a different set of components.
     That's the expected consequence of adding noise which is going to be random.
-    To make the decomposition reproducible, one needs to set a seed for the random number generator used in EEMD
-    **and** set ``parallel=False``. This is done using :func:`PyEMD.EEMD.noise_seed` method on the instance::
+    To make the decomposition reproducible, set a seed using
+    :func:`PyEMD.EEMD.noise_seed` on the instance. Noise is drawn in the parent
+    process and trial results are collected in order, so the same seed produces
+    the same ensemble with serial or parallel execution::
 
-        eemd = EEMD(parallel=False)
+        eemd = EEMD()
         eemd.noise_seed(12345)
         imfs = eemd(signal)
 

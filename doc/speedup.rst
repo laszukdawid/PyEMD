@@ -33,16 +33,18 @@ To explicitly control parallelization::
     # Use specific number of processes
     eemd = EEMD(trials=100, processes=4)
 
-    # Disable parallelization (for reproducibility with seeds or debugging)
+    # Disable parallelization for debugging or small workloads
     eemd = EEMD(trials=100, parallel=False)
 
 .. note::
-    When using ``noise_seed()`` for reproducible results, you must set ``parallel=False``.
-    Parallel execution does not guarantee deterministic ordering of results.
+    For CEEMDAN, set ``parallel=False`` when using ``noise_seed()`` for reproducible
+    results. EEMD draws noise in the parent process and collects trials in order,
+    so seeded serial and parallel execution use the same ensemble.
+    CEEMDAN parallel execution does not guarantee deterministic ordering of results.
 
 **When to disable parallelization:**
 
-- When you need reproducible results using ``noise_seed()``
+- When you need reproducible CEEMDAN results using ``noise_seed()``
 - For very short signals (< 100 samples) where multiprocessing overhead exceeds the benefit
 - For very few trials (< 4) where overhead isn't amortized
 - When debugging or profiling

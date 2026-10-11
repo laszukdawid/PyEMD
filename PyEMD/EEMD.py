@@ -193,10 +193,12 @@ class EEMD:
         # with added white noise
         if self.parallel:
             pool = Pool(processes=self.processes)
-            map_pool = pool.map
+            map_pool = pool.imap
         else:
             map_pool = map
-        all_IMFs = map_pool(self._trial_update, range(self.trials))
+        # Draw noise in the parent so workers do not reuse copied RNG states.
+        all_noises = (self.generate_noise(self._scale, self._N) for _ in range(self.trials))
+        all_IMFs = map_pool(self._trial_update, all_noises)
 
         if self.parallel:
             pool.close()
@@ -229,12 +231,8 @@ class EEMD:
 
         return self.E_IMF
 
-    def _trial_update(self, trial) -> Tuple[np.ndarray, Optional[np.ndarray]]:
-        """A single trial evaluation, i.e. EMD(signal + noise).
-
-        *Note*: Although `trial` argument isn't used it's needed for the (multiprocessing) map method.
-        """
-        noise = self.generate_noise(self._scale, self._N)
+    def _trial_update(self, noise: np.ndarray) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """A single trial evaluation, i.e. EMD(signal + noise)."""
         imfs = self.emd(self._S + noise, self._T, self.max_imf)
         trend = None
         if self.separate_trends:

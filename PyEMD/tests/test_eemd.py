@@ -107,7 +107,7 @@ class EEMDTest(unittest.TestCase):
         def cmpMachEps(x, y):
             return np.abs(x - y) <= 2 * np.finfo(x.dtype).eps
 
-        # parallel=False required for reproducible seed behavior
+        # Serial seed behavior; parallel equivalence is checked separately.
         eemd = EEMD(trials=10, parallel=False)
 
         # First run random seed
@@ -129,6 +129,26 @@ class EEMDTest(unittest.TestCase):
         # Using same seeds, thus expecting same results
         msg_true = "Used same seed, expected same results"
         self.assertTrue(np.all(cmpMachEps(eIMF2, eIMF3)), msg_true)
+
+    def test_parallel_noise_matches_serial(self):
+        """Each worker receives a distinct draw from the same serial noise stream."""
+        t = np.linspace(0, 1, 128)
+        signal = np.sin(2 * np.pi * 7 * t) + 0.2 * np.sin(2 * np.pi * 21 * t)
+        for noise_kind in ("normal", "uniform"):
+            serial = EEMD(trials=8, parallel=False, noise_kind=noise_kind)
+            serial.noise_seed(42)
+            expected = serial(signal, max_imf=2)
+            expected_next_noise = serial.generate_noise(1, 5)
+            for processes in (1, 2, 3):
+                with self.subTest(noise_kind=noise_kind, processes=processes):
+                    parallel = EEMD(trials=8, processes=processes, noise_kind=noise_kind)
+                    parallel.noise_seed(42)
+                    actual = parallel(signal, max_imf=2)
+                    np.testing.assert_array_equal(actual, expected)
+                    for order in serial.all_imfs:
+                        np.testing.assert_array_equal(parallel.all_imfs[order], serial.all_imfs[order])
+                    np.testing.assert_array_equal(parallel.generate_noise(1, 5), expected_next_noise)
+                    self.assertEqual(len(np.unique(parallel.all_imfs[0], axis=0)), parallel.trials)
 
     def test_eemd_notParallel(self):
         S = np.random.random(100)
